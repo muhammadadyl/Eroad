@@ -1,0 +1,82 @@
+services:
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    hostname: kafka-kraft
+    container_name: kafka-kraft
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    restart: always
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    environment:
+      KAFKA_KRAFT_MODE: "true"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka-kraft:9093'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+      KAFKA_NODE_ID: 1
+      KAFKA_BROKER_ID: 1
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_LISTENERS: 'PLAINTEXT://kafka-kraft:9092,CONTROLLER://kafka-kraft:9093'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka-kraft:9092'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT'
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+      KAFKA_MIN_INSYNC_REPLICAS: 2
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+
+  init-kafka:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - kafka
+    entrypoint: [ '/bin/sh', '-c' ]
+    command: |
+      "
+      # blocks until kafka is reachable
+      kafka-topics --bootstrap-server kafka-kraft:9092 --list
+
+      echo -e 'Creating kafka topics'
+      kafka-topics --bootstrap-server kafka-kraft:9092 --create --if-not-exists --topic SocialMediaPostEvents --replication-factor 1 --partitions 1
+
+      echo -e 'Successfully created the following topics:'
+      kafka-topics --bootstrap-server kafka-kraft:9092 --list
+      "
+
+  mongo:
+    image: mongo:latest
+    container_name: mongo-container
+    ports:
+      - 27017:27017
+    restart: always
+    volumes:
+      - mongodb_data:/data/db
+
+  sql:
+    image: mcr.microsoft.com/mssql/server:2017-latest-ubuntu
+    container_name: sql-container
+    ports:
+      - 1433:1433
+    restart: always
+    environment:
+      ACCEPT_EULA: Y
+      SA_PASSWORD: $$tr0ngS@P@ssw0rd02
+      MSSQL_PID: Express
+
+  kafka-ui:
+    container_name: kafka-ui
+    image: provectuslabs/kafka-ui:latest
+    ports:
+      - 8080:8080
+    environment:
+      DYNAMIC_CONFIG_ENABLED: 'true'
+   
+networks:
+  default:    
+    driver: bridge
+
+volumes:
+  mongodb_data: {}
+  kafka_data: {}
