@@ -11,7 +11,11 @@ namespace Eroad.FleetManagement.Command.Domain.Aggregates
 
         public DriverAggregate(Guid driverId, string name, string driverLicence, DriverStatus driverStatus)
         {
-            // Business logic validation can be added here
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentException("Name cannot be empty", nameof(name));
+            if (string.IsNullOrWhiteSpace(driverLicence))
+                throw new ArgumentException("Driver licence cannot be empty", nameof(driverLicence));
+
             RaiseEvent(new DriverAddedEvent(name, driverLicence, driverStatus) 
             {
                 Id = driverId
@@ -26,7 +30,9 @@ namespace Eroad.FleetManagement.Command.Domain.Aggregates
 
         public void UpdateDriverInfo(string driverLicence)
         {
-            // Business logic validation can be added here
+            if (string.IsNullOrWhiteSpace(driverLicence))
+                throw new ArgumentException("Driver licence cannot be empty", nameof(driverLicence));
+
             RaiseEvent(new DriverUpdatedEvent(driverLicence) { Id = _id });
         }
 
@@ -38,7 +44,11 @@ namespace Eroad.FleetManagement.Command.Domain.Aggregates
 
         public void ChangeDriverStatus(DriverStatus oldStatus, DriverStatus newStatus)
         {
-            // Business logic validation can be added here
+            if (_driverStatus != oldStatus)
+                throw new InvalidOperationException($"Current driver status is {_driverStatus}, not {oldStatus}");
+            if (_driverStatus == newStatus)
+                throw new InvalidOperationException("New status must be different from current status");
+
             RaiseEvent(new DriverStatusChangedEvent(oldStatus, newStatus) { Id = _id });
         }
 

@@ -1,29 +1,35 @@
 using Eroad.CQRS.Core.Domain;
+using Eroad.CQRS.Core.Exceptions;
 using Eroad.CQRS.Core.Handlers;
 using Eroad.CQRS.Core.Infrastructure;
 using Eroad.CQRS.Core.Producers;
 using Eroad.FleetManagement.Command.Domain.Aggregates;
+using Eroad.FleetManagement.Command.Infrastructure.Config;
+using Microsoft.Extensions.Options;
 
-namespace Eroad.FleetMangement.Command.Infrastructure.Handlers
+namespace Eroad.FleetManagement.Command.Infrastructure.Handlers
 {
     public class DriverEventSourcingHandler : IEventSourcingHandler<DriverAggregate>
     {
         private readonly IEventStore _eventStore;
         private readonly IEventProducer _eventProducer;
+        private readonly string _kafkaTopic;
 
-        public DriverEventSourcingHandler(IEventStore eventStore, IEventProducer eventProducer)
+        public DriverEventSourcingHandler(IEventStore eventStore, IEventProducer eventProducer, IOptions<KafkaConfig> kafkaConfig)
         {
             _eventStore = eventStore;
             _eventProducer = eventProducer;
+            _kafkaTopic = kafkaConfig.Value?.Topic ?? throw new ArgumentNullException(nameof(kafkaConfig), "Kafka topic configuration is missing");
         }
 
         public async Task<DriverAggregate> GetByIdAsync(Guid aggregateId)
         {
-            var aggregate = new DriverAggregate();
             var events = await _eventStore.GetEventsAsync(aggregateId);
 
-            if (events == null || !events.Any()) return aggregate;
+            if (events == null || !events.Any())
+                throw new AggregateNotFoundException($"Driver aggregate with ID {aggregateId} not found.");
 
+            var aggregate = new DriverAggregate();
             aggregate.ReplayEvents(events);
             aggregate.Version = events.Select(x => x.Version).Max();
 
@@ -42,8 +48,7 @@ namespace Eroad.FleetMangement.Command.Infrastructure.Handlers
 
                 foreach (var @event in events)
                 {
-                    var topic = Environment.GetEnvironmentVariable("KAFKA_TOPIC");
-                    await _eventProducer.ProduceAsync(topic, @event);
+                    await _eventProducer.ProduceAsync(_kafkaTopic, @event);
                 }
             }
         }

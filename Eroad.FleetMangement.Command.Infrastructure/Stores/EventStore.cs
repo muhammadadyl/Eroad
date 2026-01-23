@@ -1,20 +1,23 @@
 using Eroad.CQRS.Core.Domain;
 using Eroad.CQRS.Core.Events;
 using Eroad.CQRS.Core.Exceptions;
-using Eroad.CQRS.Core.Infrastructure;
 using Eroad.CQRS.Core.Producers;
+using Eroad.FleetManagement.Command.Infrastructure.Config;
+using Microsoft.Extensions.Options;
 
-namespace Post.Cmd.Infrastructure.Stores
+namespace Eroad.CQRS.Core.Infrastructure.Stores
 {
     public class EventStore : IEventStore
     {
         private readonly IEventStoreRepository _eventStoreRepository;
         private readonly IEventProducer _eventProducer;
+        private readonly string _kafkaTopic;
 
-        public EventStore(IEventStoreRepository eventStoreRepository, IEventProducer eventProducer)
+        public EventStore(IEventStoreRepository eventStoreRepository, IEventProducer eventProducer, IOptions<KafkaConfig> kafkaConfig)
         {
             _eventStoreRepository = eventStoreRepository;
             _eventProducer = eventProducer;
+            _kafkaTopic = kafkaConfig.Value?.Topic ?? throw new ArgumentNullException(nameof(kafkaConfig), "Kafka topic configuration is missing");
         }
 
         public async Task<List<Guid>> GetAggregateIdsByTypeAsync(string aggregateType)
@@ -41,8 +44,11 @@ namespace Post.Cmd.Infrastructure.Stores
         {
             var eventStream = await _eventStoreRepository.FindByAggregateId(aggregateId);
 
-            if (expectedVersion != -1 && eventStream[^1].Version != expectedVersion)
-                throw new ConcurrencyException();
+            if (expectedVersion != -1 && eventStream != null && eventStream.Any())
+            {
+                if (eventStream[^1].Version != expectedVersion)
+                    throw new ConcurrencyException();
+            }
 
             var version = expectedVersion;
 
@@ -63,8 +69,7 @@ namespace Post.Cmd.Infrastructure.Stores
 
                 await _eventStoreRepository.SaveAsync(eventModel);
 
-                var topic = Environment.GetEnvironmentVariable("KAFKA_TOPIC");
-                await _eventProducer.ProduceAsync(topic, @event);
+                await _eventProducer.ProduceAsync(_kafkaTopic, @event);
             }
         }
     }

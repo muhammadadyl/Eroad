@@ -4,7 +4,7 @@ using Eroad.CQRS.Core.Events;
 using Eroad.CQRS.Core.Producers;
 using Microsoft.Extensions.Options;
 
-namespace Post.Cmd.Infrastructure.Producers
+namespace Eroad.CQRS.Core.Infrastructure.Producers
 {
     public class EventProducer : IEventProducer
     {

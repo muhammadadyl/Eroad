@@ -40,7 +40,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Eroad.FleetManagement", "Er
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Eroad.FleetManagement.Command.Domain", "..\Eroad.FleetManagement.Command.Domain\Eroad.FleetManagement.Command.Domain.csproj", "{BAE0DAE7-003B-4A8A-83EF-BA9339B5B8FB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Eroad.FleetMangement.Command.Infrastructure", "..\Eroad.FleetMangement.Command.Infrastructure\Eroad.FleetMangement.Command.Infrastructure.csproj", "{5319C195-0F29-4958-8E82-83CEDE916E0F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Eroad.FleetManagement.Command.Infrastructure", "..\Eroad.FleetMangement.Command.Infrastructure\Eroad.FleetManagement.Command.Infrastructure.csproj", "{5319C195-0F29-4958-8E82-83CEDE916E0F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Eroad.CQRS.Core", "..\Eroad.CQRS.Core\Eroad.CQRS.Core.csproj", "{31499FD5-26EF-48E9-B640-6F1C7E3CFF0E}"
 EndProject

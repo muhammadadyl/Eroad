@@ -15,6 +15,11 @@
     <ProjectReference Include="..\Eroad.CQRS.Core\Eroad.CQRS.Core.csproj" />
     <ProjectReference Include="..\Eroad.FeetManagement.Common\Eroad.FleetManagement.Common.csproj" />
     <ProjectReference Include="..\Eroad.FleetManagement.Command.Domain\Eroad.FleetManagement.Command.Domain.csproj" />
+    <ProjectReference Include="..\Eroad.FleetMangement.Command.Infrastructure\Eroad.FleetManagement.Command.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Controllers\" />
   </ItemGroup>
 
 </Project>

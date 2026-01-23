@@ -1,4 +1,5 @@
 ﻿
+using Eroad.CQRS.Core.Exceptions;
 using Eroad.CQRS.Core.Handlers;
 using Eroad.FleetManagement.Command.Domain.Aggregates;
 
@@ -14,6 +15,7 @@ namespace Eroad.FleetManagement.Command.API.Commands.Vehicle
             _eventSourcingHandler = eventSourcingHandler;
             _driverEventSourcingHandler = driverEventSourcingHandler;
         }
+
         public async Task HandleAsync(AddVehicleCommand command)
         {
             var aggregate = new VehicleAggregate(command.Id, command.Registration, command.VehicleType);
@@ -25,7 +27,7 @@ namespace Eroad.FleetManagement.Command.API.Commands.Vehicle
             var aggregate = await _eventSourcingHandler.GetByIdAsync(command.Id);
             if (aggregate == null)
             {
-                throw new ArgumentNullException(nameof(aggregate), $"Vehicle aggregate with ID {command.Id} not found.");
+                throw new AggregateNotFoundException($"Vehicle aggregate with ID {command.Id} not found.");
             }
 
             aggregate.UpdateVehicleInfo(command.Registration, command.VehicleType);
@@ -37,7 +39,7 @@ namespace Eroad.FleetManagement.Command.API.Commands.Vehicle
             var aggregate = await _eventSourcingHandler.GetByIdAsync(command.Id);
             if (aggregate == null)
             {
-                throw new ArgumentNullException(nameof(aggregate), $"Vehicle aggregate with ID {command.Id} not found.");
+                throw new AggregateNotFoundException($"Vehicle aggregate with ID {command.Id} not found.");
             }
 
             aggregate.ChangeVehicleStatus(command.OldStatus, command.NewStatus, command.Reason);
@@ -49,7 +51,7 @@ namespace Eroad.FleetManagement.Command.API.Commands.Vehicle
             var aggregate = await _eventSourcingHandler.GetByIdAsync(command.VehicleId);
             if (aggregate == null)
             {
-                throw new ArgumentNullException(nameof(aggregate), $"Vehicle aggregate with ID {command.VehicleId} not found.");
+                throw new AggregateNotFoundException($"Vehicle aggregate with ID {command.VehicleId} not found.");
             }
 
             if (command.DriverId != Guid.Empty)
@@ -57,12 +59,19 @@ namespace Eroad.FleetManagement.Command.API.Commands.Vehicle
                 var driverAggregate = await _driverEventSourcingHandler.GetByIdAsync(command.DriverId);
                 if (driverAggregate == null)
                 {
-                    throw new ArgumentNullException(nameof(driverAggregate), $"Driver aggregate with ID {command.DriverId} not found.");
+                    throw new AggregateNotFoundException($"Driver aggregate with ID {command.DriverId} not found.");
                 }
 
                 if (driverAggregate.Status != Common.DriverStatus.Available)
                 {
                     throw new InvalidOperationException($"Driver with ID {command.DriverId} is not active and cannot be assigned to a vehicle.");
+                }
+
+                var oldAssignedDriver = await _driverEventSourcingHandler.GetByIdAsync(aggregate.AssignedDriverId);
+                if (oldAssignedDriver != null && oldAssignedDriver.Status == Common.DriverStatus.Assigned)
+                {
+                    oldAssignedDriver.ChangeDriverStatus(oldAssignedDriver.Status, Common.DriverStatus.Available);
+                    await _driverEventSourcingHandler.SaveAsync(oldAssignedDriver);
                 }
 
                 driverAggregate.ChangeDriverStatus(driverAggregate.Status, Common.DriverStatus.Assigned);

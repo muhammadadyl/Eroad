@@ -1,6 +1,43 @@
+using Confluent.Kafka;
+using Eroad.CQRS.Core.Domain;
+using Eroad.CQRS.Core.Events;
+using Eroad.CQRS.Core.Handlers;
+using Eroad.CQRS.Core.Infrastructure;
+using Eroad.CQRS.Core.Infrastructure.Producers;
+using Eroad.CQRS.Core.Infrastructure.Stores;
+using Eroad.CQRS.Core.Producers;
+using Eroad.FleetManagement.Command.API.Commands;
+using Eroad.FleetManagement.Command.API.Commands.Driver;
+using Eroad.FleetManagement.Command.API.Commands.Vehicle;
+using Eroad.FleetManagement.Command.Domain.Aggregates;
+using Eroad.FleetManagement.Command.Infrastructure.Config;
+using Eroad.FleetManagement.Command.Infrastructure.Handlers;
+using Eroad.FleetManagement.Common;
+using MongoDB.Bson.Serialization;
+
 var builder = WebApplication.CreateBuilder(args);
 
+// Register BSON class maps for domain events
+BsonClassMap.RegisterClassMap<DomainEvent>();
+BsonClassMap.RegisterClassMap<VehicleAddedEvent>();
+BsonClassMap.RegisterClassMap<VehicleUpdatedEvent>();
+BsonClassMap.RegisterClassMap<VehicleStatusChangedEvent>();
+BsonClassMap.RegisterClassMap<DriverAssignedEvent>();
+BsonClassMap.RegisterClassMap<DriverAddedEvent>();
+BsonClassMap.RegisterClassMap<DriverUpdatedEvent>();
+BsonClassMap.RegisterClassMap<DriverStatusChangedEvent>();
+
 // Add services to the container.
+builder.Services.Configure<MongoDbConfig>(builder.Configuration.GetSection(nameof(MongoDbConfig)));
+builder.Services.Configure<ProducerConfig>(builder.Configuration.GetSection(nameof(ProducerConfig)));
+builder.Services.Configure<KafkaConfig>(builder.Configuration.GetSection(nameof(KafkaConfig)));
+builder.Services.AddScoped<IEventStoreRepository, Eroad.CQRS.Core.Infrastructure.Repositories.EventStoreRepository>();
+builder.Services.AddScoped<IEventProducer, EventProducer>();
+builder.Services.AddScoped<IEventStore, EventStore>();
+builder.Services.AddScoped<IEventSourcingHandler<VehicleAggregate>, VehicleEventSourcingHandler>();
+builder.Services.AddScoped<IEventSourcingHandler<DriverAggregate>, DriverEventSourcingHandler>();
+builder.Services.AddScoped<IVehicleCommandHandler, VehicleCommandHandler>();
+builder.Services.AddScoped<IDriverCommandHandler, DriverCommandHandler>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

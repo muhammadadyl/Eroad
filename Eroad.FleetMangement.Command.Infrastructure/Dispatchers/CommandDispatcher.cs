@@ -1,7 +1,7 @@
 using Eroad.CQRS.Core.Commands;
 using Eroad.CQRS.Core.Infrastructure;
 
-namespace Eroad.FleetMangement.Command.Infrastructure.Dispatchers
+namespace Eroad.FleetManagement.Command.Infrastructure.Dispatchers
 {
     public class CommandDispatcher : ICommandDispatcher
     {
