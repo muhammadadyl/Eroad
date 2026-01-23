@@ -1,0 +1,6 @@
+@Eroad.DeliveryTracking.Command.API_HostAddress = http://localhost:5065
+
+GET {{Eroad.DeliveryTracking.Command.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
