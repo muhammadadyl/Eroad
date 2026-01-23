@@ -1,4 +1,4 @@
-﻿namespace Eroad.FeetManagement.Common
+﻿namespace Eroad.FleetManagement.Common
 {
     public enum DriverStatus
     {

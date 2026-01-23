@@ -7,8 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Confluent.Kafka" Version="1.8.2" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Eroad.CQRS.Core\Eroad.CQRS.Core.csproj" />
-    <ProjectReference Include="..\Eroad.FeetManagement.Common\Eroad.FleetManagement.Common.csproj" />
+    <ProjectReference Include="..\Eroad.FleetManagement.Command.Domain\Eroad.FleetManagement.Command.Domain.csproj" />
   </ItemGroup>
 
 </Project>

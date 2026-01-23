@@ -1,10 +1,9 @@
-﻿using CQRS.Core.Events;
+﻿using Eroad.CQRS.Core.Events;
 
-namespace Eroad.FeetManagement.Common
+namespace Eroad.FleetManagement.Common
 {
     public record DriverAssignedEvent(
-        Guid DriverId,
-        Guid VehicleId) : DomainEvent(nameof(DriverAssignedEvent));
+        Guid DriverId) : DomainEvent(nameof(DriverAssignedEvent));
 
     public record VehicleAddedEvent(
         string Registration,
@@ -14,13 +13,11 @@ namespace Eroad.FeetManagement.Common
 
 
     public record VehicleUpdatedEvent(
-        Guid VehicleId,
         string Registration,
         string VehicleType
         ) : DomainEvent(nameof(VehicleUpdatedEvent));
 
     public record VehicleStatusChangedEvent(
-        Guid VehicleId,
         VehicleStatus OldStatus,
         VehicleStatus NewStatus,
         string Reason) : DomainEvent(nameof(VehicleStatusChangedEvent));
@@ -32,12 +29,10 @@ namespace Eroad.FeetManagement.Common
         ) : DomainEvent(nameof(DriverAddedEvent));
 
     public record DriverUpdatedEvent(
-        Guid DriverId,
         string DriverLicence
         ) : DomainEvent(nameof(DriverUpdatedEvent));
 
     public record DriverStatusChangedEvent(
-        Guid DriverId,
         DriverStatus OldStatus,
         DriverStatus NewStatus
         ) : DomainEvent(nameof(DriverStatusChangedEvent));

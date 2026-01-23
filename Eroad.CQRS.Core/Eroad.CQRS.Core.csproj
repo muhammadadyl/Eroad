@@ -7,8 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Eroad.CQRS.Core\Eroad.CQRS.Core.csproj" />
-    <ProjectReference Include="..\Eroad.FeetManagement.Common\Eroad.FleetManagement.Common.csproj" />
+    <PackageReference Include="MongoDB.Bson" Version="2.14.1" />
   </ItemGroup>
 
 </Project>
