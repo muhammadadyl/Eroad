@@ -9,6 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Eroad.Common\Eroad.Common.csproj" />
     <ProjectReference Include="..\Eroad.CQRS.Core\Eroad.CQRS.Core.csproj" />
+    <ProjectReference Include="..\Eroad.RouteManagement.Common\Eroad.RouteManagement.Common.csproj" />
   </ItemGroup>
 
 </Project>
