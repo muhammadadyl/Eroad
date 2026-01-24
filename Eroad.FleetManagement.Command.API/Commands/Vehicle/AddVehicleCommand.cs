@@ -4,6 +4,7 @@ namespace Eroad.FleetManagement.Command.API.Commands.Vehicle
 {
     public class AddVehicleCommand
     {
+        [Required(ErrorMessage = "Vehicle ID is required")]
         public Guid Id { get; set; }
 
         [Required(ErrorMessage = "Registration is required")]

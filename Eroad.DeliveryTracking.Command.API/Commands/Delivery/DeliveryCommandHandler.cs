@@ -63,7 +63,7 @@ namespace Eroad.DeliveryTracking.Command.API.Commands.Delivery
                 throw new AggregateNotFoundException($"Delivery aggregate with ID {command.Id} not found.");
             }
 
-            aggregate.ResolveIncident(command.IncidentType, command.Timestamp);
+            aggregate.ResolveIncident(command.IncidentId);
             await _eventSourcingHandler.SaveAsync(aggregate);
         }
 

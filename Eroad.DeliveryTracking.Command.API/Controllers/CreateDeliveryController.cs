@@ -23,7 +23,6 @@ namespace Eroad.DeliveryTracking.Command.API.Controllers
         {
             try
             {
-                command = command with { Id = Guid.NewGuid() };
                 await _commandHandler.HandleAsync(command);
 
                 return StatusCode(StatusCodes.Status201Created, new BaseResponse

@@ -6,6 +6,9 @@ namespace Eroad.FleetManagement.Command.API.Commands.Driver
 {
     public record AddDriverCommand : BaseCommand
     {
+        [Required(ErrorMessage = "Driver ID is required")]
+        public new Guid Id { get; init; }
+
         [Required(ErrorMessage = "Name is required")]
         [StringLength(100, MinimumLength = 1, ErrorMessage = "Name must be between 1 and 100 characters")]
         public string Name { get; init; }

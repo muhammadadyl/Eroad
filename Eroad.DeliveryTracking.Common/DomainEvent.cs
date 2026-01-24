@@ -15,7 +15,7 @@ namespace Eroad.DeliveryTracking.Common
 
     public record IncidentReportedEvent(Incident Incident) : DomainEvent(nameof(IncidentReportedEvent));
 
-    public record IncidentResolvedEvent(string IncidentType, DateTime Timestamp) : DomainEvent(nameof(IncidentResolvedEvent));
+    public record IncidentResolvedEvent(Guid IncidentId, DateTime ResolvedTimestamp) : DomainEvent(nameof(IncidentResolvedEvent));
 
     public record ProofOfDeliveryCapturedEvent(
         Guid DeliveryId,

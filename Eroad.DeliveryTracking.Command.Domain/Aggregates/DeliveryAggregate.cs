@@ -93,15 +93,15 @@ namespace Eroad.DeliveryTracking.Command.Domain.Aggregates
             _incidents.Add(@event.Incident);
         }
 
-        public void ResolveIncident(string incidentType, DateTime timestamp)
+        public void ResolveIncident(Guid incidentId)
         {
-            var incident = _incidents.FirstOrDefault(i => i.Type == incidentType && i.Timestamp == timestamp);
+            var incident = _incidents.FirstOrDefault(i => i.Id == incidentId);
             if (incident == null)
-                throw new InvalidOperationException($"Incident with type {incidentType} and timestamp {timestamp} not found");
+                throw new InvalidOperationException($"Incident with ID {incidentId} not found");
             if (incident.Resolved)
                 throw new InvalidOperationException("Incident is already resolved");
 
-            RaiseEvent(new IncidentResolvedEvent(incidentType, timestamp)
+            RaiseEvent(new IncidentResolvedEvent(incidentId, DateTime.UtcNow)
             {
                 Id = _id
             });
@@ -110,10 +110,11 @@ namespace Eroad.DeliveryTracking.Command.Domain.Aggregates
         public void Apply(IncidentResolvedEvent @event)
         {
             _id = @event.Id;
-            var incident = _incidents.FirstOrDefault(i => i.Type == @event.IncidentType && i.Timestamp == @event.Timestamp);
+            var incident = _incidents.FirstOrDefault(i => i.Id == @event.IncidentId);
             if (incident != null)
             {
                 incident.Resolved = true;
+                incident.ResolvedTimestamp = @event.ResolvedTimestamp;
             }
         }
 
