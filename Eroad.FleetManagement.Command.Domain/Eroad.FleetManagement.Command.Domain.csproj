@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Eroad.CQRS.Core\Eroad.CQRS.Core.csproj" />
-    <ProjectReference Include="..\Eroad.FeetManagement.Common\Eroad.FleetManagement.Common.csproj" />
+    <ProjectReference Include="..\Eroad.FleetManagement.Common\Eroad.FleetManagement.Common.csproj" />
   </ItemGroup>
 
 </Project>

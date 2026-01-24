@@ -75,6 +75,126 @@ services:
       - 8080:8080
     environment:
       DYNAMIC_CONFIG_ENABLED: 'true'
+
+  # Delivery Tracking Services
+  delivery-tracking-command-api:
+    build:
+      context: .
+      dockerfile: Eroad.DeliveryTracking.Command.API/Dockerfile
+    container_name: delivery-tracking-command-api
+    ports:
+      - "5001:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - MongoDbConfig__ConnectionString=mongodb://mongo:27017
+      - MongoDbConfig__Database=deliverytracking
+      - MongoDbConfig__Collection=eventStore
+      - ProducerConfig__BootstrapServers=kafka-kraft:9092
+      - KafkaConfig__Topic=delivery-tracking-events
+    depends_on:
+      - kafka
+      - mongo
+    restart: on-failure
+
+  delivery-tracking-query-api:
+    build:
+      context: .
+      dockerfile: Eroad.DeliveryTracking.Query.API/Dockerfile
+    container_name: delivery-tracking-query-api
+    ports:
+      - "5002:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__SqlServer=Server=sql;Database=DeliveryTrackingQuery;User Id=sa;Password=$$tr0ngS@P@ssw0rd02;TrustServerCertificate=true;
+      - ConsumerConfig__GroupId=delivery-query-consumer
+      - ConsumerConfig__BootstrapServers=kafka-kraft:9092
+      - ConsumerConfig__EnableAutoCommit=false
+      - ConsumerConfig__AutoOffsetReset=Earliest
+      - ConsumerConfig__AllowAutoCreateTopics=true
+    depends_on:
+      - kafka
+      - sql
+    restart: on-failure
+
+  # Fleet Management Services
+  fleet-management-command-api:
+    build:
+      context: .
+      dockerfile: Eroad.FleetManagement.Command.API/Dockerfile
+    container_name: fleet-management-command-api
+    ports:
+      - "5003:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - MongoDbConfig__ConnectionString=mongodb://mongo:27017
+      - MongoDbConfig__Database=fleetmanagement
+      - MongoDbConfig__Collection=eventStore
+      - ProducerConfig__BootstrapServers=kafka-kraft:9092
+      - KafkaConfig__Topic=fleet-management-events
+    depends_on:
+      - kafka
+      - mongo
+    restart: on-failure
+
+  fleet-management-query-api:
+    build:
+      context: .
+      dockerfile: Eroad.FleetManagement.Query.API/Dockerfile
+    container_name: fleet-management-query-api
+    ports:
+      - "5004:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__SqlServer=Server=sql;Database=FleetManagementQuery;User Id=sa;Password=$$tr0ngS@P@ssw0rd02;TrustServerCertificate=true;
+      - ConsumerConfig__GroupId=fleet-query-consumer
+      - ConsumerConfig__BootstrapServers=kafka-kraft:9092
+      - ConsumerConfig__EnableAutoCommit=false
+      - ConsumerConfig__AutoOffsetReset=Earliest
+      - ConsumerConfig__AllowAutoCreateTopics=true
+    depends_on:
+      - kafka
+      - sql
+    restart: on-failure
+
+  # Route Management Services
+  route-management-command-api:
+    build:
+      context: .
+      dockerfile: Eroad.RouteManagement.Command.API/Dockerfile
+    container_name: route-management-command-api
+    ports:
+      - "5005:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - MongoDbConfig__ConnectionString=mongodb://mongo:27017
+      - MongoDbConfig__Database=routemanagement
+      - MongoDbConfig__Collection=eventStore
+      - ProducerConfig__BootstrapServers=kafka-kraft:9092
+      - KafkaConfig__Topic=route-management-events
+    depends_on:
+      - kafka
+      - mongo
+    restart: on-failure
+
+  route-management-query-api:
+    build:
+      context: .
+      dockerfile: Eroad.RouteManagement.Query.API/Dockerfile
+    container_name: route-management-query-api
+    ports:
+      - "5006:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__SqlServer=Server=sql;Database=RouteManagementQuery;User Id=sa;Password=$$tr0ngS@P@ssw0rd02;TrustServerCertificate=true;
+      - ConsumerConfig__GroupId=route-query-consumer
+      - ConsumerConfig__BootstrapServers=kafka-kraft:9092
+      - ConsumerConfig__EnableAutoCommit=false
+      - ConsumerConfig__AutoOffsetReset=Earliest
+      - ConsumerConfig__AllowAutoCreateTopics=true
+    depends_on:
+      - kafka
+      - sql
+    restart: on-failure
    
 networks:
   default:    
