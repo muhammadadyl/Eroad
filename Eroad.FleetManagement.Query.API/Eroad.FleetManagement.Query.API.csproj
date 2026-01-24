@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="appsettings.Development.json~RF1845ef9.TMP" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Eroad.CQRS.Core\Eroad.CQRS.Core.csproj" />
+    <ProjectReference Include="..\Eroad.FleetManagement.Query.Domain\Eroad.FleetManagement.Query.Domain.csproj" />
+    <ProjectReference Include="..\Eroad.FleetManagement.Query.Infrastructure\Eroad.FleetManagement.Query.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>
