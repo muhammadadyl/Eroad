@@ -1,6 +1,67 @@
-@Eroad.FleetManagement.Command.API_HostAddress = http://localhost:5200
+@Eroad_FleetManagement_Command_API_HostAddress = https://localhost:5200
 
-GET {{Eroad.FleetManagement.Command.API_HostAddress}}/weatherforecast/
-Accept: application/json
+### Add Driver
+POST {{Eroad_FleetManagement_Command_API_HostAddress}}/api/v1/AddDriver
+Content-Type: application/json
+
+{
+  "name": "John Smith",
+  "driverLicense": "DL123456789",
+  "driverStatus": 0
+}
+
+### Update Driver
+PUT {{Eroad_FleetManagement_Command_API_HostAddress}}/api/v1/UpdateDriver/8e9d9d91-180f-4259-98c9-776f4bff6c11
+Content-Type: application/json
+
+{
+  "driverLicense": "DL987654321"
+}
+
+### Change Driver Status
+PUT {{Eroad_FleetManagement_Command_API_HostAddress}}/api/v1/ChangeDriverStatus/8e9d9d91-180f-4259-98c9-776f4bff6c11
+Content-Type: application/json
+
+{
+  "oldStatus": 1,
+  "newStatus": 0
+}
+
+### Add Vehicle
+POST {{Eroad_FleetManagement_Command_API_HostAddress}}/api/v1/AddVehicle
+Content-Type: application/json
+
+{
+  "registration": "ABC123",
+  "vehicleType": "Truck"
+}
+
+### Update Vehicle
+PUT {{Eroad_FleetManagement_Command_API_HostAddress}}/api/v1/UpdateVehicle/631728e4-a98b-4932-b622-5ee46f2fa84c
+Content-Type: application/json
+
+{
+  "registration": "XYZ789",
+  "vehicleType": "Van"
+}
+
+### Change Vehicle Status
+PUT {{Eroad_FleetManagement_Command_API_HostAddress}}/api/v1/ChangeVehicleStatus/631728e4-a98b-4932-b622-5ee46f2fa84c
+Content-Type: application/json
+
+{
+  "oldStatus": 0,
+  "newStatus": 1,
+  "reason": "Scheduled maintenance"
+}
+
+### Assign Driver To Vehicle
+PUT {{Eroad_FleetManagement_Command_API_HostAddress}}/api/v1/AssignDriverToVehicle
+Content-Type: application/json
+
+{
+  "vehicleId": "631728e4-a98b-4932-b622-5ee46f2fa84c",
+  "driverId": "8e9d9d91-180f-4259-98c9-776f4bff6c11"
+}
 
 ###

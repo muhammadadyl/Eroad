@@ -1,6 +1,69 @@
-@Eroad.RouteManagement.Command.API_HostAddress = http://localhost:5098
+@Eroad_RouteManagement_Command_API_HostAddress = http://localhost:5098
 
-GET {{Eroad.RouteManagement.Command.API_HostAddress}}/weatherforecast/
-Accept: application/json
+### Create Route
+POST {{Eroad_RouteManagement_Command_API_HostAddress}}/api/v1/CreateRoute
+Content-Type: application/json
+
+{
+  "origin": "New York Distribution Center",
+  "destination": "Boston Warehouse",
+  "assignedDriverId": "8e9d9d91-180f-4259-98c9-776f4bff6c11",
+  "assignedVehicleId": "631728e4-a98b-4932-b622-5ee46f2fa84c"
+}
+
+### Update Route
+PUT {{Eroad_RouteManagement_Command_API_HostAddress}}/api/v1/UpdateRoute/d3ee9d28-461c-4503-9ae1-10730c6c71e0
+Content-Type: application/json
+
+{
+  "origin": "Philadelphia Distribution Center",
+  "destination": "Boston Warehouse"
+}
+
+### Change Route Status
+PUT {{Eroad_RouteManagement_Command_API_HostAddress}}/api/v1/ChangeRouteStatus/d3ee9d28-461c-4503-9ae1-10730c6c71e0
+Content-Type: application/json
+
+{
+  "oldStatus": 0,
+  "newStatus": 1
+}
+
+### Assign Driver To Route
+PUT {{Eroad_RouteManagement_Command_API_HostAddress}}/api/v1/AssignDriverToRoute/d3ee9d28-461c-4503-9ae1-10730c6c71e0
+Content-Type: application/json
+
+{
+  "driverId": "8e9d9d91-180f-4259-98c9-776f4bff6c11"
+}
+
+### Assign Vehicle To Route
+PUT {{Eroad_RouteManagement_Command_API_HostAddress}}/api/v1/AssignVehicleToRoute/d3ee9d28-461c-4503-9ae1-10730c6c71e0
+Content-Type: application/json
+
+{
+  "vehicleId": "631728e4-a98b-4932-b622-5ee46f2fa84c"
+}
+
+### Add Checkpoint
+POST {{Eroad_RouteManagement_Command_API_HostAddress}}/api/v1/AddCheckpoint/d3ee9d28-461c-4503-9ae1-10730c6c71e0
+Content-Type: application/json
+
+{
+  "checkpoint": {
+    "sequence": 1,
+    "location": "Highway Rest Stop",
+    "estimatedTime": "2026-01-24T14:00:00Z"
+  }
+}
+
+### Update Checkpoint
+PUT {{Eroad_RouteManagement_Command_API_HostAddress}}/api/v1/UpdateCheckpoint/d3ee9d28-461c-4503-9ae1-10730c6c71e0
+Content-Type: application/json
+
+{
+  "sequence": 1,
+  "actualTime": "2026-01-24T14:15:00Z"
+}
 
 ###

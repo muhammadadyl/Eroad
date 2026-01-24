@@ -1,6 +1,58 @@
-@Eroad.DeliveryTracking.Command.API_HostAddress = http://localhost:5065
+@Eroad_DeliveryTracking_Command_API_HostAddress = http://localhost:5065
 
-GET {{Eroad.DeliveryTracking.Command.API_HostAddress}}/weatherforecast/
-Accept: application/json
+### Create Delivery
+POST {{Eroad_DeliveryTracking_Command_API_HostAddress}}/api/v1/CreateDelivery
+Content-Type: application/json
+
+{
+  "routeId": "d3ee9d28-461c-4503-9ae1-10730c6c71e0"
+}
+
+### Update Delivery Status
+PUT {{Eroad_DeliveryTracking_Command_API_HostAddress}}/api/v1/UpdateDeliveryStatus/63bb3bfb-b0a0-4bce-aaa8-b488e04e6639
+Content-Type: application/json
+
+{
+  "oldStatus": 1,
+  "newStatus": 2
+}
+
+### Update Current Checkpoint
+PUT {{Eroad_DeliveryTracking_Command_API_HostAddress}}/api/v1/UpdateCurrentCheckpoint/63bb3bfb-b0a0-4bce-aaa8-b488e04e6639
+Content-Type: application/json
+
+{
+  "checkpoint": "Main Distribution Center"
+}
+
+### Report Incident
+POST {{Eroad_DeliveryTracking_Command_API_HostAddress}}/api/v1/ReportIncident/63bb3bfb-b0a0-4bce-aaa8-b488e04e6639
+Content-Type: application/json
+
+{
+  "incident": {
+    "type": "Vehicle Breakdown",
+    "timestamp": "2026-01-24T10:30:00Z",
+    "description": "Engine overheating"
+  }
+}
+
+### Resolve Incident
+PUT {{Eroad_DeliveryTracking_Command_API_HostAddress}}/api/v1/ResolveIncident/63bb3bfb-b0a0-4bce-aaa8-b488e04e6639
+Content-Type: application/json
+
+{
+  "incidentType": "Vehicle Breakdown",
+  "timestamp": "2026-01-24T12:00:00Z"
+}
+
+### Capture Proof of Delivery
+POST {{Eroad_DeliveryTracking_Command_API_HostAddress}}/api/v1/CaptureProofOfDelivery/63bb3bfb-b0a0-4bce-aaa8-b488e04e6639
+Content-Type: application/json
+
+{
+  "signatureUrl": "https://example.com/signatures/abc123.png",
+  "receiverName": "John Doe"
+}
 
 ###

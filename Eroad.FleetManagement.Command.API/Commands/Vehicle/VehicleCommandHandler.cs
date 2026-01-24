@@ -67,11 +67,14 @@ namespace Eroad.FleetManagement.Command.API.Commands.Vehicle
                     throw new InvalidOperationException($"Driver with ID {command.DriverId} is not active and cannot be assigned to a vehicle.");
                 }
 
-                var oldAssignedDriver = await _driverEventSourcingHandler.GetByIdAsync(aggregate.AssignedDriverId);
-                if (oldAssignedDriver != null && oldAssignedDriver.Status == Common.DriverStatus.Assigned)
+                if (aggregate.AssignedDriverId != Guid.Empty) 
                 {
-                    oldAssignedDriver.ChangeDriverStatus(oldAssignedDriver.Status, Common.DriverStatus.Available);
-                    await _driverEventSourcingHandler.SaveAsync(oldAssignedDriver);
+                    var oldAssignedDriver = await _driverEventSourcingHandler.GetByIdAsync(aggregate.AssignedDriverId);
+                    if (oldAssignedDriver != null && oldAssignedDriver.Status == Common.DriverStatus.Assigned)
+                    {
+                        oldAssignedDriver.ChangeDriverStatus(oldAssignedDriver.Status, Common.DriverStatus.Available);
+                        await _driverEventSourcingHandler.SaveAsync(oldAssignedDriver);
+                    }
                 }
 
                 driverAggregate.ChangeDriverStatus(driverAggregate.Status, Common.DriverStatus.Assigned);

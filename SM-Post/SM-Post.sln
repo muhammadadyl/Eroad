@@ -23,11 +23,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Post.Query.Infrastructure",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CQRS.Core", "CQRS-ES\CQRS.Core\CQRS.Core.csproj", "{FEC05D94-3AFE-4FF9-A484-6DC983A655B9}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Dockers", "Dockers", "{25F967A2-DD64-492F-AC4E-0CA345FCF5F5}"
-	ProjectSection(SolutionItems) = preProject
-		docker-compose.yaml = docker-compose.yaml
-	EndProjectSection
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Eroad.Common", "..\Eroad.Common\Eroad.Common.csproj", "{6C4CDFA0-A6C5-4E4E-A662-FD3646710423}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Eroad.FleetManagement.Common", "..\Eroad.FeetManagement.Common\Eroad.FleetManagement.Common.csproj", "{6CABECA8-AD0B-4943-8A3E-FE47C48E8B32}"
@@ -44,23 +39,28 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Eroad.FleetManagement.Comma
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Eroad.CQRS.Core", "..\Eroad.CQRS.Core\Eroad.CQRS.Core.csproj", "{31499FD5-26EF-48E9-B640-6F1C7E3CFF0E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Eroad.FleetManagement.Command.API", "..\Eroad.FleetManagement.Command.API\Eroad.FleetManagement.Command.API.csproj", "{734A62C4-D36B-481F-8B2F-CC936D7E020C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Eroad.FleetManagement.Command.API", "..\Eroad.FleetManagement.Command.API\Eroad.FleetManagement.Command.API.csproj", "{734A62C4-D36B-481F-8B2F-CC936D7E020C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Eroad.RouteManagement", "Eroad.RouteManagement", "{B1A47B02-1D06-4FF6-843E-EDD20E13727A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Eroad.RouteManagement.Command.Domain", "..\Eroad.RouteManagement.Command.Domain\Eroad.RouteManagement.Command.Domain.csproj", "{18C952D6-F1FB-4F31-8EB1-8588004899B1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Eroad.RouteManagement.Command.Domain", "..\Eroad.RouteManagement.Command.Domain\Eroad.RouteManagement.Command.Domain.csproj", "{18C952D6-F1FB-4F31-8EB1-8588004899B1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Eroad.RouteManagement.Command.Infrastructure", "..\Eroad.RouteManagement.Command.Infrastructure\Eroad.RouteManagement.Command.Infrastructure.csproj", "{D7D81429-2E14-48E3-9001-0F8B98ACAF29}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Eroad.RouteManagement.Command.Infrastructure", "..\Eroad.RouteManagement.Command.Infrastructure\Eroad.RouteManagement.Command.Infrastructure.csproj", "{D7D81429-2E14-48E3-9001-0F8B98ACAF29}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Eroad.RouteManagement.Command.API", "..\Eroad.RouteManagement.Command.API\Eroad.RouteManagement.Command.API.csproj", "{1982C8C1-226D-4E47-ACFE-01C2EC5351B7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Eroad.RouteManagement.Command.API", "..\Eroad.RouteManagement.Command.API\Eroad.RouteManagement.Command.API.csproj", "{1982C8C1-226D-4E47-ACFE-01C2EC5351B7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Eroad.DeliveryTracking", "Eroad.DeliveryTracking", "{D379FFB6-34EE-434E-9A31-E02B0F4D5B17}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Eroad.DeliveryTracking.Command.API", "..\Eroad.DeliveryTracking.Command.API\Eroad.DeliveryTracking.Command.API.csproj", "{450E3F5D-A444-4D89-9865-9A49F525B921}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Eroad.DeliveryTracking.Command.API", "..\Eroad.DeliveryTracking.Command.API\Eroad.DeliveryTracking.Command.API.csproj", "{450E3F5D-A444-4D89-9865-9A49F525B921}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Eroad.DeliveryTracking.Command.Domain", "..\Eroad.DeliveryTracking.Command.Domain\Eroad.DeliveryTracking.Command.Domain.csproj", "{79A2DD84-92ED-435B-B91D-B03A6A7FE040}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Eroad.DeliveryTracking.Command.Domain", "..\Eroad.DeliveryTracking.Command.Domain\Eroad.DeliveryTracking.Command.Domain.csproj", "{79A2DD84-92ED-435B-B91D-B03A6A7FE040}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Eroad.DeliveryTracking.Command.Infrastructure", "..\Eroad.DeliveryTracking.Command.Infrastructure\Eroad.DeliveryTracking.Command.Infrastructure.csproj", "{696ABCEF-CED3-48BC-B1F9-60262FC18E12}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Eroad.DeliveryTracking.Command.Infrastructure", "..\Eroad.DeliveryTracking.Command.Infrastructure\Eroad.DeliveryTracking.Command.Infrastructure.csproj", "{696ABCEF-CED3-48BC-B1F9-60262FC18E12}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docker", "docker", "{B29F0BFC-0919-489B-AB2A-C3D7D9F0AB6B}"
+	ProjectSection(SolutionItems) = preProject
+		..\docker-compose.yaml = ..\docker-compose.yaml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
