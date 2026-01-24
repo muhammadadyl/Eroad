@@ -1,7 +1,7 @@
 @Eroad_DeliveryTracking_Command_API_HostAddress = http://localhost:5065
-@deliveryId = 63bb3bfb-b0a0-4bce-aaa8-b488e04e6639
-@routeId = d3ee9d28-461c-4503-9ae1-10730c6c71e0
-@incidentId = a1b2c3d4-5678-90ab-cdef-123456789012
+@deliveryId = 63bb3bfb-b0a0-4bce-aaa8-b488e04e7739
+@routeId = d3ee9d28-461c-4503-9ae1-10730c6c71e1
+@incidentId = a1b2c3d4-5678-90ab-cdef-123456ef9012
 
 ### Create Delivery
 POST {{Eroad_DeliveryTracking_Command_API_HostAddress}}/api/v1/CreateDelivery
@@ -17,8 +17,8 @@ PUT {{Eroad_DeliveryTracking_Command_API_HostAddress}}/api/v1/UpdateDeliveryStat
 Content-Type: application/json
 
 {
-  "oldStatus": 1,
-  "newStatus": 2
+  "oldStatus": 0,
+  "newStatus": 1
 }
 
 ### Update Current Checkpoint
