@@ -1,0 +1,47 @@
+@Eroad_RouteManagement_Query_API_HostAddress = https://localhost:7256
+@routeId = d3ee9d28-461c-4503-9ae1-10730c6c71e1
+@driverId = 8e9d9d91-180f-4259-98c9-776f4bff6c11
+@vehicleId = 631728e4-a98b-4932-b622-5ee46f2fa84c
+@routeStatus = Planned
+
+### Get All Routes
+GET {{Eroad_RouteManagement_Query_API_HostAddress}}/api/v1/RouteLookup
+Accept: application/json
+
+###
+
+### Get Route By Id
+GET {{Eroad_RouteManagement_Query_API_HostAddress}}/api/v1/RouteLookup/byId/{{routeId}}
+Accept: application/json
+
+###
+
+### Get Routes By Status
+GET {{Eroad_RouteManagement_Query_API_HostAddress}}/api/v1/RouteLookup/byStatus/{{routeStatus}}
+Accept: application/json
+
+###
+
+### Get Routes By Driver
+GET {{Eroad_RouteManagement_Query_API_HostAddress}}/api/v1/RouteLookup/byDriver/{{driverId}}
+Accept: application/json
+
+###
+
+### Get Routes By Vehicle
+GET {{Eroad_RouteManagement_Query_API_HostAddress}}/api/v1/RouteLookup/byVehicle/{{vehicleId}}
+Accept: application/json
+
+###
+
+### Get All Route Statuses
+GET {{Eroad_RouteManagement_Query_API_HostAddress}}/api/v1/RouteLookup/statuses
+Accept: application/json
+
+###
+
+### Get Checkpoints By Route
+GET {{Eroad_RouteManagement_Query_API_HostAddress}}/api/v1/CheckpointLookup/byRoute/{{routeId}}
+Accept: application/json
+
+###

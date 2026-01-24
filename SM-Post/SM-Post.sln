@@ -68,6 +68,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Eroad.FleetManagement.Query
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Eroad.FleetManagement.Query.Infrastructure", "..\Eroad.FleetManagement.Query.Infrastructure\Eroad.FleetManagement.Query.Infrastructure.csproj", "{7F0BD13A-F1DA-417D-AC6A-D38AEC5F05CE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Eroad.RouteManagement.Query.API", "..\Eroad.RouteManagement.Query.API\Eroad.RouteManagement.Query.API.csproj", "{44D92491-DA75-4446-90E7-5097F60216B8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Eroad.RouteManagement.Query.Domain", "..\Eroad.RouteManagement.Query.Domain\Eroad.RouteManagement.Query.Domain.csproj", "{1D8C5CBD-B5E8-45BE-BE8E-78CBE43A3987}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Eroad.RouteManagement.Query.Infrastructure", "..\Eroad.RouteManagement.Query.Infrastructure\Eroad.RouteManagement.Query.Infrastructure.csproj", "{5770DE1C-9763-4212-A94C-B10426377F86}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -174,6 +180,18 @@ Global
 		{7F0BD13A-F1DA-417D-AC6A-D38AEC5F05CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7F0BD13A-F1DA-417D-AC6A-D38AEC5F05CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7F0BD13A-F1DA-417D-AC6A-D38AEC5F05CE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{44D92491-DA75-4446-90E7-5097F60216B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{44D92491-DA75-4446-90E7-5097F60216B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{44D92491-DA75-4446-90E7-5097F60216B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{44D92491-DA75-4446-90E7-5097F60216B8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1D8C5CBD-B5E8-45BE-BE8E-78CBE43A3987}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1D8C5CBD-B5E8-45BE-BE8E-78CBE43A3987}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1D8C5CBD-B5E8-45BE-BE8E-78CBE43A3987}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1D8C5CBD-B5E8-45BE-BE8E-78CBE43A3987}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5770DE1C-9763-4212-A94C-B10426377F86}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5770DE1C-9763-4212-A94C-B10426377F86}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5770DE1C-9763-4212-A94C-B10426377F86}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5770DE1C-9763-4212-A94C-B10426377F86}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -200,6 +218,9 @@ Global
 		{380F04FD-E128-40C2-86C4-B2A42ED643B0} = {395115BE-88CA-4C25-AD0D-3DCBE18E92E0}
 		{ADFBBCFB-C212-446F-856F-6CD50A36E15A} = {395115BE-88CA-4C25-AD0D-3DCBE18E92E0}
 		{7F0BD13A-F1DA-417D-AC6A-D38AEC5F05CE} = {395115BE-88CA-4C25-AD0D-3DCBE18E92E0}
+		{44D92491-DA75-4446-90E7-5097F60216B8} = {B1A47B02-1D06-4FF6-843E-EDD20E13727A}
+		{1D8C5CBD-B5E8-45BE-BE8E-78CBE43A3987} = {B1A47B02-1D06-4FF6-843E-EDD20E13727A}
+		{5770DE1C-9763-4212-A94C-B10426377F86} = {B1A47B02-1D06-4FF6-843E-EDD20E13727A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {13E5BA11-1D83-4E8A-AB2B-D429C34D7443}
