@@ -42,6 +42,7 @@ namespace Eroad.DeliveryTracking.Query.Infrastructure.Repositories
         {
             using DatabaseContext context = _contextFactory.CreateDbContext();
             return await context.Deliveries
+                .Include(d => d.Incidents)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Id == deliveryId);
         }
@@ -50,6 +51,7 @@ namespace Eroad.DeliveryTracking.Query.Infrastructure.Repositories
         {
             using DatabaseContext context = _contextFactory.CreateDbContext();
             return await context.Deliveries
+                .Include(d => d.Incidents)
                 .AsNoTracking()
                 .ToListAsync();
         }
@@ -58,6 +60,7 @@ namespace Eroad.DeliveryTracking.Query.Infrastructure.Repositories
         {
             using DatabaseContext context = _contextFactory.CreateDbContext();
             return await context.Deliveries
+                .Include(d => d.Incidents)
                 .AsNoTracking()
                 .Where(d => d.Status == status)
                 .ToListAsync();
@@ -67,6 +70,7 @@ namespace Eroad.DeliveryTracking.Query.Infrastructure.Repositories
         {
             using DatabaseContext context = _contextFactory.CreateDbContext();
             return await context.Deliveries
+                .Include(d => d.Incidents)
                 .AsNoTracking()
                 .Where(d => d.RouteId == routeId)
                 .ToListAsync();

@@ -1,9 +1,9 @@
-@baseUrl = https://localhost:51128
+@baseUrl = http://localhost:5000
 @vehicleId = 550e8400-e29b-41d4-a716-446655440001
 @driverId = 550e8400-e29b-41d4-a716-446655440002
 @routeId = 550e8400-e29b-41d4-a716-446655440003
 @deliveryId = 550e8400-e29b-41d4-a716-446655440004
-@incidentId = 550e8400-e29b-41d4-a716-446655440005
+@incidentId = d6131d04-4e1d-40a9-bf24-f2ef311fa19d
 
 ###############################################################################
 # FLEET MANAGEMENT - QUERY APIs
@@ -109,7 +109,7 @@ PATCH {{baseUrl}}/api/fleet/vehicles/{{vehicleId}}/status
 Content-Type: application/json
 
 {
-  "status": "InUse"
+  "status": "InTransit"
 }
 
 ### Change Vehicle Status to Maintenance
@@ -139,7 +139,6 @@ PUT {{baseUrl}}/api/fleet/drivers/{{driverId}}
 Content-Type: application/json
 
 {
-  "name": "John Smith Jr.",
   "driverLicense": "DL987654"
 }
 
@@ -151,12 +150,12 @@ Content-Type: application/json
   "status": "Available"
 }
 
-### Change Driver Status to OnDuty
+### Change Driver Status to Assigned
 PATCH {{baseUrl}}/api/fleet/drivers/{{driverId}}/status
 Content-Type: application/json
 
 {
-  "status": "OnDuty"
+  "status": "Assigned"
 }
 
 ### Change Driver Status to OffDuty
@@ -164,7 +163,7 @@ PATCH {{baseUrl}}/api/fleet/drivers/{{driverId}}/status
 Content-Type: application/json
 
 {
-  "status": "OffDuty"
+  "status": "Unavailable"
 }
 
 ### Assign Driver to Vehicle
@@ -198,12 +197,12 @@ Content-Type: application/json
   "destination": "City Distribution Center South"
 }
 
-### Change Route Status to Active
+### Change Route Status to Planned
 PATCH {{baseUrl}}/api/routes/{{routeId}}/status
 Content-Type: application/json
 
 {
-  "status": "Active"
+  "status": "Planned"
 }
 
 ### Change Route Status to InProgress
@@ -515,7 +514,16 @@ Content-Type: application/json
   "description": "Construction on main road"
 }
 
-### STEP 12: Update Checkpoint 2 Arrival
+### STEP 12: Update Delivery Status to OutForDelivery
+PATCH {{baseUrl}}/api/deliveries/550e8400-e29b-41d4-a716-446655440104/status
+Content-Type: application/json
+
+{
+  "status": "OutForDelivery"
+}
+
+
+### STEP 13: Update Checkpoint 2 Arrival
 PATCH {{baseUrl}}/api/routes/550e8400-e29b-41d4-a716-446655440103/checkpoints/2
 Content-Type: application/json
 

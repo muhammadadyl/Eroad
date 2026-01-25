@@ -46,10 +46,6 @@ builder.Services.AddScoped<IEventStore, EventStore>();
 builder.Services.AddScoped<IEventSourcingHandler<DeliveryAggregate>, DeliveryEventSourcingHandler>();
 builder.Services.AddScoped<IDeliveryCommandHandler, DeliveryCommandHandler>();
 
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 builder.Services.AddHealthChecks();
 
 // Add gRPC services
@@ -60,18 +56,6 @@ builder.Services.AddGrpcHealthChecks()
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
-// app.UseHttpsRedirection(); // Commented out for HTTP gRPC support
-
-app.UseAuthorization();
-
-app.MapControllers();
 app.MapHealthChecks("/health");
 
 // Map gRPC services

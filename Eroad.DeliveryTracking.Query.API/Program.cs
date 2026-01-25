@@ -75,19 +75,8 @@ incidentQueryDispatcher.RegisterHandler<FindAllUnresolvedIncidentsQuery>(queryHa
 builder.Services.AddSingleton<IQueryDispatcher<DeliveryEntity>>(deliveryQueryDispatcher);
 builder.Services.AddSingleton<IQueryDispatcher<IncidentEntity>>(incidentQueryDispatcher);
 
-// Configure JSON serializer with circular reference handling
-builder.Services.AddControllers()
-    .AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
-    });
-
 // Register Kafka consumer as hosted service
 builder.Services.AddHostedService<ConsumerHostedService>();
-
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 builder.Services.AddHealthChecks();
 
 // Add gRPC services
@@ -98,18 +87,6 @@ builder.Services.AddGrpcHealthChecks()
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
-// app.UseHttpsRedirection(); // Commented out for HTTP gRPC support
-
-app.UseAuthorization();
-
-app.MapControllers();
 app.MapHealthChecks("/health");
 
 // Map gRPC services

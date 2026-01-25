@@ -3,7 +3,7 @@ services:
     image: confluentinc/cp-kafka:latest
     hostname: kafka-kraft
     container_name: kafka-kraft
-    profiles: ["dev-services"]
+    profiles: ["dev-services", "init-services"]
     ports:
       - "9092:9092"
       - "9093:9093"
@@ -70,6 +70,8 @@ services:
       ACCEPT_EULA: Y
       SA_PASSWORD: $$tr0ngS@P@ssw0rd02
       MSSQL_PID: Express
+    volumes:
+      - sqlserver_data:/var/opt/mssql
 
   kafka-ui:
     container_name: kafka-ui
@@ -251,3 +253,4 @@ networks:
 volumes:
   mongodb_data: {}
   kafka_data: {}
+  sqlserver_data: {}

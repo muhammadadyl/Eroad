@@ -59,16 +59,7 @@ checkpointDispatcher.RegisterHandler<FindCheckpointsByRouteIdQuery>(queryHandler
 builder.Services.AddSingleton<IQueryDispatcher<RouteEntity>>(routeDispatcher);
 builder.Services.AddSingleton<IQueryDispatcher<CheckpointEntity>>(checkpointDispatcher);
 
-builder.Services.AddControllers()
-    .AddJsonOptions(options =>
-    {
-        // Handle circular references during serialization
-        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
-    });
 builder.Services.AddHostedService<ConsumerHostedService>();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 builder.Services.AddHealthChecks();
 
 // Add gRPC services
@@ -79,18 +70,6 @@ builder.Services.AddGrpcHealthChecks()
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
-// app.UseHttpsRedirection(); // Commented out for HTTP gRPC support
-
-app.UseAuthorization();
-
-app.MapControllers();
 app.MapHealthChecks("/health");
 
 // Map gRPC services

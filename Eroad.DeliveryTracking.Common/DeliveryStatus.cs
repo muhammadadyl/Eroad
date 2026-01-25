@@ -3,7 +3,7 @@
     public enum DeliveryStatus
     {
         PickedUp,
-        InTrasit,
+        InTransit,
         OutForDelivery,
         Delivered,
         Failed
