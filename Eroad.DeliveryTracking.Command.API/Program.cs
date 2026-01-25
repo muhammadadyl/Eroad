@@ -12,9 +12,19 @@ using Eroad.DeliveryTracking.Command.Infrastructure.Producers;
 using Eroad.DeliveryTracking.Command.Infrastructure.Repositories;
 using Eroad.DeliveryTracking.Command.Infrastructure.Stores;
 using Eroad.DeliveryTracking.Common;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using MongoDB.Bson.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure Kestrel to support HTTP/2 without TLS
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ConfigureEndpointDefaults(listenOptions =>
+    {
+        listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+    });
+});
 
 // Register BSON class maps for domain events
 BsonClassMap.RegisterClassMap<DomainEvent>();

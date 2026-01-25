@@ -9,10 +9,20 @@ using Eroad.FleetManagement.Query.Infrastructure.DataAccess;
 using Eroad.FleetManagement.Query.Infrastructure.Dispatchers;
 using Eroad.FleetManagement.Query.Infrastructure.Handlers;
 using Eroad.FleetManagement.Query.Infrastructure.Repositories;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using EventHandler = Eroad.FleetManagement.Query.Infrastructure.Handlers.EventHandler;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure Kestrel to support HTTP/2 without TLS
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ConfigureEndpointDefaults(listenOptions =>
+    {
+        listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+    });
+});
 
 // Configure Action to Configure DbContext
 Action<DbContextOptionsBuilder> configureDbContext = (o => o.UseLazyLoadingProxies().UseSqlServer(builder.Configuration.GetConnectionString("SqlServer")));

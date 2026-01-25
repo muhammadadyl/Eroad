@@ -13,9 +13,19 @@ using Eroad.FleetManagement.Command.Domain.Aggregates;
 using Eroad.FleetManagement.Command.Infrastructure.Config;
 using Eroad.FleetManagement.Command.Infrastructure.Handlers;
 using Eroad.FleetManagement.Common;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using MongoDB.Bson.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure Kestrel to support HTTP/2 without TLS
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ConfigureEndpointDefaults(listenOptions =>
+    {
+        listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+    });
+});
 
 // Register BSON class maps for domain events
 BsonClassMap.RegisterClassMap<DomainEvent>();

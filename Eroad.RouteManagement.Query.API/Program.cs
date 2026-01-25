@@ -9,10 +9,20 @@ using Eroad.RouteManagement.Query.Infrastructure.DataAccess;
 using Eroad.RouteManagement.Query.Infrastructure.Dispatchers;
 using Eroad.RouteManagement.Query.Infrastructure.Handlers;
 using Eroad.RouteManagement.Query.Infrastructure.Repositories;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using EventHandler = Eroad.RouteManagement.Query.Infrastructure.Handlers.EventHandler;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure Kestrel to support HTTP/2 without TLS
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ConfigureEndpointDefaults(listenOptions =>
+    {
+        listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+    });
+});
 
 // Configure Action to Configure DbContext
 Action<DbContextOptionsBuilder> configureDbContext = (o => o.UseLazyLoadingProxies().UseSqlServer(builder.Configuration.GetConnectionString("SqlServer")));
