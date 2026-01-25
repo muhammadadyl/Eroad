@@ -5,6 +5,9 @@ using Eroad.RouteManagement.Contracts;
 using Grpc.Net.ClientFactory;
 using Polly;
 
+// Enable insecure HTTP/2 for gRPC (required for non-TLS connections)
+AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
@@ -46,22 +49,10 @@ builder.Services
     {
         options.Address = new Uri(deliveryTrackingBaseUrl);
     })
-    .ConfigurePrimaryHttpMessageHandler(() =>
-    {
-        var handler = new HttpClientHandler();
-        handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-        return handler;
-    })
     .ConfigureChannel(options =>
     {
         options.MaxRetryAttempts = 3;
         options.MaxReceiveMessageSize = 5 * 1024 * 1024; // 5 MB
-        options.HttpHandler = new SocketsHttpHandler
-        {
-            EnableMultipleHttp2Connections = true,
-            KeepAlivePingDelay = TimeSpan.FromSeconds(60),
-            KeepAlivePingTimeout = TimeSpan.FromSeconds(30)
-        };
     });
 
 // Register Delivery Tracking gRPC clients (Command)
@@ -70,22 +61,10 @@ builder.Services
     {
         options.Address = new Uri(deliveryTrackingCommandBaseUrl);
     })
-    .ConfigurePrimaryHttpMessageHandler(() =>
-    {
-        var handler = new HttpClientHandler();
-        handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-        return handler;
-    })
     .ConfigureChannel(options =>
     {
         options.MaxRetryAttempts = 3;
         options.MaxReceiveMessageSize = 5 * 1024 * 1024; // 5 MB
-        options.HttpHandler = new SocketsHttpHandler
-        {
-            EnableMultipleHttp2Connections = true,
-            KeepAlivePingDelay = TimeSpan.FromSeconds(60),
-            KeepAlivePingTimeout = TimeSpan.FromSeconds(30)
-        };
     });
 
 // Register Fleet Management gRPC clients (Query)
@@ -94,22 +73,10 @@ builder.Services
     {
         options.Address = new Uri(fleetManagementBaseUrl);
     })
-    .ConfigurePrimaryHttpMessageHandler(() =>
-    {
-        var handler = new HttpClientHandler();
-        handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-        return handler;
-    })
     .ConfigureChannel(options =>
     {
         options.MaxRetryAttempts = 3;
         options.MaxReceiveMessageSize = 5 * 1024 * 1024; // 5 MB
-        options.HttpHandler = new SocketsHttpHandler
-        {
-            EnableMultipleHttp2Connections = true,
-            KeepAlivePingDelay = TimeSpan.FromSeconds(60),
-            KeepAlivePingTimeout = TimeSpan.FromSeconds(30)
-        };
     });
 
 builder.Services
@@ -117,22 +84,10 @@ builder.Services
     {
         options.Address = new Uri(fleetManagementBaseUrl);
     })
-    .ConfigurePrimaryHttpMessageHandler(() =>
-    {
-        var handler = new HttpClientHandler();
-        handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-        return handler;
-    })
     .ConfigureChannel(options =>
     {
         options.MaxRetryAttempts = 3;
         options.MaxReceiveMessageSize = 5 * 1024 * 1024; // 5 MB
-        options.HttpHandler = new SocketsHttpHandler
-        {
-            EnableMultipleHttp2Connections = true,
-            KeepAlivePingDelay = TimeSpan.FromSeconds(60),
-            KeepAlivePingTimeout = TimeSpan.FromSeconds(30)
-        };
     });
 
 // Register Fleet Management gRPC clients (Command)
@@ -141,22 +96,10 @@ builder.Services
     {
         options.Address = new Uri(fleetManagementCommandBaseUrl);
     })
-    .ConfigurePrimaryHttpMessageHandler(() =>
-    {
-        var handler = new HttpClientHandler();
-        handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-        return handler;
-    })
     .ConfigureChannel(options =>
     {
         options.MaxRetryAttempts = 3;
         options.MaxReceiveMessageSize = 5 * 1024 * 1024; // 5 MB
-        options.HttpHandler = new SocketsHttpHandler
-        {
-            EnableMultipleHttp2Connections = true,
-            KeepAlivePingDelay = TimeSpan.FromSeconds(60),
-            KeepAlivePingTimeout = TimeSpan.FromSeconds(30)
-        };
     });
 
 builder.Services
@@ -164,22 +107,10 @@ builder.Services
     {
         options.Address = new Uri(fleetManagementCommandBaseUrl);
     })
-    .ConfigurePrimaryHttpMessageHandler(() =>
-    {
-        var handler = new HttpClientHandler();
-        handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-        return handler;
-    })
     .ConfigureChannel(options =>
     {
         options.MaxRetryAttempts = 3;
         options.MaxReceiveMessageSize = 5 * 1024 * 1024; // 5 MB
-        options.HttpHandler = new SocketsHttpHandler
-        {
-            EnableMultipleHttp2Connections = true,
-            KeepAlivePingDelay = TimeSpan.FromSeconds(60),
-            KeepAlivePingTimeout = TimeSpan.FromSeconds(30)
-        };
     });
 
 // Register Route Management gRPC clients (Query)
@@ -188,22 +119,10 @@ builder.Services
     {
         options.Address = new Uri(routeManagementBaseUrl);
     })
-    .ConfigurePrimaryHttpMessageHandler(() =>
-    {
-        var handler = new HttpClientHandler();
-        handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-        return handler;
-    })
     .ConfigureChannel(options =>
     {
         options.MaxRetryAttempts = 3;
         options.MaxReceiveMessageSize = 5 * 1024 * 1024; // 5 MB
-        options.HttpHandler = new SocketsHttpHandler
-        {
-            EnableMultipleHttp2Connections = true,
-            KeepAlivePingDelay = TimeSpan.FromSeconds(60),
-            KeepAlivePingTimeout = TimeSpan.FromSeconds(30)
-        };
     });
 
 // Register Route Management gRPC clients (Command)
@@ -212,22 +131,10 @@ builder.Services
     {
         options.Address = new Uri(routeManagementCommandBaseUrl);
     })
-    .ConfigurePrimaryHttpMessageHandler(() =>
-    {
-        var handler = new HttpClientHandler();
-        handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-        return handler;
-    })
     .ConfigureChannel(options =>
     {
         options.MaxRetryAttempts = 3;
         options.MaxReceiveMessageSize = 5 * 1024 * 1024; // 5 MB
-        options.HttpHandler = new SocketsHttpHandler
-        {
-            EnableMultipleHttp2Connections = true,
-            KeepAlivePingDelay = TimeSpan.FromSeconds(60),
-            KeepAlivePingTimeout = TimeSpan.FromSeconds(30)
-        };
     });
 
 // Register aggregator services
