@@ -8,6 +8,10 @@
 
   <ItemGroup>
     <PackageReference Include="Confluent.Kafka" Version="1.8.2" />
+    <PackageReference Include="Grpc.AspNetCore" Version="2.60.0" />
+    <PackageReference Include="Grpc.AspNetCore.Server.Reflection" Version="2.60.0" />
+    <PackageReference Include="Grpc.HealthCheck" Version="2.60.0" />
+    <PackageReference Include="Grpc.AspNetCore.HealthChecks" Version="2.60.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
   </ItemGroup>
 
@@ -17,6 +21,7 @@
     <ProjectReference Include="..\Eroad.DeliveryTracking.Command.Domain\Eroad.DeliveryTracking.Command.Domain.csproj" />
     <ProjectReference Include="..\Eroad.DeliveryTracking.Command.Infrastructure\Eroad.DeliveryTracking.Command.Infrastructure.csproj" />
     <ProjectReference Include="..\Eroad.DeliveryTracking.Common\Eroad.DeliveryTracking.Common.csproj" />
+    <ProjectReference Include="..\Eroad.DeliveryTracking.Contracts\Eroad.DeliveryTracking.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

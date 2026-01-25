@@ -1,0 +1,7 @@
+This directory contains auto-generated NSwag clients.
+
+To generate clients from running services:
+1. Start all query API services (ports 5002, 5004, 5006)
+2. Run: dotnet build /p:GenerateNSwagClients=true
+
+Or use the generate-clients.ps1 script.

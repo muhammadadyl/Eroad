@@ -11,11 +11,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Grpc.AspNetCore" Version="2.60.0" />
+    <PackageReference Include="Grpc.AspNetCore.Server.Reflection" Version="2.60.0" />
+    <PackageReference Include="Grpc.HealthCheck" Version="2.60.0" />
+    <PackageReference Include="Grpc.AspNetCore.HealthChecks" Version="2.60.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Eroad.CQRS.Core\Eroad.CQRS.Core.csproj" />
+    <ProjectReference Include="..\Eroad.FleetManagement.Contracts\Eroad.FleetManagement.Contracts.csproj" />
     <ProjectReference Include="..\Eroad.FleetManagement.Query.Domain\Eroad.FleetManagement.Query.Domain.csproj" />
     <ProjectReference Include="..\Eroad.FleetManagement.Query.Infrastructure\Eroad.FleetManagement.Query.Infrastructure.csproj" />
   </ItemGroup>

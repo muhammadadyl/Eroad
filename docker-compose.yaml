@@ -195,6 +195,31 @@ services:
       - kafka
       - sql
     restart: on-failure
+
+  # BFF Gateway
+  bff-gateway:
+    build:
+      context: .
+      dockerfile: Eroad.BFF.Gateway/Dockerfile
+    container_name: bff-gateway
+    ports:
+      - "5000:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ServiceEndpoints__DeliveryTrackingBaseUrl=http://delivery-tracking-query-api:8080
+      - ServiceEndpoints__DeliveryTrackingCommandBaseUrl=http://delivery-tracking-command-api:8080
+      - ServiceEndpoints__FleetManagementBaseUrl=http://fleet-management-query-api:8080
+      - ServiceEndpoints__FleetManagementCommandBaseUrl=http://fleet-management-command-api:8080
+      - ServiceEndpoints__RouteManagementBaseUrl=http://route-management-query-api:8080
+      - ServiceEndpoints__RouteManagementCommandBaseUrl=http://route-management-command-api:8080
+    depends_on:
+      - delivery-tracking-command-api
+      - delivery-tracking-query-api
+      - fleet-management-command-api
+      - fleet-management-query-api
+      - route-management-command-api
+      - route-management-query-api
+    restart: on-failure
    
 networks:
   default:    

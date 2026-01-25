@@ -1,0 +1,88 @@
+syntax = "proto3";
+
+option csharp_namespace = "Eroad.RouteManagement.Contracts";
+
+import "google/protobuf/timestamp.proto";
+
+package routemanagement.command;
+
+// Command service for route operations
+service RouteCommand {
+  rpc CreateRoute(CreateRouteRequest) returns (CreateRouteResponse);
+  rpc UpdateRoute(UpdateRouteRequest) returns (UpdateRouteResponse);
+  rpc ChangeRouteStatus(ChangeRouteStatusRequest) returns (ChangeRouteStatusResponse);
+  rpc AddCheckpoint(AddCheckpointRequest) returns (AddCheckpointResponse);
+  rpc UpdateCheckpoint(UpdateCheckpointRequest) returns (UpdateCheckpointResponse);
+  rpc AssignDriverToRoute(AssignDriverToRouteRequest) returns (AssignDriverToRouteResponse);
+  rpc AssignVehicleToRoute(AssignVehicleToRouteRequest) returns (AssignVehicleToRouteResponse);
+}
+
+// Request messages
+message CreateRouteRequest {
+  string id = 1;
+  string origin = 2;
+  string destination = 3;
+}
+
+message UpdateRouteRequest {
+  string id = 1;
+  string origin = 2;
+  string destination = 3;
+}
+
+message ChangeRouteStatusRequest {
+  string id = 1;
+  string status = 2;
+}
+
+message AddCheckpointRequest {
+  string id = 1;
+  int32 sequence = 2;
+  string location = 3;
+  google.protobuf.Timestamp expected_time = 4;
+}
+
+message UpdateCheckpointRequest {
+  string id = 1;
+  int32 sequence = 2;
+  google.protobuf.Timestamp actual_time = 3;
+}
+
+message AssignDriverToRouteRequest {
+  string id = 1;
+  string driver_id = 2;
+}
+
+message AssignVehicleToRouteRequest {
+  string id = 1;
+  string vehicle_id = 2;
+}
+
+// Response messages
+message CreateRouteResponse {
+  string message = 1;
+}
+
+message UpdateRouteResponse {
+  string message = 1;
+}
+
+message ChangeRouteStatusResponse {
+  string message = 1;
+}
+
+message AddCheckpointResponse {
+  string message = 1;
+}
+
+message UpdateCheckpointResponse {
+  string message = 1;
+}
+
+message AssignDriverToRouteResponse {
+  string message = 1;
+}
+
+message AssignVehicleToRouteResponse {
+  string message = 1;
+}

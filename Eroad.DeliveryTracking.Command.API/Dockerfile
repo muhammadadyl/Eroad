@@ -14,6 +14,7 @@ COPY ["Eroad.DeliveryTracking.Command.API/Eroad.DeliveryTracking.Command.API.csp
 COPY ["Eroad.DeliveryTracking.Command.Domain/Eroad.DeliveryTracking.Command.Domain.csproj", "Eroad.DeliveryTracking.Command.Domain/"]
 COPY ["Eroad.DeliveryTracking.Command.Infrastructure/Eroad.DeliveryTracking.Command.Infrastructure.csproj", "Eroad.DeliveryTracking.Command.Infrastructure/"]
 COPY ["Eroad.DeliveryTracking.Common/Eroad.DeliveryTracking.Common.csproj", "Eroad.DeliveryTracking.Common/"]
+COPY ["Eroad.DeliveryTracking.Contracts/Eroad.DeliveryTracking.Contracts.csproj", "Eroad.DeliveryTracking.Contracts/"]
 COPY ["Eroad.Common/Eroad.Common.csproj", "Eroad.Common/"]
 COPY ["Eroad.CQRS.Core/Eroad.CQRS.Core.csproj", "Eroad.CQRS.Core/"]
 
@@ -25,6 +26,7 @@ COPY ["Eroad.DeliveryTracking.Command.API/", "Eroad.DeliveryTracking.Command.API
 COPY ["Eroad.DeliveryTracking.Command.Domain/", "Eroad.DeliveryTracking.Command.Domain/"]
 COPY ["Eroad.DeliveryTracking.Command.Infrastructure/", "Eroad.DeliveryTracking.Command.Infrastructure/"]
 COPY ["Eroad.DeliveryTracking.Common/", "Eroad.DeliveryTracking.Common/"]
+COPY ["Eroad.DeliveryTracking.Contracts/", "Eroad.DeliveryTracking.Contracts/"]
 COPY ["Eroad.Common/", "Eroad.Common/"]
 COPY ["Eroad.CQRS.Core/", "Eroad.CQRS.Core/"]
 

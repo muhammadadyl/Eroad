@@ -1,0 +1,78 @@
+syntax = "proto3";
+
+option csharp_namespace = "Eroad.FleetManagement.Contracts";
+
+import "google/protobuf/wrappers.proto";
+
+package fleetmanagement.query;
+
+// Query service for driver lookups
+service DriverLookup {
+  rpc GetDriverById(GetDriverByIdRequest) returns (DriverLookupResponse);
+  rpc GetDriversByStatus(GetDriversByStatusRequest) returns (DriverLookupResponse);
+  rpc GetAllDrivers(GetAllDriversRequest) returns (DriverLookupResponse);
+}
+
+// Query service for vehicle lookups
+service VehicleLookup {
+  rpc GetVehicleById(GetVehicleByIdRequest) returns (VehicleLookupResponse);
+  rpc GetVehiclesByStatus(GetVehiclesByStatusRequest) returns (VehicleLookupResponse);
+  rpc GetVehiclesByDriver(GetVehiclesByDriverRequest) returns (VehicleLookupResponse);
+  rpc GetAllVehicles(GetAllVehiclesRequest) returns (VehicleLookupResponse);
+}
+
+// Request messages - Driver
+message GetDriverByIdRequest {
+  string id = 1;
+}
+
+message GetDriversByStatusRequest {
+  string status = 1;
+}
+
+message GetAllDriversRequest {
+}
+
+// Request messages - Vehicle
+message GetVehicleByIdRequest {
+  string id = 1;
+}
+
+message GetVehiclesByStatusRequest {
+  string status = 1;
+}
+
+message GetVehiclesByDriverRequest {
+  string driver_id = 1;
+}
+
+message GetAllVehiclesRequest {
+}
+
+// Response messages
+message DriverLookupResponse {
+  string message = 1;
+  repeated DriverEntity drivers = 2;
+}
+
+message VehicleLookupResponse {
+  string message = 1;
+  repeated VehicleEntity vehicles = 2;
+}
+
+// Entity messages (mirror REST DTOs)
+message DriverEntity {
+  string id = 1;
+  string name = 2;
+  string driver_license = 3;
+  string status = 4;
+  google.protobuf.StringValue assigned_vehicle_id = 5;
+}
+
+message VehicleEntity {
+  string id = 1;
+  string registration = 2;
+  string vehicle_type = 3;
+  string status = 4;
+  google.protobuf.StringValue assigned_driver_id = 5;
+}

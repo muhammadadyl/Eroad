@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+option csharp_namespace = "Eroad.DeliveryTracking.Contracts";
+
+package deliverytracking.command;
+
+// Command service for delivery operations
+service DeliveryCommand {
+  rpc CreateDelivery(CreateDeliveryRequest) returns (CreateDeliveryResponse);
+  rpc UpdateDeliveryStatus(UpdateDeliveryStatusRequest) returns (UpdateDeliveryStatusResponse);
+  rpc UpdateCurrentCheckpoint(UpdateCurrentCheckpointRequest) returns (UpdateCurrentCheckpointResponse);
+  rpc ReportIncident(ReportIncidentRequest) returns (ReportIncidentResponse);
+  rpc ResolveIncident(ResolveIncidentRequest) returns (ResolveIncidentResponse);
+  rpc CaptureProofOfDelivery(CaptureProofOfDeliveryRequest) returns (CaptureProofOfDeliveryResponse);
+}
+
+// Request messages
+message CreateDeliveryRequest {
+  string id = 1;
+  string route_id = 2;
+}
+
+message UpdateDeliveryStatusRequest {
+  string id = 1;
+  string status = 2;
+}
+
+message UpdateCurrentCheckpointRequest {
+  string id = 1;
+  string checkpoint = 2;
+}
+
+message ReportIncidentRequest {
+  string id = 1;
+  string type = 2;
+  string description = 3;
+}
+
+message ResolveIncidentRequest {
+  string id = 1;
+  string incident_id = 2;
+}
+
+message CaptureProofOfDeliveryRequest {
+  string id = 1;
+  string signature_url = 2;
+  string receiver_name = 3;
+}
+
+// Response messages
+message CreateDeliveryResponse {
+  string message = 1;
+  string id = 2;
+}
+
+message UpdateDeliveryStatusResponse {
+  string message = 1;
+}
+
+message UpdateCurrentCheckpointResponse {
+  string message = 1;
+}
+
+message ReportIncidentResponse {
+  string message = 1;
+}
+
+message ResolveIncidentResponse {
+  string message = 1;
+}
+
+message CaptureProofOfDeliveryResponse {
+  string message = 1;
+}

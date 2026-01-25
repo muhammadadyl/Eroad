@@ -60,6 +60,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Eroad.FleetManagement.Comma
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Eroad.FleetManagement.Common", "..\Eroad.FleetManagement.Common\Eroad.FleetManagement.Common.csproj", "{16B4FD48-2338-4093-ADF3-D3559FEF751C}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Eroad.BFF.Gateway", "..\Eroad.BFF.Gateway\Eroad.BFF.Gateway.csproj", "{2EDDBF93-C31F-4594-B5D9-4E31E6F45C98}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Eroad.DeliveryTracking.Contracts", "..\Eroad.DeliveryTracking.Contracts\Eroad.DeliveryTracking.Contracts.csproj", "{D286F220-ECB2-4D70-A706-76D238806A24}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Eroad.FleetManagement.Contracts", "..\Eroad.FleetManagement.Contracts\Eroad.FleetManagement.Contracts.csproj", "{32B907C6-D5D6-44D2-8DB6-9CCF512E5AB4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Eroad.RouteManagement.Contracts", "..\Eroad.RouteManagement.Contracts\Eroad.RouteManagement.Contracts.csproj", "{95A25E4F-C584-44A5-AEE9-8A218CB28C3A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -158,6 +166,22 @@ Global
 		{16B4FD48-2338-4093-ADF3-D3559FEF751C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{16B4FD48-2338-4093-ADF3-D3559FEF751C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{16B4FD48-2338-4093-ADF3-D3559FEF751C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2EDDBF93-C31F-4594-B5D9-4E31E6F45C98}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2EDDBF93-C31F-4594-B5D9-4E31E6F45C98}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2EDDBF93-C31F-4594-B5D9-4E31E6F45C98}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2EDDBF93-C31F-4594-B5D9-4E31E6F45C98}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D286F220-ECB2-4D70-A706-76D238806A24}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D286F220-ECB2-4D70-A706-76D238806A24}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D286F220-ECB2-4D70-A706-76D238806A24}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D286F220-ECB2-4D70-A706-76D238806A24}.Release|Any CPU.Build.0 = Release|Any CPU
+		{32B907C6-D5D6-44D2-8DB6-9CCF512E5AB4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{32B907C6-D5D6-44D2-8DB6-9CCF512E5AB4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{32B907C6-D5D6-44D2-8DB6-9CCF512E5AB4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{32B907C6-D5D6-44D2-8DB6-9CCF512E5AB4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{95A25E4F-C584-44A5-AEE9-8A218CB28C3A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{95A25E4F-C584-44A5-AEE9-8A218CB28C3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{95A25E4F-C584-44A5-AEE9-8A218CB28C3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{95A25E4F-C584-44A5-AEE9-8A218CB28C3A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -184,6 +208,9 @@ Global
 		{27D501C9-41AA-427E-936E-188A90C4DB72} = {D379FFB6-34EE-434E-9A31-E02B0F4D5B17}
 		{8A496DDA-AAFB-4AC9-8F44-9EACE633F0F6} = {395115BE-88CA-4C25-AD0D-3DCBE18E92E0}
 		{16B4FD48-2338-4093-ADF3-D3559FEF751C} = {395115BE-88CA-4C25-AD0D-3DCBE18E92E0}
+		{D286F220-ECB2-4D70-A706-76D238806A24} = {D379FFB6-34EE-434E-9A31-E02B0F4D5B17}
+		{32B907C6-D5D6-44D2-8DB6-9CCF512E5AB4} = {395115BE-88CA-4C25-AD0D-3DCBE18E92E0}
+		{95A25E4F-C584-44A5-AEE9-8A218CB28C3A} = {B1A47B02-1D06-4FF6-843E-EDD20E13727A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {13E5BA11-1D83-4E8A-AB2B-D429C34D7443}

@@ -1,0 +1,79 @@
+syntax = "proto3";
+
+option csharp_namespace = "Eroad.DeliveryTracking.Contracts";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+package deliverytracking.query;
+
+// Query service for delivery lookups
+service DeliveryLookup {
+  rpc GetDeliveryById(GetDeliveryByIdRequest) returns (DeliveryLookupResponse);
+  rpc GetDeliveriesByStatus(GetDeliveriesByStatusRequest) returns (DeliveryLookupResponse);
+  rpc GetDeliveriesByRoute(GetDeliveriesByRouteRequest) returns (DeliveryLookupResponse);
+  rpc GetAllDeliveries(GetAllDeliveriesRequest) returns (DeliveryLookupResponse);
+}
+
+// Service for incident lookups
+service IncidentLookup {
+  rpc GetIncidentsByDelivery(GetIncidentsByDeliveryRequest) returns (IncidentLookupResponse);
+  rpc GetUnresolvedIncidents(GetUnresolvedIncidentsRequest) returns (IncidentLookupResponse);
+}
+
+// Request messages
+message GetDeliveryByIdRequest {
+  string id = 1;
+}
+
+message GetDeliveriesByStatusRequest {
+  string status = 1;
+}
+
+message GetDeliveriesByRouteRequest {
+  string route_id = 1;
+}
+
+message GetAllDeliveriesRequest {
+}
+
+message GetIncidentsByDeliveryRequest {
+  string delivery_id = 1;
+}
+
+message GetUnresolvedIncidentsRequest {
+}
+
+// Response messages
+message DeliveryLookupResponse {
+  string message = 1;
+  repeated DeliveryEntity deliveries = 2;
+}
+
+message IncidentLookupResponse {
+  string message = 1;
+  repeated IncidentEntity incidents = 2;
+}
+
+// Entity messages (mirror REST DTOs)
+message DeliveryEntity {
+  string id = 1;
+  string route_id = 2;
+  string status = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp delivered_at = 5;
+  google.protobuf.StringValue signature_url = 6;
+  google.protobuf.StringValue receiver_name = 7;
+  google.protobuf.StringValue current_checkpoint = 8;
+  repeated IncidentEntity incidents = 9;
+}
+
+message IncidentEntity {
+  string id = 1;
+  string delivery_id = 2;
+  string type = 3;
+  string description = 4;
+  google.protobuf.Timestamp reported_timestamp = 5;
+  google.protobuf.Timestamp resolved_timestamp = 6;
+  bool resolved = 7;
+}

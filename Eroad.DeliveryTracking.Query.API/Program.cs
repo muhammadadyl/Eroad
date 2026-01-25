@@ -2,6 +2,7 @@ using Confluent.Kafka;
 using Eroad.CQRS.Core.Consumers;
 using Eroad.CQRS.Core.Infrastructure;
 using Eroad.DeliveryTracking.Query.API.Queries;
+using Eroad.DeliveryTracking.Query.API.Services.Grpc;
 using Eroad.DeliveryTracking.Query.Domain.Entities;
 using Eroad.DeliveryTracking.Query.Domain.Repositories;
 using Eroad.DeliveryTracking.Query.Infrastructure.Consumers;
@@ -79,6 +80,12 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHealthChecks();
 
+// Add gRPC services
+builder.Services.AddGrpc();
+builder.Services.AddGrpcReflection();
+builder.Services.AddGrpcHealthChecks()
+    .AddCheck("delivery_tracking_query", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy());
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -94,6 +101,16 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapHealthChecks("/health");
+
+// Map gRPC services
+app.MapGrpcService<DeliveryLookupGrpcService>();
+app.MapGrpcService<IncidentLookupGrpcService>();
+app.MapGrpcHealthChecksService();
+
+if (app.Environment.IsDevelopment())
+{
+    app.MapGrpcReflectionService();
+}
 
 // Create database if it doesn't exist
 using (var scope = app.Services.CreateScope())

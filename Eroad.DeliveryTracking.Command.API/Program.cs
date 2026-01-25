@@ -41,6 +41,12 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHealthChecks();
 
+// Add gRPC services
+builder.Services.AddGrpc();
+builder.Services.AddGrpcReflection();
+builder.Services.AddGrpcHealthChecks()
+    .AddCheck("delivery_tracking_command_health", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy());
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -56,5 +62,14 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapHealthChecks("/health");
+
+// Map gRPC services
+app.MapGrpcService<Eroad.DeliveryTracking.Command.API.Services.Grpc.DeliveryCommandGrpcService>();
+app.MapGrpcHealthChecksService();
+
+if (app.Environment.IsDevelopment())
+{
+    app.MapGrpcReflectionService();
+}
 
 app.Run();

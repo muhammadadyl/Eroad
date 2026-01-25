@@ -1,0 +1,557 @@
+@baseUrl = http://localhost:5000
+@vehicleId = 550e8400-e29b-41d4-a716-446655440001
+@driverId = 550e8400-e29b-41d4-a716-446655440002
+@routeId = 550e8400-e29b-41d4-a716-446655440003
+@deliveryId = 550e8400-e29b-41d4-a716-446655440004
+@incidentId = 550e8400-e29b-41d4-a716-446655440005
+
+###############################################################################
+# FLEET MANAGEMENT - QUERY APIs
+###############################################################################
+
+### Get Fleet Overview
+GET {{baseUrl}}/api/fleet/overview
+Accept: application/json
+
+### Get Vehicle Detail
+GET {{baseUrl}}/api/fleet/vehicles/{{vehicleId}}
+Accept: application/json
+
+### Get Driver Detail
+GET {{baseUrl}}/api/fleet/drivers/{{driverId}}
+Accept: application/json
+
+###############################################################################
+# ROUTE MANAGEMENT - QUERY APIs
+###############################################################################
+
+### Get Route Overview
+GET {{baseUrl}}/api/routes/overview
+Accept: application/json
+
+### Get Route Detail
+GET {{baseUrl}}/api/routes/{{routeId}}
+Accept: application/json
+
+### Get Route Performance
+GET {{baseUrl}}/api/routes/{{routeId}}/performance
+Accept: application/json
+
+###############################################################################
+# EVENT MANAGEMENT - QUERY APIs
+###############################################################################
+
+### Get Delivery Events
+GET {{baseUrl}}/api/events/deliveries/{{deliveryId}}
+Accept: application/json
+
+### Get Incident Dashboard
+GET {{baseUrl}}/api/events/incidents/dashboard
+Accept: application/json
+
+### Get Incident Timeline
+GET {{baseUrl}}/api/events/incidents/{{incidentId}}/timeline
+Accept: application/json
+
+### Get Event Statistics
+GET {{baseUrl}}/api/events/statistics
+Accept: application/json
+
+###############################################################################
+# DELIVERY MANAGEMENT - QUERY APIs
+###############################################################################
+
+### Get Delivery Context
+GET {{baseUrl}}/api/deliveries/{{deliveryId}}/context
+Accept: application/json
+
+### Get Live Tracking
+GET {{baseUrl}}/api/deliveries/live-tracking
+Accept: application/json
+
+### Get Completed Summary
+GET {{baseUrl}}/api/deliveries/{{deliveryId}}/completed-summary
+Accept: application/json
+
+###############################################################################
+# FLEET MANAGEMENT - COMMAND APIs (Vehicles)
+###############################################################################
+
+### Add Vehicle
+POST {{baseUrl}}/api/fleet/vehicles
+Content-Type: application/json
+
+{
+  "id": "{{vehicleId}}",
+  "registration": "TRK-001",
+  "vehicleType": "Delivery Truck"
+}
+
+### Update Vehicle
+PUT {{baseUrl}}/api/fleet/vehicles/{{vehicleId}}
+Content-Type: application/json
+
+{
+  "registration": "TRK-001-UPDATED",
+  "vehicleType": "Heavy Truck"
+}
+
+### Change Vehicle Status to Available
+PATCH {{baseUrl}}/api/fleet/vehicles/{{vehicleId}}/status
+Content-Type: application/json
+
+{
+  "status": "Available"
+}
+
+### Change Vehicle Status to InUse
+PATCH {{baseUrl}}/api/fleet/vehicles/{{vehicleId}}/status
+Content-Type: application/json
+
+{
+  "status": "InUse"
+}
+
+### Change Vehicle Status to Maintenance
+PATCH {{baseUrl}}/api/fleet/vehicles/{{vehicleId}}/status
+Content-Type: application/json
+
+{
+  "status": "Maintenance"
+}
+
+###############################################################################
+# FLEET MANAGEMENT - COMMAND APIs (Drivers)
+###############################################################################
+
+### Add Driver
+POST {{baseUrl}}/api/fleet/drivers
+Content-Type: application/json
+
+{
+  "id": "{{driverId}}",
+  "name": "John Smith",
+  "driverLicense": "DL987654"
+}
+
+### Update Driver
+PUT {{baseUrl}}/api/fleet/drivers/{{driverId}}
+Content-Type: application/json
+
+{
+  "name": "John Smith Jr.",
+  "driverLicense": "DL987654"
+}
+
+### Change Driver Status to Available
+PATCH {{baseUrl}}/api/fleet/drivers/{{driverId}}/status
+Content-Type: application/json
+
+{
+  "status": "Available"
+}
+
+### Change Driver Status to OnDuty
+PATCH {{baseUrl}}/api/fleet/drivers/{{driverId}}/status
+Content-Type: application/json
+
+{
+  "status": "OnDuty"
+}
+
+### Change Driver Status to OffDuty
+PATCH {{baseUrl}}/api/fleet/drivers/{{driverId}}/status
+Content-Type: application/json
+
+{
+  "status": "OffDuty"
+}
+
+### Assign Driver to Vehicle
+POST {{baseUrl}}/api/fleet/drivers/{{driverId}}/assign-vehicle
+Content-Type: application/json
+
+{
+  "vehicleId": "{{vehicleId}}"
+}
+
+###############################################################################
+# ROUTE MANAGEMENT - COMMAND APIs
+###############################################################################
+
+### Create Route
+POST {{baseUrl}}/api/routes
+Content-Type: application/json
+
+{
+  "id": "{{routeId}}",
+  "origin": "Main Warehouse",
+  "destination": "City Distribution Center"
+}
+
+### Update Route
+PUT {{baseUrl}}/api/routes/{{routeId}}
+Content-Type: application/json
+
+{
+  "origin": "Main Warehouse Updated",
+  "destination": "City Distribution Center South"
+}
+
+### Change Route Status to Active
+PATCH {{baseUrl}}/api/routes/{{routeId}}/status
+Content-Type: application/json
+
+{
+  "status": "Active"
+}
+
+### Change Route Status to InProgress
+PATCH {{baseUrl}}/api/routes/{{routeId}}/status
+Content-Type: application/json
+
+{
+  "status": "InProgress"
+}
+
+### Change Route Status to Completed
+PATCH {{baseUrl}}/api/routes/{{routeId}}/status
+Content-Type: application/json
+
+{
+  "status": "Completed"
+}
+
+### Change Route Status to Cancelled
+PATCH {{baseUrl}}/api/routes/{{routeId}}/status
+Content-Type: application/json
+
+{
+  "status": "Cancelled"
+}
+
+### Add Checkpoint 1
+POST {{baseUrl}}/api/routes/{{routeId}}/checkpoints
+Content-Type: application/json
+
+{
+  "sequence": 1,
+  "location": "Highway Junction A",
+  "expectedTime": "2026-01-25T09:00:00Z"
+}
+
+### Add Checkpoint 2
+POST {{baseUrl}}/api/routes/{{routeId}}/checkpoints
+Content-Type: application/json
+
+{
+  "sequence": 2,
+  "location": "Rest Stop B",
+  "expectedTime": "2026-01-25T11:00:00Z"
+}
+
+### Add Checkpoint 3
+POST {{baseUrl}}/api/routes/{{routeId}}/checkpoints
+Content-Type: application/json
+
+{
+  "sequence": 3,
+  "location": "Distribution Center Gate",
+  "expectedTime": "2026-01-25T13:00:00Z"
+}
+
+### Update Checkpoint 1 (Actual Arrival)
+PATCH {{baseUrl}}/api/routes/{{routeId}}/checkpoints/1
+Content-Type: application/json
+
+{
+  "actualTime": "2026-01-25T09:05:00Z"
+}
+
+### Update Checkpoint 2 (Actual Arrival)
+PATCH {{baseUrl}}/api/routes/{{routeId}}/checkpoints/2
+Content-Type: application/json
+
+{
+  "actualTime": "2026-01-25T11:15:00Z"
+}
+
+### Assign Driver to Route (Individual)
+POST {{baseUrl}}/api/routes/{{routeId}}/assign-driver
+Content-Type: application/json
+
+{
+  "driverId": "{{driverId}}"
+}
+
+### Assign Vehicle to Route (Individual)
+POST {{baseUrl}}/api/routes/{{routeId}}/assign-vehicle
+Content-Type: application/json
+
+{
+  "vehicleId": "{{vehicleId}}"
+}
+
+### Assign Both Driver and Vehicle to Route (COMBINED - RECOMMENDED)
+POST {{baseUrl}}/api/routes/{{routeId}}/assign-resources
+Content-Type: application/json
+
+{
+  "driverId": "{{driverId}}",
+  "vehicleId": "{{vehicleId}}"
+}
+
+###############################################################################
+# DELIVERY MANAGEMENT - COMMAND APIs
+###############################################################################
+
+### Create Delivery
+POST {{baseUrl}}/api/deliveries
+Content-Type: application/json
+
+{
+  "id": "{{deliveryId}}",
+  "routeId": "{{routeId}}"
+}
+
+### Update Delivery Status to InTransit
+PATCH {{baseUrl}}/api/deliveries/{{deliveryId}}/status
+Content-Type: application/json
+
+{
+  "status": "InTransit"
+}
+
+### Update Delivery Status to OutForDelivery
+PATCH {{baseUrl}}/api/deliveries/{{deliveryId}}/status
+Content-Type: application/json
+
+{
+  "status": "OutForDelivery"
+}
+
+### Update Delivery Status to Delivered
+PATCH {{baseUrl}}/api/deliveries/{{deliveryId}}/status
+Content-Type: application/json
+
+{
+  "status": "Delivered"
+}
+
+### Update Delivery Status to Cancelled
+PATCH {{baseUrl}}/api/deliveries/{{deliveryId}}/status
+Content-Type: application/json
+
+{
+  "status": "Cancelled"
+}
+
+### Update Current Checkpoint
+PATCH {{baseUrl}}/api/deliveries/{{deliveryId}}/checkpoint
+Content-Type: application/json
+
+{
+  "checkpoint": "Highway Junction A"
+}
+
+### Report Delay Incident
+POST {{baseUrl}}/api/deliveries/{{deliveryId}}/incidents
+Content-Type: application/json
+
+{
+  "type": "Delay",
+  "description": "Heavy traffic on highway causing 30 minute delay"
+}
+
+### Report Accident Incident
+POST {{baseUrl}}/api/deliveries/{{deliveryId}}/incidents
+Content-Type: application/json
+
+{
+  "type": "Accident",
+  "description": "Minor fender bender, no injuries"
+}
+
+### Report Breakdown Incident
+POST {{baseUrl}}/api/deliveries/{{deliveryId}}/incidents
+Content-Type: application/json
+
+{
+  "type": "Breakdown",
+  "description": "Engine overheating, waiting for roadside assistance"
+}
+
+### Report Weather Delay Incident
+POST {{baseUrl}}/api/deliveries/{{deliveryId}}/incidents
+Content-Type: application/json
+
+{
+  "type": "WeatherDelay",
+  "description": "Heavy snow causing reduced visibility and slow travel"
+}
+
+### Resolve Incident
+PATCH {{baseUrl}}/api/deliveries/{{deliveryId}}/incidents/{{incidentId}}/resolve
+
+### Capture Proof of Delivery
+POST {{baseUrl}}/api/deliveries/{{deliveryId}}/proof-of-delivery
+Content-Type: application/json
+
+{
+  "signatureUrl": "https://storage.example.com/signatures/delivery-{{deliveryId}}.png",
+  "receiverName": "Jane Doe"
+}
+
+###############################################################################
+# COMPLETE WORKFLOW - END TO END
+###############################################################################
+
+### STEP 1: Add Vehicle
+POST {{baseUrl}}/api/fleet/vehicles
+Content-Type: application/json
+
+{
+  "id": "550e8400-e29b-41d4-a716-446655440101",
+  "registration": "WRK-001",
+  "vehicleType": "Delivery Van"
+}
+
+### STEP 2: Add Driver
+POST {{baseUrl}}/api/fleet/drivers
+Content-Type: application/json
+
+{
+  "id": "550e8400-e29b-41d4-a716-446655440102",
+  "name": "Alice Johnson",
+  "driverLicense": "DL123456"
+}
+
+### STEP 3: Create Route
+POST {{baseUrl}}/api/routes
+Content-Type: application/json
+
+{
+  "id": "550e8400-e29b-41d4-a716-446655440103",
+  "origin": "Warehouse North",
+  "destination": "Customer Location Downtown"
+}
+
+### STEP 4a: Add Checkpoint 1
+POST {{baseUrl}}/api/routes/550e8400-e29b-41d4-a716-446655440103/checkpoints
+Content-Type: application/json
+
+{
+  "sequence": 1,
+  "location": "Highway Entrance",
+  "expectedTime": "2026-01-25T08:00:00Z"
+}
+
+### STEP 4b: Add Checkpoint 2
+POST {{baseUrl}}/api/routes/550e8400-e29b-41d4-a716-446655440103/checkpoints
+Content-Type: application/json
+
+{
+  "sequence": 2,
+  "location": "City Center",
+  "expectedTime": "2026-01-25T09:30:00Z"
+}
+
+### STEP 5: Assign Resources (Driver + Vehicle) - COMBINED
+POST {{baseUrl}}/api/routes/550e8400-e29b-41d4-a716-446655440103/assign-resources
+Content-Type: application/json
+
+{
+  "driverId": "550e8400-e29b-41d4-a716-446655440102",
+  "vehicleId": "550e8400-e29b-41d4-a716-446655440101"
+}
+
+### STEP 6: Create Delivery
+POST {{baseUrl}}/api/deliveries
+Content-Type: application/json
+
+{
+  "id": "550e8400-e29b-41d4-a716-446655440104",
+  "routeId": "550e8400-e29b-41d4-a716-446655440103"
+}
+
+### STEP 7: Start Route
+PATCH {{baseUrl}}/api/routes/550e8400-e29b-41d4-a716-446655440103/status
+Content-Type: application/json
+
+{
+  "status": "InProgress"
+}
+
+### STEP 8: Update Delivery Status to InTransit
+PATCH {{baseUrl}}/api/deliveries/550e8400-e29b-41d4-a716-446655440104/status
+Content-Type: application/json
+
+{
+  "status": "InTransit"
+}
+
+### STEP 9: Update Checkpoint 1 Arrival
+PATCH {{baseUrl}}/api/routes/550e8400-e29b-41d4-a716-446655440103/checkpoints/1
+Content-Type: application/json
+
+{
+  "actualTime": "2026-01-25T08:05:00Z"
+}
+
+### STEP 10: Update Delivery Current Checkpoint
+PATCH {{baseUrl}}/api/deliveries/550e8400-e29b-41d4-a716-446655440104/checkpoint
+Content-Type: application/json
+
+{
+  "checkpoint": "Highway Entrance"
+}
+
+### STEP 11: Report Incident (Optional)
+POST {{baseUrl}}/api/deliveries/550e8400-e29b-41d4-a716-446655440104/incidents
+Content-Type: application/json
+
+{
+  "type": "Delay",
+  "description": "Construction on main road"
+}
+
+### STEP 12: Update Checkpoint 2 Arrival
+PATCH {{baseUrl}}/api/routes/550e8400-e29b-41d4-a716-446655440103/checkpoints/2
+Content-Type: application/json
+
+{
+  "actualTime": "2026-01-25T09:45:00Z"
+}
+
+### STEP 13: Capture Proof of Delivery
+POST {{baseUrl}}/api/deliveries/550e8400-e29b-41d4-a716-446655440104/proof-of-delivery
+Content-Type: application/json
+
+{
+  "signatureUrl": "https://storage.example.com/signatures/workflow-test.png",
+  "receiverName": "Customer Representative"
+}
+
+### STEP 14: Complete Delivery
+PATCH {{baseUrl}}/api/deliveries/550e8400-e29b-41d4-a716-446655440104/status
+Content-Type: application/json
+
+{
+  "status": "Delivered"
+}
+
+### STEP 15: Complete Route
+PATCH {{baseUrl}}/api/routes/550e8400-e29b-41d4-a716-446655440103/status
+Content-Type: application/json
+
+{
+  "status": "Completed"
+}
+
+### STEP 16: Verify Fleet Overview
+GET {{baseUrl}}/api/fleet/overview
+Accept: application/json
+
+### STEP 17: Verify Event Statistics
+GET {{baseUrl}}/api/events/statistics
+Accept: application/json

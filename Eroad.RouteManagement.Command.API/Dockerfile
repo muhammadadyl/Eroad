@@ -14,6 +14,7 @@ COPY ["Eroad.RouteManagement.Command.API/Eroad.RouteManagement.Command.API.cspro
 COPY ["Eroad.RouteManagement.Command.Domain/Eroad.RouteManagement.Command.Domain.csproj", "Eroad.RouteManagement.Command.Domain/"]
 COPY ["Eroad.RouteManagement.Command.Infrastructure/Eroad.RouteManagement.Command.Infrastructure.csproj", "Eroad.RouteManagement.Command.Infrastructure/"]
 COPY ["Eroad.RouteManagement.Common/Eroad.RouteManagement.Common.csproj", "Eroad.RouteManagement.Common/"]
+COPY ["Eroad.RouteManagement.Contracts/Eroad.RouteManagement.Contracts.csproj", "Eroad.RouteManagement.Contracts/"]
 COPY ["Eroad.Common/Eroad.Common.csproj", "Eroad.Common/"]
 COPY ["Eroad.CQRS.Core/Eroad.CQRS.Core.csproj", "Eroad.CQRS.Core/"]
 
@@ -25,6 +26,7 @@ COPY ["Eroad.RouteManagement.Command.API/", "Eroad.RouteManagement.Command.API/"
 COPY ["Eroad.RouteManagement.Command.Domain/", "Eroad.RouteManagement.Command.Domain/"]
 COPY ["Eroad.RouteManagement.Command.Infrastructure/", "Eroad.RouteManagement.Command.Infrastructure/"]
 COPY ["Eroad.RouteManagement.Common/", "Eroad.RouteManagement.Common/"]
+COPY ["Eroad.RouteManagement.Contracts/", "Eroad.RouteManagement.Contracts/"]
 COPY ["Eroad.Common/", "Eroad.Common/"]
 COPY ["Eroad.CQRS.Core/", "Eroad.CQRS.Core/"]
 

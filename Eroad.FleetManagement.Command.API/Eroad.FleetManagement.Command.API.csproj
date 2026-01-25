@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Grpc.AspNetCore" Version="2.60.0" />
+    <PackageReference Include="Grpc.AspNetCore.Server.Reflection" Version="2.60.0" />
+    <PackageReference Include="Grpc.HealthCheck" Version="2.60.0" />
+    <PackageReference Include="Grpc.AspNetCore.HealthChecks" Version="2.60.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
   </ItemGroup>
 
@@ -16,6 +20,7 @@
     <ProjectReference Include="..\Eroad.FleetManagement.Common\Eroad.FleetManagement.Common.csproj" />
     <ProjectReference Include="..\Eroad.FleetManagement.Command.Domain\Eroad.FleetManagement.Command.Domain.csproj" />
     <ProjectReference Include="..\Eroad.FleetManagement.Command.Infrastructure\Eroad.FleetManagement.Command.Infrastructure.csproj" />
+    <ProjectReference Include="..\Eroad.FleetManagement.Contracts\Eroad.FleetManagement.Contracts.csproj" />
   </ItemGroup>
 
   <ItemGroup>

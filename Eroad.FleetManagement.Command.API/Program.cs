@@ -45,6 +45,12 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHealthChecks();
 
+// Add gRPC services
+builder.Services.AddGrpc();
+builder.Services.AddGrpcReflection();
+builder.Services.AddGrpcHealthChecks()
+    .AddCheck("fleet_management_command_health", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy());
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -60,5 +66,15 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapHealthChecks("/health");
+
+// Map gRPC services
+app.MapGrpcService<Eroad.FleetManagement.Command.API.Services.Grpc.VehicleCommandGrpcService>();
+app.MapGrpcService<Eroad.FleetManagement.Command.API.Services.Grpc.DriverCommandGrpcService>();
+app.MapGrpcHealthChecksService();
+
+if (app.Environment.IsDevelopment())
+{
+    app.MapGrpcReflectionService();
+}
 
 app.Run();
