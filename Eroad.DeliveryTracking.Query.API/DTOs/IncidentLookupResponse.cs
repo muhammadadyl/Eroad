@@ -5,6 +5,6 @@ namespace Eroad.DeliveryTracking.Query.API.DTOs
 {
     public class IncidentLookupResponse : BaseResponse
     {
-        public List<IncidentEntity> Incidents { get; set; }
+        public required List<IncidentEntity> Incidents { get; set; }
     }
 }

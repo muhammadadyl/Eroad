@@ -5,6 +5,6 @@ namespace Eroad.FleetManagement.Query.API.DTOs
 {
     public class VehicleLookupResponse : BaseResponse
     {
-        public List<VehicleEntity> Vehicles { get; set; }
+        public required List<VehicleEntity> Vehicles { get; set; }
     }
 }

@@ -5,6 +5,6 @@ namespace Eroad.RouteManagement.Query.API.DTOs
 {
     public class CheckpointLookupResponse : BaseResponse
     {
-        public List<CheckpointEntity> Checkpoints { get; set; }
+        public required List<CheckpointEntity> Checkpoints { get; set; }
     }
 }

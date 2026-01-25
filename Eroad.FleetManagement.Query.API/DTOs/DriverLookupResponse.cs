@@ -5,6 +5,6 @@ namespace Eroad.FleetManagement.Query.API.DTOs
 {
     public class DriverLookupResponse : BaseResponse
     {
-        public List<DriverEntity> Drivers { get; set; }
+        public required List<DriverEntity> Drivers { get; set; }
     }
 }

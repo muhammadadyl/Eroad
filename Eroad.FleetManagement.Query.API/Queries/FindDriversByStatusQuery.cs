@@ -4,6 +4,6 @@ namespace Eroad.FleetManagement.Query.API.Queries
 {
     public class FindDriversByStatusQuery : BaseQuery
     {
-        public string Status { get; set; }
+        public required string Status { get; set; }
     }
 }

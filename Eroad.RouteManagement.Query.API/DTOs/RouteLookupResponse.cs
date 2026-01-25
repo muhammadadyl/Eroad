@@ -5,6 +5,6 @@ namespace Eroad.RouteManagement.Query.API.DTOs
 {
     public class RouteLookupResponse : BaseResponse
     {
-        public List<RouteEntity> Routes { get; set; }
+        public required List<RouteEntity> Routes { get; set; }
     }
 }

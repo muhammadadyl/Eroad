@@ -4,6 +4,6 @@ namespace Eroad.RouteManagement.Query.API.DTOs
 {
     public class StatusLookupResponse : BaseResponse
     {
-        public List<StatusInfo> Statuses { get; set; }
+        public required List<StatusInfo> Statuses { get; set; }
     }
 }
