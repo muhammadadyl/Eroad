@@ -1,0 +1,67 @@
+# Build output directories
+**/bin/
+**/obj/
+**/out/
+
+# IDE and editor files
+**/.vs/
+**/.vscode/
+**/.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Test results
+**/TestResults/
+**/*.trx
+
+# Version control
+.git/
+.gitignore
+.gitattributes
+
+# Documentation and non-essential files
+**/*.md
+!README.md
+LICENSE
+**/.editorconfig
+
+# Docker files (exclude from build context)
+**/.dockerignore
+**/Dockerfile
+**/docker-compose*.yml
+**/docker-compose*.yaml
+
+# Package managers
+**/.nuget/
+**/packages/
+
+# Build system
+**/.vs/
+**/project.lock.json
+**/project.fragment.lock.json
+**/artifacts/
+
+# User-specific files
+*.rsuser
+*.sln.DotSettings.user
+
+# Logs
+**/*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+**/tmp/
+**/temp/
+**/*.tmp
+**/*.bak
+**/*.swp
+*~
+
+# Application specific
+**/appsettings.Development.json
+**/*.http
