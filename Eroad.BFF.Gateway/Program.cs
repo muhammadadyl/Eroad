@@ -1,4 +1,5 @@
 using Eroad.BFF.Gateway.Aggregators;
+using Eroad.BFF.Gateway.Middleware;
 using Eroad.DeliveryTracking.Contracts;
 using Eroad.FleetManagement.Contracts;
 using Eroad.RouteManagement.Contracts;
@@ -148,6 +149,8 @@ builder.Services.AddScoped<EventManagementAggregator>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

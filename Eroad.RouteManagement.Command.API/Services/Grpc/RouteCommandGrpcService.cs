@@ -1,5 +1,7 @@
+using Eroad.CQRS.Core.Handlers;
 using Eroad.RouteManagement.Command.API.Commands;
 using Eroad.RouteManagement.Command.API.Commands.Route;
+using Eroad.RouteManagement.Command.Domain.Aggregates;
 using Eroad.RouteManagement.Contracts;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
@@ -9,11 +11,16 @@ namespace Eroad.RouteManagement.Command.API.Services.Grpc
     public class RouteCommandGrpcService : RouteCommand.RouteCommandBase
     {
         private readonly IRouteCommandHandler _commandHandler;
+        private readonly IEventSourcingHandler<RouteAggregate> _eventSourcingHandler;
         private readonly ILogger<RouteCommandGrpcService> _logger;
 
-        public RouteCommandGrpcService(IRouteCommandHandler commandHandler, ILogger<RouteCommandGrpcService> logger)
+        public RouteCommandGrpcService(
+            IRouteCommandHandler commandHandler, 
+            IEventSourcingHandler<RouteAggregate> eventSourcingHandler,
+            ILogger<RouteCommandGrpcService> logger)
         {
             _commandHandler = commandHandler;
+            _eventSourcingHandler = eventSourcingHandler;
             _logger = logger;
         }
 
@@ -111,14 +118,34 @@ namespace Eroad.RouteManagement.Command.API.Services.Grpc
                     throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid route status"));
                 }
 
+                // Get the current route aggregate to retrieve its current status
+                var aggregate = await _eventSourcingHandler.GetByIdAsync(routeId);
+                if (aggregate == null)
+                {
+                    _logger.LogInformation("Route with ID {RouteId} not found", routeId);
+                    throw new RpcException(new Status(StatusCode.NotFound, $"Route with ID {routeId} not found"));
+                }
+
+                // Check if the new status is the same as the current status
+                if (aggregate.Status == newStatus)
+                {
+                    _logger.LogInformation("Route {RouteId} is already in status {Status}. No change needed.", routeId, newStatus);
+                    return new ChangeRouteStatusResponse
+                    {
+                        Message = $"Route is already in {newStatus} status"
+                    };
+                }
+
                 var command = new ChangeRouteStatusCommand
                 {
                     Id = routeId,
-                    OldStatus = RouteManagement.Common.RouteStatus.Planned,
+                    OldStatus = aggregate.Status,
                     NewStatus = newStatus
                 };
 
                 await _commandHandler.HandleAsync(command);
+
+                _logger.LogInformation("Route {RouteId} status changed from {OldStatus} to {NewStatus}", routeId, aggregate.Status, newStatus);
 
                 return new ChangeRouteStatusResponse
                 {
@@ -131,12 +158,12 @@ namespace Eroad.RouteManagement.Command.API.Services.Grpc
             }
             catch (InvalidOperationException ex)
             {
-                _logger.LogWarning(ex, "Invalid operation when changing route status");
+                _logger.LogWarning("Invalid operation when changing route status for route {RouteId}: {Message}", request.Id, ex.Message);
                 throw new RpcException(new Status(StatusCode.InvalidArgument, ex.Message));
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error changing route status");
+                _logger.LogError(ex, "Error changing route status for route {RouteId}", request.Id);
                 throw new RpcException(new Status(StatusCode.Internal, "An error occurred while changing route status"));
             }
         }

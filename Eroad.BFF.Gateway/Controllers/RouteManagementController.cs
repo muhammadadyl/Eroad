@@ -1,6 +1,7 @@
 using Eroad.BFF.Gateway.Aggregators;
 using Eroad.RouteManagement.Contracts;
 using Google.Protobuf.WellKnownTypes;
+using Grpc.Core;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Eroad.BFF.Gateway.Controllers;
@@ -28,16 +29,8 @@ public class RouteManagementController : ControllerBase
     [HttpGet("overview")]
     public async Task<IActionResult> GetRouteOverview()
     {
-        try
-        {
-            var result = await _aggregator.GetRouteOverviewAsync();
-            return Ok(result);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error fetching route overview");
-            return StatusCode(500, new { Message = "An error occurred while fetching route overview" });
-        }
+        var result = await _aggregator.GetRouteOverviewAsync();
+        return Ok(result);
     }
 
     [HttpGet("{id}")]
@@ -87,60 +80,36 @@ public class RouteManagementController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateRoute([FromBody] CreateRouteRequest request)
     {
-        try
-        {
-            _logger.LogInformation("Creating new route from {Origin} to {Destination}", request.Origin, request.Destination);
-            var response = await _routeCommandClient.CreateRouteAsync(request);
-            return Ok(new { Message = response.Message });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error creating route");
-            return StatusCode(500, new { Message = "An error occurred while creating route" });
-        }
+        _logger.LogInformation("Creating new route from {Origin} to {Destination}", request.Origin, request.Destination);
+        var response = await _routeCommandClient.CreateRouteAsync(request);
+        return Ok(new { Message = response.Message });
     }
 
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateRoute(string id, [FromBody] UpdateRouteDto dto)
     {
-        try
+        _logger.LogInformation("Updating route: {RouteId}", id);
+        var request = new UpdateRouteRequest
         {
-            _logger.LogInformation("Updating route: {RouteId}", id);
-            var request = new UpdateRouteRequest
-            {
-                Id = id,
-                Origin = dto.Origin,
-                Destination = dto.Destination
-            };
-            var response = await _routeCommandClient.UpdateRouteAsync(request);
-            return Ok(new { Message = response.Message });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error updating route: {RouteId}", id);
-            return StatusCode(500, new { Message = "An error occurred while updating route" });
-        }
+            Id = id,
+            Origin = dto.Origin,
+            Destination = dto.Destination
+        };
+        var response = await _routeCommandClient.UpdateRouteAsync(request);
+        return Ok(new { Message = response.Message });
     }
 
     [HttpPatch("{id}/status")]
     public async Task<IActionResult> ChangeRouteStatus(string id, [FromBody] ChangeRouteStatusDto dto)
     {
-        try
+        _logger.LogInformation("Changing route status: {RouteId} to {Status}", id, dto.Status);
+        var request = new ChangeRouteStatusRequest
         {
-            _logger.LogInformation("Changing route status: {RouteId} to {Status}", id, dto.Status);
-            var request = new ChangeRouteStatusRequest
-            {
-                Id = id,
-                Status = dto.Status
-            };
-            var response = await _routeCommandClient.ChangeRouteStatusAsync(request);
-            return Ok(new { Message = response.Message });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error changing route status: {RouteId}", id);
-            return StatusCode(500, new { Message = "An error occurred while changing route status" });
-        }
+            Id = id,
+            Status = dto.Status
+        };
+        var response = await _routeCommandClient.ChangeRouteStatusAsync(request);
+        return Ok(new { Message = response.Message });
     }
 
     [HttpPost("{id}/checkpoints")]

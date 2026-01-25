@@ -1,5 +1,7 @@
+using Eroad.CQRS.Core.Handlers;
 using Eroad.FleetManagement.Command.API.Commands;
 using Eroad.FleetManagement.Command.API.Commands.Vehicle;
+using Eroad.FleetManagement.Command.Domain.Aggregates;
 using Eroad.FleetManagement.Contracts;
 using Grpc.Core;
 
@@ -8,11 +10,16 @@ namespace Eroad.FleetManagement.Command.API.Services.Grpc
     public class VehicleCommandGrpcService : VehicleCommand.VehicleCommandBase
     {
         private readonly IVehicleCommandHandler _commandHandler;
+        private readonly IEventSourcingHandler<VehicleAggregate> _eventSourcingHandler;
         private readonly ILogger<VehicleCommandGrpcService> _logger;
 
-        public VehicleCommandGrpcService(IVehicleCommandHandler commandHandler, ILogger<VehicleCommandGrpcService> logger)
+        public VehicleCommandGrpcService(
+            IVehicleCommandHandler commandHandler, 
+            IEventSourcingHandler<VehicleAggregate> eventSourcingHandler,
+            ILogger<VehicleCommandGrpcService> logger)
         {
             _commandHandler = commandHandler;
+            _eventSourcingHandler = eventSourcingHandler;
             _logger = logger;
         }
 
@@ -108,15 +115,35 @@ namespace Eroad.FleetManagement.Command.API.Services.Grpc
                     throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid vehicle status"));
                 }
 
+                // Get the current vehicle aggregate to retrieve its current status
+                var aggregate = await _eventSourcingHandler.GetByIdAsync(vehicleId);
+                if (aggregate == null)
+                {
+                    _logger.LogInformation("Vehicle with ID {VehicleId} not found", vehicleId);
+                    throw new RpcException(new Status(StatusCode.NotFound, $"Vehicle with ID {vehicleId} not found"));
+                }
+
+                // Check if the new status is the same as the current status
+                if (aggregate.Status == newStatus)
+                {
+                    _logger.LogInformation("Vehicle {VehicleId} is already in status {Status}. No change needed.", vehicleId, newStatus);
+                    return new ChangeVehicleStatusResponse
+                    {
+                        Message = $"Vehicle is already in {newStatus} status"
+                    };
+                }
+
                 var command = new ChangeVehicleStatusCommand
                 {
                     Id = vehicleId,
-                    OldStatus = FleetManagement.Common.VehicleStatus.Available,
+                    OldStatus = aggregate.Status,
                     NewStatus = newStatus,
                     Reason = string.Empty
                 };
 
                 await _commandHandler.HandleAsync(command);
+
+                _logger.LogInformation("Vehicle {VehicleId} status changed from {OldStatus} to {NewStatus}", vehicleId, aggregate.Status, newStatus);
 
                 return new ChangeVehicleStatusResponse
                 {
@@ -129,12 +156,12 @@ namespace Eroad.FleetManagement.Command.API.Services.Grpc
             }
             catch (InvalidOperationException ex)
             {
-                _logger.LogWarning(ex, "Invalid operation when changing vehicle status");
+                _logger.LogWarning("Invalid operation when changing vehicle status for vehicle {VehicleId}: {Message}", request.Id, ex.Message);
                 throw new RpcException(new Status(StatusCode.InvalidArgument, ex.Message));
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error changing vehicle status");
+                _logger.LogError(ex, "Error changing vehicle status for vehicle {VehicleId}", request.Id);
                 throw new RpcException(new Status(StatusCode.Internal, "An error occurred while changing vehicle status"));
             }
         }

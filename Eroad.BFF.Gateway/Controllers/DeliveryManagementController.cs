@@ -1,5 +1,6 @@
 using Eroad.BFF.Gateway.Aggregators;
 using Eroad.DeliveryTracking.Contracts;
+using Grpc.Core;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Eroad.BFF.Gateway.Controllers;
@@ -33,56 +34,22 @@ public class DeliveryManagementController : ControllerBase
     [HttpGet("{id}/context")]
     public async Task<IActionResult> GetDeliveryContext(Guid id)
     {
-        try
-        {
-            var result = await _deliveryContextAggregator.GetDeliveryContextAsync(id);
-            return Ok(result);
-        }
-        catch (InvalidOperationException ex)
-        {
-            _logger.LogWarning(ex, "Invalid operation while fetching delivery context for ID: {DeliveryId}", id);
-            return BadRequest(new { Message = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error fetching delivery context for ID: {DeliveryId}", id);
-            return StatusCode(500, new { Message = "An error occurred while fetching delivery context" });
-        }
+        var result = await _deliveryContextAggregator.GetDeliveryContextAsync(id);
+        return Ok(result);
     }
 
     [HttpGet("live-tracking")]
     public async Task<IActionResult> GetLiveTracking()
     {
-        try
-        {
-            var result = await _liveTrackingAggregator.GetLiveTrackingAsync();
-            return Ok(result);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error fetching live tracking data");
-            return StatusCode(500, new { Message = "An error occurred while fetching live tracking data" });
-        }
+        var result = await _liveTrackingAggregator.GetLiveTrackingAsync();
+        return Ok(result);
     }
 
     [HttpGet("{id}/completed-summary")]
     public async Task<IActionResult> GetCompletedSummary(Guid id)
     {
-        try
-        {
-            var result = await _completedDeliveryAggregator.GetCompletedSummaryAsync(id);
-            return Ok(result);
-        }
-        catch (InvalidOperationException ex)
-        {
-            _logger.LogWarning(ex, "Invalid operation while fetching completed summary for ID: {DeliveryId}", id);
-            return BadRequest(new { Message = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error fetching completed summary for ID: {DeliveryId}", id);
-            return StatusCode(500, new { Message = "An error occurred while fetching completed delivery summary" });
-        }
+        var result = await _completedDeliveryAggregator.GetCompletedSummaryAsync(id);
+        return Ok(result);
     }
 
     #endregion
@@ -92,38 +59,22 @@ public class DeliveryManagementController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateDelivery([FromBody] CreateDeliveryRequest request)
     {
-        try
-        {
-            _logger.LogInformation("Creating delivery for route: {RouteId}", request.RouteId);
-            var response = await _deliveryCommandClient.CreateDeliveryAsync(request);
-            return Ok(new { Message = response.Message, Id = response.Id });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error creating delivery");
-            return StatusCode(500, new { Message = "An error occurred while creating delivery" });
-        }
+        _logger.LogInformation("Creating delivery for route: {RouteId}", request.RouteId);
+        var response = await _deliveryCommandClient.CreateDeliveryAsync(request);
+        return Ok(new { Message = response.Message, Id = response.Id });
     }
 
     [HttpPatch("{id}/status")]
     public async Task<IActionResult> UpdateDeliveryStatus(string id, [FromBody] UpdateStatusDto dto)
     {
-        try
+        _logger.LogInformation("Updating delivery status: {DeliveryId} to {Status}", id, dto.Status);
+        var request = new UpdateDeliveryStatusRequest
         {
-            _logger.LogInformation("Updating delivery status: {DeliveryId} to {Status}", id, dto.Status);
-            var request = new UpdateDeliveryStatusRequest
-            {
-                Id = id,
-                Status = dto.Status
-            };
-            var response = await _deliveryCommandClient.UpdateDeliveryStatusAsync(request);
-            return Ok(new { Message = response.Message });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error updating delivery status: {DeliveryId}", id);
-            return StatusCode(500, new { Message = "An error occurred while updating delivery status" });
-        }
+            Id = id,
+            Status = dto.Status
+        };
+        var response = await _deliveryCommandClient.UpdateDeliveryStatusAsync(request);
+        return Ok(new { Message = response.Message });
     }
 
     [HttpPatch("{id}/checkpoint")]

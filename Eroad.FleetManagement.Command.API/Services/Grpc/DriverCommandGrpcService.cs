@@ -1,6 +1,8 @@
+using Eroad.CQRS.Core.Handlers;
 using Eroad.FleetManagement.Command.API.Commands;
 using Eroad.FleetManagement.Command.API.Commands.Driver;
 using Eroad.FleetManagement.Command.API.Commands.Vehicle;
+using Eroad.FleetManagement.Command.Domain.Aggregates;
 using Eroad.FleetManagement.Contracts;
 using Grpc.Core;
 
@@ -10,12 +12,18 @@ namespace Eroad.FleetManagement.Command.API.Services.Grpc
     {
         private readonly IDriverCommandHandler _commandHandler;
         private readonly IVehicleCommandHandler _vehicleCommandHandler;
+        private readonly IEventSourcingHandler<DriverAggregate> _eventSourcingHandler;
         private readonly ILogger<DriverCommandGrpcService> _logger;
 
-        public DriverCommandGrpcService(IDriverCommandHandler commandHandler, IVehicleCommandHandler vehicleCommandHandler, ILogger<DriverCommandGrpcService> logger)
+        public DriverCommandGrpcService(
+            IDriverCommandHandler commandHandler, 
+            IVehicleCommandHandler vehicleCommandHandler, 
+            IEventSourcingHandler<DriverAggregate> eventSourcingHandler,
+            ILogger<DriverCommandGrpcService> logger)
         {
             _commandHandler = commandHandler;
             _vehicleCommandHandler = vehicleCommandHandler;
+            _eventSourcingHandler = eventSourcingHandler;
             _logger = logger;
         }
 
@@ -111,14 +119,34 @@ namespace Eroad.FleetManagement.Command.API.Services.Grpc
                     throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid driver status"));
                 }
 
+                // Get the current driver aggregate to retrieve its current status
+                var aggregate = await _eventSourcingHandler.GetByIdAsync(driverId);
+                if (aggregate == null)
+                {
+                    _logger.LogInformation("Driver with ID {DriverId} not found", driverId);
+                    throw new RpcException(new Status(StatusCode.NotFound, $"Driver with ID {driverId} not found"));
+                }
+
+                // Check if the new status is the same as the current status
+                if (aggregate.Status == newStatus)
+                {
+                    _logger.LogInformation("Driver {DriverId} is already in status {Status}. No change needed.", driverId, newStatus);
+                    return new ChangeDriverStatusResponse
+                    {
+                        Message = $"Driver is already in {newStatus} status"
+                    };
+                }
+
                 var command = new ChangeDriverStatusCommand
                 {
                     Id = driverId,
-                    OldStatus = FleetManagement.Common.DriverStatus.Available,
+                    OldStatus = aggregate.Status,
                     NewStatus = newStatus
                 };
 
                 await _commandHandler.HandleAsync(command);
+
+                _logger.LogInformation("Driver {DriverId} status changed from {OldStatus} to {NewStatus}", driverId, aggregate.Status, newStatus);
 
                 return new ChangeDriverStatusResponse
                 {
@@ -131,12 +159,12 @@ namespace Eroad.FleetManagement.Command.API.Services.Grpc
             }
             catch (InvalidOperationException ex)
             {
-                _logger.LogWarning(ex, "Invalid operation when changing driver status");
+                _logger.LogWarning("Invalid operation when changing driver status for driver {DriverId}: {Message}", request.Id, ex.Message);
                 throw new RpcException(new Status(StatusCode.InvalidArgument, ex.Message));
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error changing driver status");
+                _logger.LogError(ex, "Error changing driver status for driver {DriverId}", request.Id);
                 throw new RpcException(new Status(StatusCode.Internal, "An error occurred while changing driver status"));
             }
         }
