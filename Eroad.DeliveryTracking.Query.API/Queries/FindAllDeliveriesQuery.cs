@@ -1,8 +1,9 @@
 using Eroad.CQRS.Core.Queries;
+using Eroad.DeliveryTracking.Query.Domain.Entities;
 
 namespace Eroad.DeliveryTracking.Query.API.Queries
 {
-    public class FindAllDeliveriesQuery : BaseQuery
+    public class FindAllDeliveriesQuery : BaseQuery<DeliveryEntity>
     {
     }
 }

@@ -115,127 +115,87 @@ public class RouteManagementController : ControllerBase
     [HttpPost("{id}/checkpoints")]
     public async Task<IActionResult> AddCheckpoint(string id, [FromBody] AddCheckpointDto dto)
     {
-        try
+        _logger.LogInformation("Adding checkpoint to route: {RouteId}", id);
+        var request = new AddCheckpointRequest
         {
-            _logger.LogInformation("Adding checkpoint to route: {RouteId}", id);
-            var request = new AddCheckpointRequest
-            {
-                Id = id,
-                Sequence = dto.Sequence,
-                Location = dto.Location,
-                ExpectedTime = Timestamp.FromDateTime(dto.ExpectedTime.ToUniversalTime())
-            };
-            var response = await _routeCommandClient.AddCheckpointAsync(request);
-            return Ok(new { Message = response.Message });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error adding checkpoint to route: {RouteId}", id);
-            return StatusCode(500, new { Message = "An error occurred while adding checkpoint" });
-        }
+            Id = id,
+            Sequence = dto.Sequence,
+            Location = dto.Location,
+            ExpectedTime = Timestamp.FromDateTime(dto.ExpectedTime.ToUniversalTime())
+        };
+        var response = await _routeCommandClient.AddCheckpointAsync(request);
+        return Ok(new { Message = response.Message });
     }
 
     [HttpPatch("{id}/checkpoints/{sequence}")]
     public async Task<IActionResult> UpdateCheckpoint(string id, int sequence, [FromBody] UpdateCheckpointDto dto)
     {
-        try
+        _logger.LogInformation("Updating checkpoint {Sequence} on route: {RouteId}", sequence, id);
+        var request = new UpdateCheckpointRequest
         {
-            _logger.LogInformation("Updating checkpoint {Sequence} on route: {RouteId}", sequence, id);
-            var request = new UpdateCheckpointRequest
-            {
-                Id = id,
-                Sequence = sequence,
-                ActualTime = Timestamp.FromDateTime(dto.ActualTime.ToUniversalTime())
-            };
-            var response = await _routeCommandClient.UpdateCheckpointAsync(request);
-            return Ok(new { Message = response.Message });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error updating checkpoint on route: {RouteId}", id);
-            return StatusCode(500, new { Message = "An error occurred while updating checkpoint" });
-        }
+            Id = id,
+            Sequence = sequence,
+            ActualTime = Timestamp.FromDateTime(dto.ActualTime.ToUniversalTime())
+        };
+        var response = await _routeCommandClient.UpdateCheckpointAsync(request);
+        return Ok(new { Message = response.Message });
     }
 
     [HttpPost("{id}/assign-driver")]
     public async Task<IActionResult> AssignDriverToRoute(string id, [FromBody] AssignDriverDto dto)
     {
-        try
+        _logger.LogInformation("Assigning driver {DriverId} to route {RouteId}", dto.DriverId, id);
+        var request = new AssignDriverToRouteRequest
         {
-            _logger.LogInformation("Assigning driver {DriverId} to route {RouteId}", dto.DriverId, id);
-            var request = new AssignDriverToRouteRequest
-            {
-                Id = id,
-                DriverId = dto.DriverId
-            };
-            var response = await _routeCommandClient.AssignDriverToRouteAsync(request);
-            return Ok(new { Message = response.Message });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error assigning driver to route: {RouteId}", id);
-            return StatusCode(500, new { Message = "An error occurred while assigning driver to route" });
-        }
+            Id = id,
+            DriverId = dto.DriverId
+        };
+        var response = await _routeCommandClient.AssignDriverToRouteAsync(request);
+        return Ok(new { Message = response.Message });
     }
 
     [HttpPost("{id}/assign-vehicle")]
     public async Task<IActionResult> AssignVehicleToRoute(string id, [FromBody] AssignVehicleToRouteDto dto)
     {
-        try
+        _logger.LogInformation("Assigning vehicle {VehicleId} to route {RouteId}", dto.VehicleId, id);
+        var request = new AssignVehicleToRouteRequest
         {
-            _logger.LogInformation("Assigning vehicle {VehicleId} to route {RouteId}", dto.VehicleId, id);
-            var request = new AssignVehicleToRouteRequest
-            {
-                Id = id,
-                VehicleId = dto.VehicleId
-            };
-            var response = await _routeCommandClient.AssignVehicleToRouteAsync(request);
-            return Ok(new { Message = response.Message });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error assigning vehicle to route: {RouteId}", id);
-            return StatusCode(500, new { Message = "An error occurred while assigning vehicle to route" });
-        }
+            Id = id,
+            VehicleId = dto.VehicleId
+        };
+        var response = await _routeCommandClient.AssignVehicleToRouteAsync(request);
+        return Ok(new { Message = response.Message });
     }
 
     [HttpPost("{id}/assign-resources")]
     public async Task<IActionResult> AssignResourcesToRoute(string id, [FromBody] AssignResourcesDto dto)
     {
-        try
+        _logger.LogInformation("Assigning driver {DriverId} and vehicle {VehicleId} to route {RouteId}", 
+            dto.DriverId, dto.VehicleId, id);
+
+        // Assign both driver and vehicle in sequence
+        // The backend services will enforce that a driver can only be assigned to one vehicle per route
+        var driverRequest = new AssignDriverToRouteRequest
         {
-            _logger.LogInformation("Assigning driver {DriverId} and vehicle {VehicleId} to route {RouteId}", 
-                dto.DriverId, dto.VehicleId, id);
-
-            // Assign both driver and vehicle in sequence
-            // The backend services will enforce that a driver can only be assigned to one vehicle per route
-            var driverRequest = new AssignDriverToRouteRequest
-            {
-                Id = id,
-                DriverId = dto.DriverId
-            };
-            
-            var vehicleRequest = new AssignVehicleToRouteRequest
-            {
-                Id = id,
-                VehicleId = dto.VehicleId
-            };
-
-            // Execute assignments - if either fails, the transaction should be rolled back by the service
-            var driverResponse = await _routeCommandClient.AssignDriverToRouteAsync(driverRequest);
-            var vehicleResponse = await _routeCommandClient.AssignVehicleToRouteAsync(vehicleRequest);
-
-            return Ok(new { 
-                Message = "Driver and vehicle assigned to route successfully",
-                DriverAssignment = driverResponse.Message,
-                VehicleAssignment = vehicleResponse.Message
-            });
-        }
-        catch (Exception ex)
+            Id = id,
+            DriverId = dto.DriverId
+        };
+        
+        var vehicleRequest = new AssignVehicleToRouteRequest
         {
-            _logger.LogError(ex, "Error assigning resources to route: {RouteId}", id);
-            return StatusCode(500, new { Message = "An error occurred while assigning resources to route. Ensure driver and vehicle are available and not currently assigned." });
-        }
+            Id = id,
+            VehicleId = dto.VehicleId
+        };
+
+        // Execute assignments - if either fails, the transaction should be rolled back by the service
+        var driverResponse = await _routeCommandClient.AssignDriverToRouteAsync(driverRequest);
+        var vehicleResponse = await _routeCommandClient.AssignVehicleToRouteAsync(vehicleRequest);
+
+        return Ok(new { 
+            Message = "Driver and vehicle assigned to route successfully",
+            DriverAssignment = driverResponse.Message,
+            VehicleAssignment = vehicleResponse.Message
+        });
     }
 
     #endregion

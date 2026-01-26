@@ -1,18 +1,20 @@
 using Eroad.DeliveryTracking.Contracts;
+using Eroad.DeliveryTracking.Query.API.Queries;
 using Eroad.DeliveryTracking.Query.Domain.Repositories;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
+using MediatR;
 
 namespace Eroad.DeliveryTracking.Query.API.Services.Grpc;
 
 public class DeliveryLookupGrpcService : DeliveryLookup.DeliveryLookupBase
 {
-    private readonly IDeliveryRepository _repository;
+    private readonly IMediator _mediator;
     private readonly ILogger<DeliveryLookupGrpcService> _logger;
 
-    public DeliveryLookupGrpcService(IDeliveryRepository repository, ILogger<DeliveryLookupGrpcService> logger)
+    public DeliveryLookupGrpcService(IMediator mediator, ILogger<DeliveryLookupGrpcService> logger)
     {
-        _repository = repository;
+        _mediator = mediator;
         _logger = logger;
     }
 
@@ -20,8 +22,8 @@ public class DeliveryLookupGrpcService : DeliveryLookup.DeliveryLookupBase
     {
         try
         {
-            var delivery = await _repository.GetByIdAsync(Guid.Parse(request.Id));
-            if (delivery == null)
+            var deliveries = await _mediator.Send(new FindDeliveryByIdQuery { Id = Guid.Parse(request.Id) }, context.CancellationToken);
+            if (deliveries == null || deliveries.Count == 0)
             {
                 throw new RpcException(new Status(StatusCode.NotFound, $"Delivery {request.Id} not found"));
             }
@@ -29,7 +31,7 @@ public class DeliveryLookupGrpcService : DeliveryLookup.DeliveryLookupBase
             return new DeliveryLookupResponse
             {
                 Message = "Delivery retrieved successfully",
-                Deliveries = { MapToProto(delivery) }
+                Deliveries = { deliveries.Select(MapToProto) }
             };
         }
         catch (FormatException)
@@ -51,7 +53,7 @@ public class DeliveryLookupGrpcService : DeliveryLookup.DeliveryLookupBase
     {
         try
         {
-            var deliveries = await _repository.GetByStatusAsync(request.Status);
+            var deliveries = await _mediator.Send(new FindDeliveriesByStatusQuery { Status = request.Status }, context.CancellationToken);
             return new DeliveryLookupResponse
             {
                 Message = "Deliveries retrieved successfully",
@@ -69,7 +71,7 @@ public class DeliveryLookupGrpcService : DeliveryLookup.DeliveryLookupBase
     {
         try
         {
-            var deliveries = await _repository.GetByRouteIdAsync(Guid.Parse(request.RouteId));
+            var deliveries = await _mediator.Send(new FindDeliveriesByRouteIdQuery { RouteId = Guid.Parse(request.RouteId) }, context.CancellationToken);
             return new DeliveryLookupResponse
             {
                 Message = "Deliveries retrieved successfully",
@@ -91,7 +93,7 @@ public class DeliveryLookupGrpcService : DeliveryLookup.DeliveryLookupBase
     {
         try
         {
-            var deliveries = await _repository.GetAllAsync();
+            var deliveries = await _mediator.Send(new FindAllDeliveriesQuery(), context.CancellationToken);
             return new DeliveryLookupResponse
             {
                 Message = "Deliveries retrieved successfully",

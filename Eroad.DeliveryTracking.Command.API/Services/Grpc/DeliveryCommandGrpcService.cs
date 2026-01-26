@@ -4,21 +4,22 @@ using Eroad.DeliveryTracking.Command.Domain.Aggregates;
 using Eroad.DeliveryTracking.Contracts;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
+using MediatR;
 
 namespace Eroad.DeliveryTracking.Command.API.Services.Grpc
 {
     public class DeliveryCommandGrpcService : DeliveryCommand.DeliveryCommandBase
     {
-        private readonly IDeliveryCommandHandler _commandHandler;
+        private readonly IMediator _mediator;
         private readonly IEventSourcingHandler<DeliveryAggregate> _eventSourcingHandler;
         private readonly ILogger<DeliveryCommandGrpcService> _logger;
 
         public DeliveryCommandGrpcService(
-            IDeliveryCommandHandler commandHandler, 
+            IMediator mediator, 
             IEventSourcingHandler<DeliveryAggregate> eventSourcingHandler,
             ILogger<DeliveryCommandGrpcService> logger)
         {
-            _commandHandler = commandHandler;
+            _mediator = mediator;
             _eventSourcingHandler = eventSourcingHandler;
             _logger = logger;
         }
@@ -43,7 +44,7 @@ namespace Eroad.DeliveryTracking.Command.API.Services.Grpc
                     RouteId = routeId
                 };
 
-                await _commandHandler.HandleAsync(command);
+                await _mediator.Send(command, context.CancellationToken);
 
                 return new CreateDeliveryResponse
                 {
@@ -106,7 +107,7 @@ namespace Eroad.DeliveryTracking.Command.API.Services.Grpc
                     NewStatus = newStatus
                 };
 
-                await _commandHandler.HandleAsync(command);
+                await _mediator.Send(command, context.CancellationToken);
 
                 _logger.LogInformation("Delivery {DeliveryId} status changed from {OldStatus} to {NewStatus}", deliveryId, aggregate.Status, newStatus);
 
@@ -146,7 +147,7 @@ namespace Eroad.DeliveryTracking.Command.API.Services.Grpc
                     Checkpoint = request.Checkpoint
                 };
 
-                await _commandHandler.HandleAsync(command);
+                await _mediator.Send(command, context.CancellationToken);
 
                 return new UpdateCurrentCheckpointResponse
                 {
@@ -191,7 +192,7 @@ namespace Eroad.DeliveryTracking.Command.API.Services.Grpc
                     }
                 };
 
-                await _commandHandler.HandleAsync(command);
+                await _mediator.Send(command, context.CancellationToken);
 
                 return new ReportIncidentResponse
                 {
@@ -234,7 +235,7 @@ namespace Eroad.DeliveryTracking.Command.API.Services.Grpc
                     IncidentId = incidentId
                 };
 
-                await _commandHandler.HandleAsync(command);
+                await _mediator.Send(command, context.CancellationToken);
 
                 return new ResolveIncidentResponse
                 {
@@ -273,7 +274,7 @@ namespace Eroad.DeliveryTracking.Command.API.Services.Grpc
                     ReceiverName = request.ReceiverName
                 };
 
-                await _commandHandler.HandleAsync(command);
+                await _mediator.Send(command, context.CancellationToken);
 
                 return new CaptureProofOfDeliveryResponse
                 {

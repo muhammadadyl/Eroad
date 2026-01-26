@@ -1,8 +1,9 @@
 using Eroad.CQRS.Core.Queries;
+using Eroad.FleetManagement.Query.Domain.Entities;
 
 namespace Eroad.FleetManagement.Query.API.Queries
 {
-    public class FindAllDriversQuery : BaseQuery
+    public class FindAllDriversQuery : BaseQuery<DriverEntity>
     {
     }
 }

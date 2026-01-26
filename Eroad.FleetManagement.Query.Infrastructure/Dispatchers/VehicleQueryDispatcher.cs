@@ -6,21 +6,21 @@ namespace Eroad.FleetManagement.Query.Infrastructure.Dispatchers
 {
     public class VehicleQueryDispatcher : IQueryDispatcher<VehicleEntity>
     {
-        private readonly Dictionary<Type, Func<BaseQuery, Task<List<VehicleEntity>>>> _vehicleHandlers = new();
+        private readonly Dictionary<Type, Func<BaseQuery<VehicleEntity>, Task<List<VehicleEntity>>>> _handlers = new();
 
-        public void RegisterHandler<TQuery>(Func<TQuery, Task<List<VehicleEntity>>> handler) where TQuery : BaseQuery
+        public void RegisterHandler<TQuery>(Func<TQuery, Task<List<VehicleEntity>>> handler) where TQuery : BaseQuery<VehicleEntity>
         {
-            if (_vehicleHandlers.ContainsKey(typeof(TQuery)))
+            if (_handlers.ContainsKey(typeof(TQuery)))
             {
                 throw new IndexOutOfRangeException("You cannot register the same query handler twice!");
             }
 
-            _vehicleHandlers.Add(typeof(TQuery), x => handler((TQuery)x));
+            _handlers.Add(typeof(TQuery), x => handler((TQuery)x));
         }
 
-        public async Task<List<VehicleEntity>> SendAsync(BaseQuery query)
+        public async Task<List<VehicleEntity>> SendAsync(BaseQuery<VehicleEntity> query)
         {
-            if (_vehicleHandlers.TryGetValue(query.GetType(), out Func<BaseQuery, Task<List<VehicleEntity>>> handler))
+            if (_handlers.TryGetValue(query.GetType(), out Func<BaseQuery<VehicleEntity>, Task<List<VehicleEntity>>> handler))
             {
                 return await handler(query);
             }

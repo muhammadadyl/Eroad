@@ -8,7 +8,6 @@ using Eroad.DeliveryTracking.Query.Domain.Repositories;
 using Eroad.DeliveryTracking.Query.Infrastructure.Consumers;
 using Eroad.DeliveryTracking.Query.Infrastructure.Converters;
 using Eroad.DeliveryTracking.Query.Infrastructure.DataAccess;
-using Eroad.DeliveryTracking.Query.Infrastructure.Dispatchers;
 using Eroad.DeliveryTracking.Query.Infrastructure.Handlers;
 using Eroad.DeliveryTracking.Query.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -55,25 +54,8 @@ builder.Services.AddScoped<IIncidentRepository, IncidentRepository>();
 // Register event handler
 builder.Services.AddScoped<IEventHandler, EventHandler>();
 
-// Register query handler
-builder.Services.AddScoped<IQueryHandler, QueryHandler>();
-
-// Register Query Handler
-var queryHandler = builder.Services.BuildServiceProvider().GetRequiredService<IQueryHandler>();
-
-// Register query dispatchers
-var deliveryQueryDispatcher = new DeliveryQueryDispatcher();
-deliveryQueryDispatcher.RegisterHandler<FindAllDeliveriesQuery>(queryHandler.HandleAsync);
-deliveryQueryDispatcher.RegisterHandler<FindDeliveryByIdQuery>(queryHandler.HandleAsync);
-deliveryQueryDispatcher.RegisterHandler<FindDeliveriesByStatusQuery>(queryHandler.HandleAsync);
-deliveryQueryDispatcher.RegisterHandler<FindDeliveriesByRouteIdQuery>(queryHandler.HandleAsync);
-
-var incidentQueryDispatcher = new IncidentQueryDispatcher();
-incidentQueryDispatcher.RegisterHandler<FindIncidentsByDeliveryIdQuery>(queryHandler.HandleAsync);
-incidentQueryDispatcher.RegisterHandler<FindAllUnresolvedIncidentsQuery>(queryHandler.HandleAsync);
-
-builder.Services.AddSingleton<IQueryDispatcher<DeliveryEntity>>(deliveryQueryDispatcher);
-builder.Services.AddSingleton<IQueryDispatcher<IncidentEntity>>(incidentQueryDispatcher);
+// Add MediatR
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
 
 // Register Kafka consumer as hosted service
 builder.Services.AddHostedService<ConsumerHostedService>();
