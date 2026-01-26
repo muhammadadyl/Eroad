@@ -38,6 +38,7 @@ namespace Eroad.RouteManagement.Query.Infrastructure.Converters
                 nameof(RouteUpdatedEvent) => JsonSerializer.Deserialize<RouteUpdatedEvent>(json, newOptions),
                 nameof(RouteStatusChangedEvent) => JsonSerializer.Deserialize<RouteStatusChangedEvent>(json, newOptions),
                 nameof(CheckpointAddedEvent) => JsonSerializer.Deserialize<CheckpointAddedEvent>(json, newOptions),
+                nameof(CheckpointUpdatedEvent) => JsonSerializer.Deserialize<CheckpointUpdatedEvent>(json, newOptions),
                 _ => throw new JsonException($"{typeDiscriminator} is not supported yet!")
             };
         }

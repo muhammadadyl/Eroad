@@ -149,4 +149,18 @@ public class RouteManagementService : IRouteManagementService
         var response = await _routeCommandClient.AddCheckpointAsync(request);
         return new { Message = response.Message };
     }
+
+    public async Task<object> UpdateCheckpointAsync(string id, int sequence, string location, DateTime expectedTime)
+    {
+        _logger.LogInformation("Updating checkpoint for route: {RouteId}, Sequence: {Sequence}", id, sequence);
+        var request = new UpdateCheckpointRequest
+        {
+            Id = id,
+            Sequence = sequence,
+            Location = location,
+            ExpectedTime = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(expectedTime.ToUniversalTime())
+        };
+        var response = await _routeCommandClient.UpdateCheckpointAsync(request);
+        return new { Message = response.Message };
+    }
 }

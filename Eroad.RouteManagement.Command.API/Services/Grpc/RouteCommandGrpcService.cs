@@ -210,5 +210,50 @@ namespace Eroad.RouteManagement.Command.API.Services.Grpc
                 throw new RpcException(new Status(StatusCode.Internal, "An error occurred while adding checkpoint"));
             }
         }
+
+        public override async Task<UpdateCheckpointResponse> UpdateCheckpoint(UpdateCheckpointRequest request, ServerCallContext context)
+        {
+            try
+            {
+                if (!Guid.TryParse(request.Id, out var routeId))
+                {
+                    throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid route ID format"));
+                }
+
+                var checkpoint = new RouteManagement.Common.Checkpoint
+                {
+                    Sequence = request.Sequence,
+                    Location = request.Location,
+                    ExpectedTime = request.ExpectedTime.ToDateTime()
+                };
+
+                var command = new UpdateCheckpointCommand
+                {
+                    Id = routeId,
+                    Checkpoint = checkpoint
+                };
+
+                await _mediator.Send(command, context.CancellationToken);
+
+                return new UpdateCheckpointResponse
+                {
+                    Message = "Checkpoint updated successfully"
+                };
+            }
+            catch (RpcException)
+            {
+                throw;
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex, "Invalid operation when updating checkpoint");
+                throw new RpcException(new Status(StatusCode.InvalidArgument, ex.Message));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating checkpoint");
+                throw new RpcException(new Status(StatusCode.Internal, "An error occurred while updating checkpoint"));
+            }
+        }
     }
 }

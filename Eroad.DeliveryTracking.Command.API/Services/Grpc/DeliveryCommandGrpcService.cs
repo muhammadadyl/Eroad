@@ -2,7 +2,6 @@ using Eroad.CQRS.Core.Handlers;
 using Eroad.DeliveryTracking.Command.API.Commands.Delivery;
 using Eroad.DeliveryTracking.Command.Domain.Aggregates;
 using Eroad.DeliveryTracking.Contracts;
-using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using MediatR;
 

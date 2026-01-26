@@ -21,4 +21,8 @@ namespace Eroad.RouteManagement.Common
     public record CheckpointAddedEvent(
         Checkpoint Checkpoint
         ) : DomainEvent(nameof(CheckpointAddedEvent));
+
+    public record CheckpointUpdatedEvent(
+        Checkpoint Checkpoint
+        ) : DomainEvent(nameof(CheckpointUpdatedEvent));
 }

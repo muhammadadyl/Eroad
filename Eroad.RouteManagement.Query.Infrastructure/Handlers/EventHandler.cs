@@ -66,5 +66,17 @@ namespace Eroad.RouteManagement.Query.Infrastructure.Handlers
 
             await _checkpointRepository.CreateAsync(checkpoint);
         }
+
+        public async Task On(CheckpointUpdatedEvent @event)
+        {
+            var checkpoint = await _checkpointRepository.GetByIdAsync(@event.Id, @event.Checkpoint.Sequence);
+
+            if (checkpoint == null) return;
+
+            checkpoint.Location = @event.Checkpoint.Location;
+            checkpoint.ExpectedTime = @event.Checkpoint.ExpectedTime;
+
+            await _checkpointRepository.UpdateAsync(checkpoint);
+        }
     }
 }

@@ -67,5 +67,12 @@ public class RouteManagementController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPut("{id}/checkpoints")]
+    public async Task<IActionResult> UpdateCheckpoint(string id, [FromBody] UpdateCheckpointModel dto)
+    {
+        var result = await _aggregator.UpdateCheckpointAsync(id, dto.Sequence, dto.Location, dto.ExpectedTime);
+        return Ok(result);
+    }
+
     #endregion
 }

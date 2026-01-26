@@ -90,5 +90,33 @@ namespace Eroad.RouteManagement.Command.Domain.Aggregates
             _id = @event.Id;
             _checkpoints.Add(@event.Checkpoint);
         }
+
+        public void UpdateCheckpoint(Checkpoint checkpoint)
+        {
+            if (checkpoint == null)
+                throw new ArgumentNullException(nameof(checkpoint));
+            if (string.IsNullOrWhiteSpace(checkpoint.Location))
+                throw new ArgumentException("Checkpoint location cannot be empty");
+
+            var existingCheckpoint = _checkpoints.FirstOrDefault(c => c.Sequence == checkpoint.Sequence);
+            if (existingCheckpoint == null)
+                throw new InvalidOperationException($"Checkpoint with sequence {checkpoint.Sequence} does not exist");
+
+            if (_routeStatus != RouteStatus.Planning)
+                throw new InvalidOperationException("Checkpoints can only be updated when the route is in Planning status");
+
+            RaiseEvent(new CheckpointUpdatedEvent(checkpoint) { Id = _id });
+        }
+
+        public void Apply(CheckpointUpdatedEvent @event)
+        {
+            _id = @event.Id;
+            var existingCheckpoint = _checkpoints.FirstOrDefault(c => c.Sequence == @event.Checkpoint.Sequence);
+            if (existingCheckpoint != null)
+            {
+                _checkpoints.Remove(existingCheckpoint);
+                _checkpoints.Add(@event.Checkpoint);
+            }
+        }
     }
 }

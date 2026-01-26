@@ -13,4 +13,5 @@ public interface IRouteManagementService
     Task<object> UpdateRouteAsync(string id, string origin, string destination);
     Task<object> ChangeRouteStatusAsync(string id, string status);
     Task<object> AddCheckpointAsync(string id, int sequence, string location, DateTime expectedTime);
+    Task<object> UpdateCheckpointAsync(string id, int sequence, string location, DateTime expectedTime);
 }
