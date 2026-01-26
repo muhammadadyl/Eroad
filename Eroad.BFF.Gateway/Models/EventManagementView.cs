@@ -41,8 +41,6 @@ public class DeliveryContext
     public string? CurrentCheckpoint { get; set; }
     public string RouteOrigin { get; set; } = string.Empty;
     public string RouteDestination { get; set; } = string.Empty;
-    public string? DriverName { get; set; }
-    public string? VehicleRegistration { get; set; }
 }
 
 public class IncidentTimelineView

@@ -9,7 +9,5 @@ public class CompletedDeliverySummaryView
     public string? SignatureUrl { get; set; }
     public string? ReceiverName { get; set; }
     public double DurationMinutes { get; set; }
-    public string? DriverName { get; set; }
-    public string? VehicleRegistration { get; set; }
     public List<IncidentInfo> Incidents { get; set; } = new();
 }

@@ -62,30 +62,6 @@ public class CompletedDeliveryAggregator
             throw new InvalidOperationException($"Route with ID {delivery.RouteId} not found");
         }
 
-        // Fetch driver and vehicle in parallel
-        DriverLookupResponse? driverResponse = null;
-        VehicleLookupResponse? vehicleResponse = null;
-
-        var tasks = new List<Task>();
-        
-        if (!string.IsNullOrEmpty(route.AssignedDriverId))
-        {
-            tasks.Add(Task.Run(async () => driverResponse = await _driverClient.GetDriverByIdAsync(new GetDriverByIdRequest { Id = route.AssignedDriverId })));
-        }
-
-        if (!string.IsNullOrEmpty(route.AssignedVehicleId))
-        {
-            tasks.Add(Task.Run(async () => vehicleResponse = await _vehicleClient.GetVehicleByIdAsync(new GetVehicleByIdRequest { Id = route.AssignedVehicleId })));
-        }
-
-        if (tasks.Any())
-        {
-            await Task.WhenAll(tasks);
-        }
-
-        var driver = driverResponse?.Drivers?.FirstOrDefault();
-        var vehicle = vehicleResponse?.Vehicles?.FirstOrDefault();
-
         // Calculate duration
         var deliveredAt = delivery.DeliveredAt.ToDateTime();
         var createdAt = delivery.CreatedAt.ToDateTime();
@@ -101,8 +77,6 @@ public class CompletedDeliveryAggregator
             SignatureUrl = delivery.SignatureUrl,
             ReceiverName = delivery.ReceiverName,
             DurationMinutes = Math.Round(durationMinutes, 2),
-            DriverName = driver?.Name,
-            VehicleRegistration = vehicle?.Registration,
             Incidents = delivery.Incidents.Select(i => new IncidentInfo
             {
                 Id = Guid.Parse(i.Id),

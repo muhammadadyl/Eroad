@@ -51,27 +51,6 @@ public class DeliveryContextAggregator
             throw new InvalidOperationException($"Route with ID {delivery.RouteId} not found");
         }
 
-        // Fetch driver and vehicle in parallel
-        DriverLookupResponse? driverResponse = null;
-        VehicleLookupResponse? vehicleResponse = null;
-
-        var tasks = new List<Task>();
-        
-        if (!string.IsNullOrEmpty(route.AssignedDriverId))
-        {
-            tasks.Add(Task.Run(async () => driverResponse = await _driverClient.GetDriverByIdAsync(new GetDriverByIdRequest { Id = route.AssignedDriverId })));
-        }
-
-        if (!string.IsNullOrEmpty(route.AssignedVehicleId))
-        {
-            tasks.Add(Task.Run(async () => vehicleResponse = await _vehicleClient.GetVehicleByIdAsync(new GetVehicleByIdRequest { Id = route.AssignedVehicleId })));
-        }
-
-        if (tasks.Any())
-        {
-            await Task.WhenAll(tasks);
-        }
-
         // Map to view model
         return new DeliveryContextView
         {
@@ -86,30 +65,11 @@ public class DeliveryContextAggregator
                 Destination = route.Destination,
                 Status = route.Status
             },
-            Driver = driverResponse?.Drivers?.FirstOrDefault() != null
-                ? new DriverInfo
-                {
-                    DriverId = Guid.Parse(driverResponse.Drivers.First().Id),
-                    Name = driverResponse.Drivers.First().Name,
-                    DriverLicense = driverResponse.Drivers.First().DriverLicense,
-                    Status = driverResponse.Drivers.First().Status
-                }
-                : null,
-            Vehicle = vehicleResponse?.Vehicles?.FirstOrDefault() != null
-                ? new VehicleInfo
-                {
-                    VehicleId = Guid.Parse(vehicleResponse.Vehicles.First().Id),
-                    Registration = vehicleResponse.Vehicles.First().Registration,
-                    VehicleType = vehicleResponse.Vehicles.First().VehicleType,
-                    Status = vehicleResponse.Vehicles.First().Status
-                }
-                : null,
             Checkpoints = route.Checkpoints.Select(c => new CheckpointInfo
             {
                 Sequence = c.Sequence,
                 Location = c.Location,
-                ExpectedTime = c.ExpectedTime.ToDateTime(),
-                ActualTime = c.ActualTime?.ToDateTime()
+                ExpectedTime = c.ExpectedTime.ToDateTime()
             }).OrderBy(c => c.Sequence).ToList(),
             Incidents = delivery.Incidents.Select(i => new IncidentInfo
             {

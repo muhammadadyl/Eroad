@@ -8,27 +8,23 @@ namespace Eroad.RouteManagement.Command.Domain.Aggregates
         private string _origin;
         private string _destination;
         private List<Checkpoint> _checkpoints = new();
-        private Guid _assignedDriverId;
-        private Guid _assignedVehicleId;
         private RouteStatus _routeStatus;
 
         public string Origin => _origin;
         public string Destination => _destination;
         public IReadOnlyList<Checkpoint> Checkpoints => _checkpoints.AsReadOnly();
-        public Guid AssignedDriverId => _assignedDriverId;
-        public Guid AssignedVehicleId => _assignedVehicleId;
         public RouteStatus Status => _routeStatus;
 
         public RouteAggregate() { }
 
-        public RouteAggregate(Guid routeId, string origin, string destination, Guid assignedDriverId, Guid assignedVehicleId)
+        public RouteAggregate(Guid routeId, string origin, string destination)
         {
             if (string.IsNullOrWhiteSpace(origin))
                 throw new ArgumentException("Origin cannot be empty", nameof(origin));
             if (string.IsNullOrWhiteSpace(destination))
                 throw new ArgumentException("Destination cannot be empty", nameof(destination));
 
-            RaiseEvent(new RouteCreatedEvent(origin, destination, assignedDriverId, assignedVehicleId)
+            RaiseEvent(new RouteCreatedEvent(origin, destination)
             {
                 Id = routeId
             });
@@ -39,8 +35,6 @@ namespace Eroad.RouteManagement.Command.Domain.Aggregates
             _id = @event.Id;
             _origin = @event.Origin;
             _destination = @event.Destination;
-            _assignedDriverId = @event.AssignedDriverId;
-            _assignedVehicleId = @event.AssignedVehicleId;
             _routeStatus = @event.RouteStatus;
         }
 
@@ -93,47 +87,6 @@ namespace Eroad.RouteManagement.Command.Domain.Aggregates
         {
             _id = @event.Id;
             _checkpoints.Add(@event.Checkpoint);
-        }
-
-        public void UpdateCheckpoint(int sequence, DateTime? actualTime)
-        {
-            var checkpoint = _checkpoints.FirstOrDefault(c => c.Sequence == sequence);
-            if (checkpoint == null)
-                throw new InvalidOperationException($"Checkpoint with sequence {sequence} not found");
-
-            RaiseEvent(new CheckpointUpdatedEvent(sequence, actualTime) { Id = _id });
-        }
-
-        public void Apply(CheckpointUpdatedEvent @event)
-        {
-            _id = @event.Id;
-            var checkpoint = _checkpoints.FirstOrDefault(c => c.Sequence == @event.Sequence);
-            if (checkpoint != null)
-            {
-                checkpoint.ActualTime = @event.ActualTime;
-            }
-        }
-
-        public void AssignDriver(Guid driverId)
-        {
-            RaiseEvent(new DriverAssignedToRouteEvent(driverId) { Id = _id });
-        }
-
-        public void Apply(DriverAssignedToRouteEvent @event)
-        {
-            _id = @event.Id;
-            _assignedDriverId = @event.DriverId;
-        }
-
-        public void AssignVehicle(Guid vehicleId)
-        {
-            RaiseEvent(new VehicleAssignedToRouteEvent(vehicleId) { Id = _id });
-        }
-
-        public void Apply(VehicleAssignedToRouteEvent @event)
-        {
-            _id = @event.Id;
-            _assignedVehicleId = @event.VehicleId;
         }
     }
 }

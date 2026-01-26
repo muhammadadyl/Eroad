@@ -54,52 +54,10 @@ public class LiveTrackingAggregator
             .SelectMany(r => r.Routes)
             .ToDictionary(r => r.Id, r => r);
 
-        // Extract unique driver and vehicle IDs from routes
-        var driverIds = routes.Values
-            .Where(r => !string.IsNullOrEmpty(r.AssignedDriverId))
-            .Select(r => r.AssignedDriverId)
-            .Distinct()
-            .ToList();
-
-        var vehicleIds = routes.Values
-            .Where(r => !string.IsNullOrEmpty(r.AssignedVehicleId))
-            .Select(r => r.AssignedVehicleId)
-            .Distinct()
-            .ToList();
-
-        // Fetch drivers and vehicles in parallel
-        var driverResponses = await Task.WhenAll(
-            driverIds.Select(id => 
-                _driverClient.GetDriverByIdAsync(new GetDriverByIdRequest { Id = id }).ResponseAsync));
-        
-        var vehicleResponses = await Task.WhenAll(
-            vehicleIds.Select(id => 
-                _vehicleClient.GetVehicleByIdAsync(new GetVehicleByIdRequest { Id = id }).ResponseAsync));
-
-        var drivers = driverResponses
-            .SelectMany(r => r.Drivers)
-            .ToDictionary(d => d.Id, d => d);
-
-        var vehicles = vehicleResponses
-            .SelectMany(r => r.Vehicles)
-            .ToDictionary(v => v.Id, v => v);
-
-        // Map to view model
+        // Map to view model (driver/vehicle assignment removed from routes)
         var activeDeliveries = allDeliveries.Select(delivery =>
         {
             routes.TryGetValue(delivery.RouteId, out var route);
-            
-            DriverEntity? driver = null;
-            if (route != null && !string.IsNullOrEmpty(route.AssignedDriverId))
-            {
-                drivers.TryGetValue(route.AssignedDriverId, out driver);
-            }
-
-            VehicleEntity? vehicle = null;
-            if (route != null && !string.IsNullOrEmpty(route.AssignedVehicleId))
-            {
-                vehicles.TryGetValue(route.AssignedVehicleId, out vehicle);
-            }
 
             return new ActiveDeliveryItem
             {
@@ -108,8 +66,6 @@ public class LiveTrackingAggregator
                 CurrentCheckpoint = delivery.CurrentCheckpoint,
                 RouteOrigin = route?.Origin ?? string.Empty,
                 RouteDestination = route?.Destination ?? string.Empty,
-                DriverName = driver?.Name,
-                VehicleRegistration = vehicle?.Registration,
                 CreatedAt = delivery.CreatedAt.ToDateTime()
             };
         }).ToList();

@@ -127,77 +127,6 @@ public class RouteManagementController : ControllerBase
         return Ok(new { Message = response.Message });
     }
 
-    [HttpPatch("{id}/checkpoints/{sequence}")]
-    public async Task<IActionResult> UpdateCheckpoint(string id, int sequence, [FromBody] UpdateCheckpointDto dto)
-    {
-        _logger.LogInformation("Updating checkpoint {Sequence} on route: {RouteId}", sequence, id);
-        var request = new UpdateCheckpointRequest
-        {
-            Id = id,
-            Sequence = sequence,
-            ActualTime = Timestamp.FromDateTime(dto.ActualTime.ToUniversalTime())
-        };
-        var response = await _routeCommandClient.UpdateCheckpointAsync(request);
-        return Ok(new { Message = response.Message });
-    }
-
-    [HttpPost("{id}/assign-driver")]
-    public async Task<IActionResult> AssignDriverToRoute(string id, [FromBody] AssignDriverDto dto)
-    {
-        _logger.LogInformation("Assigning driver {DriverId} to route {RouteId}", dto.DriverId, id);
-        var request = new AssignDriverToRouteRequest
-        {
-            Id = id,
-            DriverId = dto.DriverId
-        };
-        var response = await _routeCommandClient.AssignDriverToRouteAsync(request);
-        return Ok(new { Message = response.Message });
-    }
-
-    [HttpPost("{id}/assign-vehicle")]
-    public async Task<IActionResult> AssignVehicleToRoute(string id, [FromBody] AssignVehicleToRouteDto dto)
-    {
-        _logger.LogInformation("Assigning vehicle {VehicleId} to route {RouteId}", dto.VehicleId, id);
-        var request = new AssignVehicleToRouteRequest
-        {
-            Id = id,
-            VehicleId = dto.VehicleId
-        };
-        var response = await _routeCommandClient.AssignVehicleToRouteAsync(request);
-        return Ok(new { Message = response.Message });
-    }
-
-    [HttpPost("{id}/assign-resources")]
-    public async Task<IActionResult> AssignResourcesToRoute(string id, [FromBody] AssignResourcesDto dto)
-    {
-        _logger.LogInformation("Assigning driver {DriverId} and vehicle {VehicleId} to route {RouteId}", 
-            dto.DriverId, dto.VehicleId, id);
-
-        // Assign both driver and vehicle in sequence
-        // The backend services will enforce that a driver can only be assigned to one vehicle per route
-        var driverRequest = new AssignDriverToRouteRequest
-        {
-            Id = id,
-            DriverId = dto.DriverId
-        };
-        
-        var vehicleRequest = new AssignVehicleToRouteRequest
-        {
-            Id = id,
-            VehicleId = dto.VehicleId
-        };
-
-        // Execute assignments - if either fails, the transaction should be rolled back by the service
-        var driverResponse = await _routeCommandClient.AssignDriverToRouteAsync(driverRequest);
-        var vehicleResponse = await _routeCommandClient.AssignVehicleToRouteAsync(vehicleRequest);
-
-        return Ok(new { 
-            Message = "Driver and vehicle assigned to route successfully",
-            DriverAssignment = driverResponse.Message,
-            VehicleAssignment = vehicleResponse.Message
-        });
-    }
-
     #endregion
 }
 
@@ -217,25 +146,4 @@ public class AddCheckpointDto
     public int Sequence { get; set; }
     public string Location { get; set; } = string.Empty;
     public DateTime ExpectedTime { get; set; }
-}
-
-public class UpdateCheckpointDto
-{
-    public DateTime ActualTime { get; set; }
-}
-
-public class AssignDriverDto
-{
-    public string DriverId { get; set; } = string.Empty;
-}
-
-public class AssignVehicleToRouteDto
-{
-    public string VehicleId { get; set; } = string.Empty;
-}
-
-public class AssignResourcesDto
-{
-    public string DriverId { get; set; } = string.Empty;
-    public string VehicleId { get; set; } = string.Empty;
 }

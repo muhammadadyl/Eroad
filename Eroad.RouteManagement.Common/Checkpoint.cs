@@ -5,16 +5,14 @@ namespace Eroad.RouteManagement.Common
         public int Sequence { get; set; }
         public string Location { get; set; }
         public DateTime ExpectedTime { get; set; }
-        public DateTime? ActualTime { get; set; }
 
         public Checkpoint() { }
 
-        public Checkpoint(int sequence, string location, DateTime expectedTime, DateTime? actualTime = null)
+        public Checkpoint(int sequence, string location, DateTime expectedTime)
         {
             Sequence = sequence;
             Location = location;
             ExpectedTime = expectedTime;
-            ActualTime = actualTime;
         }
     }
 }

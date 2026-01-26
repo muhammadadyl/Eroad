@@ -151,26 +151,9 @@ public class EventManagementAggregator
         var routeResponses = await Task.WhenAll(routeTasks);
         var routes = routeResponses.SelectMany(r => r.Routes).ToDictionary(r => r.Id);
 
-        var driverIds = routes.Values.Where(r => !string.IsNullOrEmpty(r.AssignedDriverId)).Select(r => r.AssignedDriverId).Distinct().ToList();
-        var vehicleIds = routes.Values.Where(r => !string.IsNullOrEmpty(r.AssignedVehicleId)).Select(r => r.AssignedVehicleId).Distinct().ToList();
-
-        var driverTasks = driverIds.Select(id => _driverClient.GetDriverByIdAsync(new GetDriverByIdRequest { Id = id }).ResponseAsync);
-        var vehicleTasks = vehicleIds.Select(id => _vehicleClient.GetVehicleByIdAsync(new GetVehicleByIdRequest { Id = id }).ResponseAsync);
-
-        await Task.WhenAll(driverTasks.Concat<Task>(vehicleTasks));
-
-        var drivers = (await Task.WhenAll(driverTasks)).SelectMany(r => r.Drivers).ToDictionary(d => d.Id);
-        var vehicles = (await Task.WhenAll(vehicleTasks)).SelectMany(r => r.Vehicles).ToDictionary(v => v.Id);
-
         var incidentDetails = recentIncidents.Select(item =>
         {
             var route = routes.ContainsKey(item.Delivery.RouteId) ? routes[item.Delivery.RouteId] : null;
-            var driver = route != null && !string.IsNullOrEmpty(route.AssignedDriverId) && drivers.ContainsKey(route.AssignedDriverId) 
-                ? drivers[route.AssignedDriverId] 
-                : null;
-            var vehicle = route != null && !string.IsNullOrEmpty(route.AssignedVehicleId) && vehicles.ContainsKey(route.AssignedVehicleId) 
-                ? vehicles[route.AssignedVehicleId] 
-                : null;
 
             return new IncidentDetail
             {
@@ -186,9 +169,7 @@ public class EventManagementAggregator
                     Status = item.Delivery.Status,
                     CurrentCheckpoint = item.Delivery.CurrentCheckpoint,
                     RouteOrigin = route?.Origin ?? "",
-                    RouteDestination = route?.Destination ?? "",
-                    DriverName = driver?.Name,
-                    VehicleRegistration = vehicle?.Registration
+                    RouteDestination = route?.Destination ?? ""
                 }
             };
         }).ToList();

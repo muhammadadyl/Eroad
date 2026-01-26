@@ -251,47 +251,6 @@ Content-Type: application/json
   "expectedTime": "2026-01-25T13:00:00Z"
 }
 
-### Update Checkpoint 1 (Actual Arrival)
-PATCH {{baseUrl}}/api/routes/{{routeId}}/checkpoints/1
-Content-Type: application/json
-
-{
-  "actualTime": "2026-01-25T09:05:00Z"
-}
-
-### Update Checkpoint 2 (Actual Arrival)
-PATCH {{baseUrl}}/api/routes/{{routeId}}/checkpoints/2
-Content-Type: application/json
-
-{
-  "actualTime": "2026-01-25T11:15:00Z"
-}
-
-### Assign Driver to Route (Individual)
-POST {{baseUrl}}/api/routes/{{routeId}}/assign-driver
-Content-Type: application/json
-
-{
-  "driverId": "{{driverId}}"
-}
-
-### Assign Vehicle to Route (Individual)
-POST {{baseUrl}}/api/routes/{{routeId}}/assign-vehicle
-Content-Type: application/json
-
-{
-  "vehicleId": "{{vehicleId}}"
-}
-
-### Assign Both Driver and Vehicle to Route (COMBINED - RECOMMENDED)
-POST {{baseUrl}}/api/routes/{{routeId}}/assign-resources
-Content-Type: application/json
-
-{
-  "driverId": "{{driverId}}",
-  "vehicleId": "{{vehicleId}}"
-}
-
 ###############################################################################
 # DELIVERY MANAGEMENT - COMMAND APIs
 ###############################################################################
@@ -447,16 +406,7 @@ Content-Type: application/json
   "expectedTime": "2026-01-25T09:30:00Z"
 }
 
-### STEP 5: Assign Resources (Driver + Vehicle) - COMBINED
-POST {{baseUrl}}/api/routes/550e8400-e29b-41d4-a716-446655440103/assign-resources
-Content-Type: application/json
-
-{
-  "driverId": "550e8400-e29b-41d4-a716-446655440102",
-  "vehicleId": "550e8400-e29b-41d4-a716-446655440101"
-}
-
-### STEP 6: Create Delivery
+### STEP 5: Create Delivery
 POST {{baseUrl}}/api/deliveries
 Content-Type: application/json
 
@@ -489,7 +439,7 @@ Content-Type: application/json
   "actualTime": "2026-01-25T08:05:00Z"
 }
 
-### STEP 10: Update Delivery Current Checkpoint
+### STEP 8: Update Delivery Current Checkpoint
 PATCH {{baseUrl}}/api/deliveries/550e8400-e29b-41d4-a716-446655440104/checkpoint
 Content-Type: application/json
 
@@ -497,7 +447,7 @@ Content-Type: application/json
   "checkpoint": "Highway Entrance"
 }
 
-### STEP 11: Report Incident (Optional)
+### STEP 9: Report Incident (Optional)
 POST {{baseUrl}}/api/deliveries/550e8400-e29b-41d4-a716-446655440104/incidents
 Content-Type: application/json
 
@@ -506,7 +456,7 @@ Content-Type: application/json
   "description": "Construction on main road"
 }
 
-### STEP 12: Update Delivery Status to OutForDelivery
+### STEP 10: Update Delivery Status to OutForDelivery
 PATCH {{baseUrl}}/api/deliveries/550e8400-e29b-41d4-a716-446655440104/status
 Content-Type: application/json
 
@@ -514,16 +464,7 @@ Content-Type: application/json
   "status": "OutForDelivery"
 }
 
-
-### STEP 13: Update Checkpoint 2 Arrival
-PATCH {{baseUrl}}/api/routes/550e8400-e29b-41d4-a716-446655440103/checkpoints/2
-Content-Type: application/json
-
-{
-  "actualTime": "2026-01-25T09:45:00Z"
-}
-
-### STEP 13: Capture Proof of Delivery
+### STEP 11: Capture Proof of Delivery
 POST {{baseUrl}}/api/deliveries/550e8400-e29b-41d4-a716-446655440104/proof-of-delivery
 Content-Type: application/json
 
@@ -532,7 +473,7 @@ Content-Type: application/json
   "receiverName": "Customer Representative"
 }
 
-### STEP 14: Complete Delivery
+### STEP 12: Complete Delivery
 PATCH {{baseUrl}}/api/deliveries/550e8400-e29b-41d4-a716-446655440104/status
 Content-Type: application/json
 
@@ -540,7 +481,7 @@ Content-Type: application/json
   "status": "Delivered"
 }
 
-### STEP 15: Complete Route
+### STEP 13: Complete Route
 PATCH {{baseUrl}}/api/routes/550e8400-e29b-41d4-a716-446655440103/status
 Content-Type: application/json
 
@@ -548,10 +489,10 @@ Content-Type: application/json
   "status": "Completed"
 }
 
-### STEP 16: Verify Fleet Overview
+### STEP 14: Verify Fleet Overview
 GET {{baseUrl}}/api/fleet/overview
 Accept: application/json
 
-### STEP 17: Verify Event Statistics
+### STEP 15: Verify Event Statistics
 GET {{baseUrl}}/api/events/statistics
 Accept: application/json

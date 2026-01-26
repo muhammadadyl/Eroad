@@ -8,8 +8,5 @@ namespace Eroad.RouteManagement.Query.Infrastructure.Handlers
         Task On(RouteUpdatedEvent @event);
         Task On(RouteStatusChangedEvent @event);
         Task On(CheckpointAddedEvent @event);
-        Task On(CheckpointUpdatedEvent @event);
-        Task On(DriverAssignedToRouteEvent @event);
-        Task On(VehicleAssignedToRouteEvent @event);
     }
 }

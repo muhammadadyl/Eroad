@@ -11,8 +11,7 @@ public class RouteDetail
     public string Origin { get; set; } = string.Empty;
     public string Destination { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
-    public DriverInfo? AssignedDriver { get; set; }
-    public VehicleInfo? AssignedVehicle { get; set; }
+
     public List<CheckpointSummary> Checkpoints { get; set; } = new();
 }
 
@@ -21,7 +20,6 @@ public class CheckpointSummary
     public int Sequence { get; set; }
     public string Location { get; set; } = string.Empty;
     public DateTime ExpectedTime { get; set; }
-    public DateTime? ActualTime { get; set; }
     public string Status { get; set; } = string.Empty;
 }
 
@@ -31,8 +29,7 @@ public class RouteDetailView
     public string Origin { get; set; } = string.Empty;
     public string Destination { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
-    public DriverInfo? AssignedDriver { get; set; }
-    public VehicleInfo? AssignedVehicle { get; set; }
+
     public List<CheckpointInfo> Checkpoints { get; set; } = new();
     public List<DeliverySummary> Deliveries { get; set; } = new();
 }

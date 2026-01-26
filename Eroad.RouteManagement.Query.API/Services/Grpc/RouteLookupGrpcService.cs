@@ -94,66 +94,6 @@ namespace Eroad.RouteManagement.Query.API.Services.Grpc
             }
         }
 
-        public override async Task<RouteLookupResponse> GetRoutesByDriver(GetRoutesByDriverRequest request, ServerCallContext context)
-        {
-            try
-            {
-                if (!Guid.TryParse(request.DriverId, out var driverId))
-                {
-                    throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid driver ID format"));
-                }
-
-                var routes = await _mediator.Send(new FindRoutesByDriverIdQuery { DriverId = driverId }, context.CancellationToken);
-                
-                var response = new RouteLookupResponse
-                {
-                    Message = $"Successfully returned {routes.Count} route(s)"
-                };
-                response.Routes.AddRange(routes.Select(MapToProto));
-                
-                return response;
-            }
-            catch (RpcException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving routes by driver: {DriverId}", request.DriverId);
-                throw new RpcException(new Status(StatusCode.Internal, "An error occurred while retrieving routes"));
-            }
-        }
-
-        public override async Task<RouteLookupResponse> GetRoutesByVehicle(GetRoutesByVehicleRequest request, ServerCallContext context)
-        {
-            try
-            {
-                if (!Guid.TryParse(request.VehicleId, out var vehicleId))
-                {
-                    throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid vehicle ID format"));
-                }
-
-                var routes = await _mediator.Send(new FindRoutesByVehicleIdQuery { VehicleId = vehicleId }, context.CancellationToken);
-                
-                var response = new RouteLookupResponse
-                {
-                    Message = $"Successfully returned {routes.Count} route(s)"
-                };
-                response.Routes.AddRange(routes.Select(MapToProto));
-                
-                return response;
-            }
-            catch (RpcException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving routes by vehicle: {VehicleId}", request.VehicleId);
-                throw new RpcException(new Status(StatusCode.Internal, "An error occurred while retrieving routes"));
-            }
-        }
-
         public override async Task<CheckpointLookupResponse> GetCheckpointsByRoute(GetCheckpointsByRouteRequest request, ServerCallContext context)
         {
             try
@@ -195,16 +135,6 @@ namespace Eroad.RouteManagement.Query.API.Services.Grpc
                 CreatedDate = Timestamp.FromDateTime(DateTime.SpecifyKind(route.CreatedDate, DateTimeKind.Utc))
             };
 
-            if (route.AssignedDriverId.HasValue)
-            {
-                entity.AssignedDriverId = route.AssignedDriverId.Value.ToString();
-            }
-
-            if (route.AssignedVehicleId.HasValue)
-            {
-                entity.AssignedVehicleId = route.AssignedVehicleId.Value.ToString();
-            }
-
             if (route.CompletedDate.HasValue)
             {
                 entity.CompletedDate = Timestamp.FromDateTime(DateTime.SpecifyKind(route.CompletedDate.Value, DateTimeKind.Utc));
@@ -215,20 +145,13 @@ namespace Eroad.RouteManagement.Query.API.Services.Grpc
 
         private static CheckpointEntity MapCheckpointToProto(Domain.Entities.CheckpointEntity checkpoint)
         {
-            var entity = new CheckpointEntity
+            return new CheckpointEntity
             {
                 RouteId = checkpoint.RouteId.ToString(),
                 Sequence = checkpoint.Sequence,
                 Location = checkpoint.Location,
                 ExpectedTime = Timestamp.FromDateTime(DateTime.SpecifyKind(checkpoint.ExpectedTime, DateTimeKind.Utc))
             };
-
-            if (checkpoint.ActualTime.HasValue)
-            {
-                entity.ActualTime = Timestamp.FromDateTime(DateTime.SpecifyKind(checkpoint.ActualTime.Value, DateTimeKind.Utc));
-            }
-
-            return entity;
         }
     }
 }

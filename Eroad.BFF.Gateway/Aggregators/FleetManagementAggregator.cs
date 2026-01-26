@@ -34,73 +34,24 @@ public class FleetManagementAggregator
         var vehicles = vehiclesResponse.Vehicles.ToList();
         var drivers = driversResponse.Drivers.ToList();
 
-        // Get unique driver and vehicle IDs from routes
-        var routesByDriverTasks = drivers
-            .Select(d => _routeClient.GetRoutesByDriverAsync(new GetRoutesByDriverRequest { DriverId = d.Id }).ResponseAsync)
-            .ToList();
-
-        var routesByVehicleTasks = vehicles
-            .Select(v => _routeClient.GetRoutesByVehicleAsync(new GetRoutesByVehicleRequest { VehicleId = v.Id }).ResponseAsync)
-            .ToList();
-
-        await Task.WhenAll(routesByDriverTasks.Concat<Task>(routesByVehicleTasks));
-
-        var routesByDriver = (await Task.WhenAll(routesByDriverTasks))
-            .SelectMany(r => r.Routes)
-            .Where(r => r.Status == "Active" || r.Status == "InProgress")
-            .GroupBy(r => r.AssignedDriverId)
-            .ToDictionary(g => g.Key, g => g.First());
-
-        var routesByVehicle = (await Task.WhenAll(routesByVehicleTasks))
-            .SelectMany(r => r.Routes)
-            .Where(r => r.Status == "Active" || r.Status == "InProgress")
-            .GroupBy(r => r.AssignedVehicleId)
-            .ToDictionary(g => g.Key, g => g.First());
-
-        // Build vehicle summaries
-        var vehicleSummaries = vehicles.Select(v =>
+        // Build vehicle summaries (no route assignment info available)
+        var vehicleSummaries = vehicles.Select(v => new VehicleSummary
         {
-            var currentRoute = !string.IsNullOrEmpty(v.Id) && routesByVehicle.ContainsKey(v.Id) 
-                ? new RouteAssignment
-                {
-                    RouteId = Guid.Parse(routesByVehicle[v.Id].Id),
-                    Origin = routesByVehicle[v.Id].Origin,
-                    Destination = routesByVehicle[v.Id].Destination,
-                    Status = routesByVehicle[v.Id].Status
-                }
-                : null;
-
-            return new VehicleSummary
-            {
-                VehicleId = Guid.Parse(v.Id),
-                Registration = v.Registration,
-                VehicleType = v.VehicleType,
-                Status = v.Status,
-                CurrentRoute = currentRoute
-            };
+            VehicleId = Guid.Parse(v.Id),
+            Registration = v.Registration,
+            VehicleType = v.VehicleType,
+            Status = v.Status,
+            CurrentRoute = null // Route assignment removed from FleetManagement
         }).ToList();
 
-        // Build driver summaries
-        var driverSummaries = drivers.Select(d =>
+        // Build driver summaries (no route assignment info available)
+        var driverSummaries = drivers.Select(d => new DriverSummary
         {
-            var currentRoute = !string.IsNullOrEmpty(d.Id) && routesByDriver.ContainsKey(d.Id)
-                ? new RouteAssignment
-                {
-                    RouteId = Guid.Parse(routesByDriver[d.Id].Id),
-                    Origin = routesByDriver[d.Id].Origin,
-                    Destination = routesByDriver[d.Id].Destination,
-                    Status = routesByDriver[d.Id].Status
-                }
-                : null;
-
-            return new DriverSummary
-            {
-                DriverId = Guid.Parse(d.Id),
-                Name = d.Name,
-                DriverLicense = d.DriverLicense,
-                Status = d.Status,
-                CurrentRoute = currentRoute
-            };
+            DriverId = Guid.Parse(d.Id),
+            Name = d.Name,
+            DriverLicense = d.DriverLicense,
+            Status = d.Status,
+            CurrentRoute = null // Route assignment removed from FleetManagement
         }).ToList();
 
         // Calculate statistics
@@ -136,25 +87,13 @@ public class FleetManagementAggregator
             throw new InvalidOperationException($"Vehicle with ID {vehicleId} not found");
         }
 
-        // Fetch routes for this vehicle
-        var routesResponse = await _routeClient.GetRoutesByVehicleAsync(new GetRoutesByVehicleRequest { VehicleId = vehicleId.ToString() });
-        var routes = routesResponse.Routes.ToList();
-
-        var routeHistory = routes.Select(r => new RouteHistoryItem
-        {
-            RouteId = Guid.Parse(r.Id),
-            Origin = r.Origin,
-            Destination = r.Destination,
-            Status = r.Status
-        }).ToList();
-
         return new VehicleDetailView
         {
             VehicleId = Guid.Parse(vehicle.Id),
             Registration = vehicle.Registration,
             VehicleType = vehicle.VehicleType,
             Status = vehicle.Status,
-            RouteHistory = routeHistory
+            RouteHistory = new List<RouteHistoryItem>() // Route assignment removed from FleetManagement
         };
     }
 
@@ -170,25 +109,13 @@ public class FleetManagementAggregator
             throw new InvalidOperationException($"Driver with ID {driverId} not found");
         }
 
-        // Fetch routes for this driver
-        var routesResponse = await _routeClient.GetRoutesByDriverAsync(new GetRoutesByDriverRequest { DriverId = driverId.ToString() });
-        var routes = routesResponse.Routes.ToList();
-
-        var routeHistory = routes.Select(r => new RouteHistoryItem
-        {
-            RouteId = Guid.Parse(r.Id),
-            Origin = r.Origin,
-            Destination = r.Destination,
-            Status = r.Status
-        }).ToList();
-
         return new DriverDetailView
         {
             DriverId = Guid.Parse(driver.Id),
             Name = driver.Name,
             DriverLicense = driver.DriverLicense,
             Status = driver.Status,
-            RouteHistory = routeHistory
+            RouteHistory = new List<RouteHistoryItem>() // Route assignment removed from FleetManagement
         };
     }
 }

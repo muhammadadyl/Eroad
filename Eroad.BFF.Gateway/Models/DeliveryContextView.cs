@@ -43,7 +43,6 @@ public class CheckpointInfo
     public int Sequence { get; set; }
     public string Location { get; set; } = string.Empty;
     public DateTime ExpectedTime { get; set; }
-    public DateTime? ActualTime { get; set; }
 }
 
 public class IncidentInfo

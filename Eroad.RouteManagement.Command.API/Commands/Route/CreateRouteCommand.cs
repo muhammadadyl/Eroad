@@ -15,8 +15,5 @@ namespace Eroad.RouteManagement.Command.API.Commands.Route
         [Required(ErrorMessage = "Destination is required")]
         [StringLength(200, MinimumLength = 1, ErrorMessage = "Destination must be between 1 and 200 characters")]
         public string Destination { get; init; }
-
-        public Guid AssignedDriverId { get; init; }
-        public Guid AssignedVehicleId { get; init; }
     }
 }

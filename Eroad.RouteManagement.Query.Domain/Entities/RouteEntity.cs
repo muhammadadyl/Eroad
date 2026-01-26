@@ -16,10 +16,6 @@ namespace Eroad.RouteManagement.Query.Domain.Entities
         
         public string Status { get; set; }
         
-        public Guid? AssignedDriverId { get; set; }
-        
-        public Guid? AssignedVehicleId { get; set; }
-        
         public DateTime CreatedDate { get; set; }
         
         public DateTime? CompletedDate { get; set; }

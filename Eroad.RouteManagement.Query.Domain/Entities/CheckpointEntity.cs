@@ -17,8 +17,6 @@ namespace Eroad.RouteManagement.Query.Domain.Entities
         
         public DateTime ExpectedTime { get; set; }
         
-        public DateTime? ActualTime { get; set; }
-        
         [ForeignKey(nameof(RouteId))]
         [JsonIgnore]
         public virtual RouteEntity? Route { get; set; }

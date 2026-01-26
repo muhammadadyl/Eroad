@@ -23,13 +23,6 @@ namespace Eroad.RouteManagement.Query.Infrastructure.DataAccess
             // Add indexes on Status column for better query performance
             modelBuilder.Entity<RouteEntity>()
                 .HasIndex(r => r.Status);
-
-            // Add indexes on foreign keys
-            modelBuilder.Entity<RouteEntity>()
-                .HasIndex(r => r.AssignedDriverId);
-
-            modelBuilder.Entity<RouteEntity>()
-                .HasIndex(r => r.AssignedVehicleId);
         }
     }
 }

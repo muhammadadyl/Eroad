@@ -22,8 +22,6 @@ namespace Eroad.RouteManagement.Query.Infrastructure.Handlers
                 Id = @event.Id,
                 Origin = @event.Origin,
                 Destination = @event.Destination,
-                AssignedDriverId = @event.AssignedDriverId,
-                AssignedVehicleId = @event.AssignedVehicleId,
                 Status = @event.RouteStatus.ToString(),
                 CreatedDate = DateTime.UtcNow
             };
@@ -66,44 +64,10 @@ namespace Eroad.RouteManagement.Query.Infrastructure.Handlers
                 RouteId = @event.Id,
                 Sequence = @event.Checkpoint.Sequence,
                 Location = @event.Checkpoint.Location,
-                ExpectedTime = @event.Checkpoint.ExpectedTime,
-                ActualTime = @event.Checkpoint.ActualTime
+                ExpectedTime = @event.Checkpoint.ExpectedTime
             };
 
             await _checkpointRepository.CreateAsync(checkpoint);
-        }
-
-        public async Task On(CheckpointUpdatedEvent @event)
-        {
-            var checkpoint = await _checkpointRepository.GetByIdAsync(@event.Id, @event.Sequence);
-
-            if (checkpoint == null) return;
-
-            checkpoint.ActualTime = @event.ActualTime;
-
-            await _checkpointRepository.UpdateAsync(checkpoint);
-        }
-
-        public async Task On(DriverAssignedToRouteEvent @event)
-        {
-            var route = await _routeRepository.GetByIdAsync(@event.Id);
-
-            if (route == null) return;
-
-            route.AssignedDriverId = @event.DriverId;
-
-            await _routeRepository.UpdateAsync(route);
-        }
-
-        public async Task On(VehicleAssignedToRouteEvent @event)
-        {
-            var route = await _routeRepository.GetByIdAsync(@event.Id);
-
-            if (route == null) return;
-
-            route.AssignedVehicleId = @event.VehicleId;
-
-            await _routeRepository.UpdateAsync(route);
         }
     }
 }

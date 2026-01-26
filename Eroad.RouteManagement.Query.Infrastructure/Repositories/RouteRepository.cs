@@ -62,23 +62,5 @@ namespace Eroad.RouteManagement.Query.Infrastructure.Repositories
                 .Where(r => r.Status == status)
                 .ToListAsync();
         }
-
-        public async Task<List<RouteEntity>> GetByDriverIdAsync(Guid driverId)
-        {
-            using DatabaseContext context = _contextFactory.CreateDbContext();
-            return await context.Routes
-                .AsNoTracking()
-                .Where(r => r.AssignedDriverId == driverId)
-                .ToListAsync();
-        }
-
-        public async Task<List<RouteEntity>> GetByVehicleIdAsync(Guid vehicleId)
-        {
-            using DatabaseContext context = _contextFactory.CreateDbContext();
-            return await context.Routes
-                .AsNoTracking()
-                .Where(r => r.AssignedVehicleId == vehicleId)
-                .ToListAsync();
-        }
     }
 }

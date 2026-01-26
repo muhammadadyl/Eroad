@@ -34,53 +34,14 @@ public class RouteManagementAggregator
         var routesResponse = await _routeClient.GetAllRoutesAsync(new GetAllRoutesRequest());
         var routes = routesResponse.Routes.ToList();
 
-        // Fetch drivers and vehicles for all routes
-        var driverIds = routes.Where(r => !string.IsNullOrEmpty(r.AssignedDriverId)).Select(r => r.AssignedDriverId).Distinct().ToList();
-        var vehicleIds = routes.Where(r => !string.IsNullOrEmpty(r.AssignedVehicleId)).Select(r => r.AssignedVehicleId).Distinct().ToList();
-
-        var driverTasks = driverIds.Select(id => _driverClient.GetDriverByIdAsync(new GetDriverByIdRequest { Id = id }).ResponseAsync);
-        var vehicleTasks = vehicleIds.Select(id => _vehicleClient.GetVehicleByIdAsync(new GetVehicleByIdRequest { Id = id }).ResponseAsync);
-
-        await Task.WhenAll(driverTasks.Concat<Task>(vehicleTasks));
-
-        var drivers = (await Task.WhenAll(driverTasks)).SelectMany(r => r.Drivers).ToDictionary(d => d.Id);
-        var vehicles = (await Task.WhenAll(vehicleTasks)).SelectMany(r => r.Vehicles).ToDictionary(v => v.Id);
-
         var routeDetails = routes.Select(route =>
         {
-            DriverInfo? driverInfo = null;
-            if (!string.IsNullOrEmpty(route.AssignedDriverId) && drivers.ContainsKey(route.AssignedDriverId))
-            {
-                var driver = drivers[route.AssignedDriverId];
-                driverInfo = new DriverInfo
-                {
-                    DriverId = Guid.Parse(driver.Id),
-                    Name = driver.Name,
-                    DriverLicense = driver.DriverLicense,
-                    Status = driver.Status
-                };
-            }
-
-            VehicleInfo? vehicleInfo = null;
-            if (!string.IsNullOrEmpty(route.AssignedVehicleId) && vehicles.ContainsKey(route.AssignedVehicleId))
-            {
-                var vehicle = vehicles[route.AssignedVehicleId];
-                vehicleInfo = new VehicleInfo
-                {
-                    VehicleId = Guid.Parse(vehicle.Id),
-                    Registration = vehicle.Registration,
-                    VehicleType = vehicle.VehicleType,
-                    Status = vehicle.Status
-                };
-            }
-
             var checkpoints = route.Checkpoints.Select(c => new CheckpointSummary
             {
                 Sequence = c.Sequence,
                 Location = c.Location,
                 ExpectedTime = c.ExpectedTime.ToDateTime(),
-                ActualTime = c.ActualTime?.ToDateTime(),
-                Status = c.ActualTime != null ? "Completed" : DateTime.UtcNow > c.ExpectedTime.ToDateTime() ? "Delayed" : "Pending"
+                Status = DateTime.UtcNow > c.ExpectedTime.ToDateTime() ? "Delayed" : "Pending"
             }).ToList();
 
             return new RouteDetail
@@ -89,8 +50,6 @@ public class RouteManagementAggregator
                 Origin = route.Origin,
                 Destination = route.Destination,
                 Status = route.Status,
-                AssignedDriver = driverInfo,
-                AssignedVehicle = vehicleInfo,
                 Checkpoints = checkpoints
             };
         }).ToList();
@@ -113,47 +72,11 @@ public class RouteManagementAggregator
             throw new InvalidOperationException($"Route with ID {routeId} not found");
         }
 
-        // Fetch driver and vehicle
-        DriverInfo? driverInfo = null;
-        if (!string.IsNullOrEmpty(route.AssignedDriverId))
-        {
-            var driverResponse = await _driverClient.GetDriverByIdAsync(new GetDriverByIdRequest { Id = route.AssignedDriverId });
-            var driver = driverResponse.Drivers.FirstOrDefault();
-            if (driver != null)
-            {
-                driverInfo = new DriverInfo
-                {
-                    DriverId = Guid.Parse(driver.Id),
-                    Name = driver.Name,
-                    DriverLicense = driver.DriverLicense,
-                    Status = driver.Status
-                };
-            }
-        }
-
-        VehicleInfo? vehicleInfo = null;
-        if (!string.IsNullOrEmpty(route.AssignedVehicleId))
-        {
-            var vehicleResponse = await _vehicleClient.GetVehicleByIdAsync(new GetVehicleByIdRequest { Id = route.AssignedVehicleId });
-            var vehicle = vehicleResponse.Vehicles.FirstOrDefault();
-            if (vehicle != null)
-            {
-                vehicleInfo = new VehicleInfo
-                {
-                    VehicleId = Guid.Parse(vehicle.Id),
-                    Registration = vehicle.Registration,
-                    VehicleType = vehicle.VehicleType,
-                    Status = vehicle.Status
-                };
-            }
-        }
-
         var checkpoints = route.Checkpoints.Select(c => new CheckpointInfo
         {
             Sequence = c.Sequence,
             Location = c.Location,
-            ExpectedTime = c.ExpectedTime.ToDateTime(),
-            ActualTime = c.ActualTime?.ToDateTime()
+            ExpectedTime = c.ExpectedTime.ToDateTime()
         }).ToList();
 
         // Fetch deliveries for this route
@@ -173,8 +96,6 @@ public class RouteManagementAggregator
             Origin = route.Origin,
             Destination = route.Destination,
             Status = route.Status,
-            AssignedDriver = driverInfo,
-            AssignedVehicle = vehicleInfo,
             Checkpoints = checkpoints,
             Deliveries = deliveries
         };
@@ -197,12 +118,11 @@ public class RouteManagementAggregator
         var deliveries = deliveriesResponse.Deliveries.Where(d => d.RouteId == routeId.ToString()).ToList();
 
         var totalCheckpoints = route.Checkpoints.Count;
-        var completedCheckpoints = route.Checkpoints.Count(c => c.ActualTime != null);
         var totalDeliveries = deliveries.Count;
         var completedDeliveries = deliveries.Count(d => d.Status == "Delivered");
 
-        var completionPercentage = totalCheckpoints > 0 
-            ? (double)completedCheckpoints / totalCheckpoints * 100 
+        var completionPercentage = totalDeliveries > 0 
+            ? (double)completedDeliveries / totalDeliveries * 100 
             : 0;
 
         return new RoutePerformanceView
@@ -211,7 +131,7 @@ public class RouteManagementAggregator
             Origin = route.Origin,
             Destination = route.Destination,
             TotalCheckpoints = totalCheckpoints,
-            CompletedCheckpoints = completedCheckpoints,
+            CompletedCheckpoints = 0, // Checkpoint completion tracking removed
             TotalDeliveries = totalDeliveries,
             CompletedDeliveries = completedDeliveries,
             CompletionPercentage = Math.Round(completionPercentage, 2)

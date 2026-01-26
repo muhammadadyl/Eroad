@@ -3,7 +3,6 @@ syntax = "proto3";
 option csharp_namespace = "Eroad.RouteManagement.Contracts";
 
 import "google/protobuf/timestamp.proto";
-import "google/protobuf/wrappers.proto";
 
 package routemanagement.query;
 
@@ -11,8 +10,6 @@ package routemanagement.query;
 service RouteLookup {
   rpc GetRouteById(GetRouteByIdRequest) returns (RouteLookupResponse);
   rpc GetRoutesByStatus(GetRoutesByStatusRequest) returns (RouteLookupResponse);
-  rpc GetRoutesByDriver(GetRoutesByDriverRequest) returns (RouteLookupResponse);
-  rpc GetRoutesByVehicle(GetRoutesByVehicleRequest) returns (RouteLookupResponse);
   rpc GetAllRoutes(GetAllRoutesRequest) returns (RouteLookupResponse);
   rpc GetCheckpointsByRoute(GetCheckpointsByRouteRequest) returns (CheckpointLookupResponse);
 }
@@ -24,14 +21,6 @@ message GetRouteByIdRequest {
 
 message GetRoutesByStatusRequest {
   string status = 1;
-}
-
-message GetRoutesByDriverRequest {
-  string driver_id = 1;
-}
-
-message GetRoutesByVehicleRequest {
-  string vehicle_id = 1;
 }
 
 message GetAllRoutesRequest {
@@ -58,11 +47,9 @@ message RouteEntity {
   string origin = 2;
   string destination = 3;
   string status = 4;
-  google.protobuf.StringValue assigned_driver_id = 5;
-  google.protobuf.StringValue assigned_vehicle_id = 6;
-  google.protobuf.Timestamp created_date = 7;
-  google.protobuf.Timestamp completed_date = 8;
-  repeated CheckpointEntity checkpoints = 9;
+  google.protobuf.Timestamp created_date = 5;
+  google.protobuf.Timestamp completed_date = 6;
+  repeated CheckpointEntity checkpoints = 7;
 }
 
 message CheckpointEntity {
@@ -70,5 +57,4 @@ message CheckpointEntity {
   int32 sequence = 2;
   string location = 3;
   google.protobuf.Timestamp expected_time = 4;
-  google.protobuf.Timestamp actual_time = 5;
 }

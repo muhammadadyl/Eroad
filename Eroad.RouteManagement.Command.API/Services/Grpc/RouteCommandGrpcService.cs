@@ -37,9 +37,7 @@ namespace Eroad.RouteManagement.Command.API.Services.Grpc
                 {
                     Id = routeId,
                     Origin = request.Origin,
-                    Destination = request.Destination,
-                    AssignedDriverId = Guid.Empty,
-                    AssignedVehicleId = Guid.Empty
+                    Destination = request.Destination
                 };
 
                 await _mediator.Send(command, context.CancellationToken);
@@ -210,137 +208,6 @@ namespace Eroad.RouteManagement.Command.API.Services.Grpc
             {
                 _logger.LogError(ex, "Error adding checkpoint");
                 throw new RpcException(new Status(StatusCode.Internal, "An error occurred while adding checkpoint"));
-            }
-        }
-
-        public override async Task<UpdateCheckpointResponse> UpdateCheckpoint(UpdateCheckpointRequest request, ServerCallContext context)
-        {
-            try
-            {
-                if (!Guid.TryParse(request.Id, out var routeId))
-                {
-                    throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid route ID format"));
-                }
-
-                DateTime? actualTime = null;
-                if (request.ActualTime != null)
-                {
-                    actualTime = request.ActualTime.ToDateTime();
-                }
-
-                var command = new UpdateCheckpointCommand
-                {
-                    Id = routeId,
-                    Sequence = request.Sequence,
-                    ActualTime = actualTime
-                };
-
-                await _mediator.Send(command, context.CancellationToken);
-
-                return new UpdateCheckpointResponse
-                {
-                    Message = "Checkpoint updated successfully"
-                };
-            }
-            catch (RpcException)
-            {
-                throw;
-            }
-            catch (InvalidOperationException ex)
-            {
-                _logger.LogWarning(ex, "Invalid operation when updating checkpoint");
-                throw new RpcException(new Status(StatusCode.InvalidArgument, ex.Message));
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error updating checkpoint");
-                throw new RpcException(new Status(StatusCode.Internal, "An error occurred while updating checkpoint"));
-            }
-        }
-
-        public override async Task<AssignDriverToRouteResponse> AssignDriverToRoute(AssignDriverToRouteRequest request, ServerCallContext context)
-        {
-            try
-            {
-                if (!Guid.TryParse(request.Id, out var routeId))
-                {
-                    throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid route ID format"));
-                }
-
-                if (!Guid.TryParse(request.DriverId, out var driverId))
-                {
-                    throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid driver ID format"));
-                }
-
-                var command = new AssignDriverToRouteCommand
-                {
-                    Id = routeId,
-                    DriverId = driverId
-                };
-
-                await _mediator.Send(command, context.CancellationToken);
-
-                return new AssignDriverToRouteResponse
-                {
-                    Message = "Driver assigned to route successfully"
-                };
-            }
-            catch (RpcException)
-            {
-                throw;
-            }
-            catch (InvalidOperationException ex)
-            {
-                _logger.LogWarning(ex, "Invalid operation when assigning driver to route");
-                throw new RpcException(new Status(StatusCode.InvalidArgument, ex.Message));
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error assigning driver to route");
-                throw new RpcException(new Status(StatusCode.Internal, "An error occurred while assigning driver to route"));
-            }
-        }
-
-        public override async Task<AssignVehicleToRouteResponse> AssignVehicleToRoute(AssignVehicleToRouteRequest request, ServerCallContext context)
-        {
-            try
-            {
-                if (!Guid.TryParse(request.Id, out var routeId))
-                {
-                    throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid route ID format"));
-                }
-
-                if (!Guid.TryParse(request.VehicleId, out var vehicleId))
-                {
-                    throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid vehicle ID format"));
-                }
-
-                var command = new AssignVehicleToRouteCommand
-                {
-                    Id = routeId,
-                    VehicleId = vehicleId
-                };
-
-                await _mediator.Send(command, context.CancellationToken);
-
-                return new AssignVehicleToRouteResponse
-                {
-                    Message = "Vehicle assigned to route successfully"
-                };
-            }
-            catch (RpcException)
-            {
-                throw;
-            }
-            catch (InvalidOperationException ex)
-            {
-                _logger.LogWarning(ex, "Invalid operation when assigning vehicle to route");
-                throw new RpcException(new Status(StatusCode.InvalidArgument, ex.Message));
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error assigning vehicle to route");
-                throw new RpcException(new Status(StatusCode.Internal, "An error occurred while assigning vehicle to route"));
             }
         }
     }
