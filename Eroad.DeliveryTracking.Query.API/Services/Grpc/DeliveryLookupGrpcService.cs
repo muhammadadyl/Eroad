@@ -22,7 +22,12 @@ public class DeliveryLookupGrpcService : DeliveryLookup.DeliveryLookupBase
     {
         try
         {
-            var deliveries = await _mediator.Send(new FindDeliveryByIdQuery { Id = Guid.Parse(request.Id) }, context.CancellationToken);
+            if (!Guid.TryParse(request.Id, out var deliveryId))
+            {
+                throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid delivery ID format"));
+            }
+
+            var deliveries = await _mediator.Send(new FindDeliveryByIdQuery { Id = deliveryId }, context.CancellationToken);
             if (deliveries == null || deliveries.Count == 0)
             {
                 throw new RpcException(new Status(StatusCode.NotFound, $"Delivery {request.Id} not found"));
@@ -33,10 +38,6 @@ public class DeliveryLookupGrpcService : DeliveryLookup.DeliveryLookupBase
                 Message = "Delivery retrieved successfully",
                 Deliveries = { deliveries.Select(MapToProto) }
             };
-        }
-        catch (FormatException)
-        {
-            throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid delivery ID format"));
         }
         catch (RpcException)
         {
@@ -70,16 +71,21 @@ public class DeliveryLookupGrpcService : DeliveryLookup.DeliveryLookupBase
     public override async Task<DeliveryLookupResponse> GetDeliveriesByRoute(GetDeliveriesByRouteRequest request, ServerCallContext context)
     {
         try
-        {
-            var deliveries = await _mediator.Send(new FindDeliveriesByRouteIdQuery { RouteId = Guid.Parse(request.RouteId) }, context.CancellationToken);
+        {if (!Guid.TryParse(request.RouteId, out var routeId))
+            {
+                throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid route ID format"));
+            }
+
+            var deliveries = await _mediator.Send(new FindDeliveriesByRouteIdQuery { RouteId = routeId }, context.CancellationToken);
             return new DeliveryLookupResponse
             {
                 Message = "Deliveries retrieved successfully",
                 Deliveries = { deliveries.Select(MapToProto) }
             };
         }
-        catch (FormatException)
+        catch (RpcException)
         {
+            throw
             throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid route ID format"));
         }
         catch (Exception ex)

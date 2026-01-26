@@ -33,7 +33,6 @@ BsonClassMap.RegisterClassMap<DomainEvent>();
 BsonClassMap.RegisterClassMap<VehicleAddedEvent>();
 BsonClassMap.RegisterClassMap<VehicleUpdatedEvent>();
 BsonClassMap.RegisterClassMap<VehicleStatusChangedEvent>();
-BsonClassMap.RegisterClassMap<DriverAssignedEvent>();
 BsonClassMap.RegisterClassMap<DriverAddedEvent>();
 BsonClassMap.RegisterClassMap<DriverUpdatedEvent>();
 BsonClassMap.RegisterClassMap<DriverStatusChangedEvent>();

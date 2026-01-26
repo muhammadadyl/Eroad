@@ -1,18 +1,19 @@
 using Eroad.DeliveryTracking.Contracts;
-using Eroad.DeliveryTracking.Query.Domain.Repositories;
+using Eroad.DeliveryTracking.Query.API.Queries;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
+using MediatR;
 
 namespace Eroad.DeliveryTracking.Query.API.Services.Grpc;
 
 public class IncidentLookupGrpcService : IncidentLookup.IncidentLookupBase
 {
-    private readonly IIncidentRepository _repository;
+    private readonly IMediator _mediator;
     private readonly ILogger<IncidentLookupGrpcService> _logger;
 
-    public IncidentLookupGrpcService(IIncidentRepository repository, ILogger<IncidentLookupGrpcService> logger)
+    public IncidentLookupGrpcService(IMediator mediator, ILogger<IncidentLookupGrpcService> logger)
     {
-        _repository = repository;
+        _mediator = mediator;
         _logger = logger;
     }
 
@@ -20,16 +21,21 @@ public class IncidentLookupGrpcService : IncidentLookup.IncidentLookupBase
     {
         try
         {
-            var incidents = await _repository.GetByDeliveryIdAsync(Guid.Parse(request.DeliveryId));
+            if (!Guid.TryParse(request.DeliveryId, out var deliveryId))
+            {
+                throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid delivery ID format"));
+            }
+
+            var incidents = await _mediator.Send(new FindIncidentsByDeliveryIdQuery { DeliveryId = deliveryId }, context.CancellationToken);
             return new IncidentLookupResponse
             {
                 Message = "Incidents retrieved successfully",
                 Incidents = { incidents.Select(MapToProto) }
             };
         }
-        catch (FormatException)
+        catch (RpcException)
         {
-            throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid delivery ID format"));
+            throw;
         }
         catch (Exception ex)
         {
@@ -42,7 +48,7 @@ public class IncidentLookupGrpcService : IncidentLookup.IncidentLookupBase
     {
         try
         {
-            var incidents = await _repository.GetAllUnresolvedAsync();
+            var incidents = await _mediator.Send(new FindAllUnresolvedIncidentsQuery(), context.CancellationToken);
             return new IncidentLookupResponse
             {
                 Message = "Unresolved incidents retrieved successfully",
