@@ -33,10 +33,6 @@ Accept: application/json
 GET {{baseUrl}}/api/routes/{{routeId}}
 Accept: application/json
 
-### Get Route Performance
-GET {{baseUrl}}/api/routes/{{routeId}}/performance
-Accept: application/json
-
 ###############################################################################
 # EVENT MANAGEMENT - QUERY APIs
 ###############################################################################
@@ -315,10 +311,6 @@ Content-Type: application/json
   "sequence": 1,
   "location": "Highway Junction A"
 }
-
-### Get Delivery Checkpoints
-GET {{baseUrl}}/api/deliveries/{{deliveryId}}/checkpoints
-Accept: application/json
 
 ### Get Delivery Event Logs
 GET {{baseUrl}}/api/deliveries/{{deliveryId}}/event-logs

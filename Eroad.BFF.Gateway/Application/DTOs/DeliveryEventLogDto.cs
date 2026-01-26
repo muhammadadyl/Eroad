@@ -1,4 +1,4 @@
-namespace Eroad.BFF.Gateway.Models
+namespace Eroad.BFF.Gateway.Application.DTOs
 {
     public class DeliveryEventLogDto
     {

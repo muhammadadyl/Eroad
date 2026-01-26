@@ -70,36 +70,6 @@ namespace Eroad.FleetManagement.Query.API.Services.Grpc
             }
         }
 
-        public override async Task<VehicleLookupResponse> GetVehiclesByDriver(GetVehiclesByDriverRequest request, ServerCallContext context)
-        {
-            try
-            {
-                if (!Guid.TryParse(request.DriverId, out var driverId))
-                {
-                    throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid driver ID format"));
-                }
-
-                var vehicles = await _mediator.Send(new FindVehicleByDriverIdQuery { DriverId = driverId }, context.CancellationToken);
-                
-                var response = new VehicleLookupResponse
-                {
-                    Message = $"Successfully returned {vehicles.Count} vehicle(s)"
-                };
-                response.Vehicles.AddRange(vehicles.Select(MapToProto));
-                
-                return response;
-            }
-            catch (RpcException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving vehicles by driver: {DriverId}", request.DriverId);
-                throw new RpcException(new Status(StatusCode.Internal, "An error occurred while retrieving vehicles"));
-            }
-        }
-
         public override async Task<VehicleLookupResponse> GetVehiclesByStatus(GetVehiclesByStatusRequest request, ServerCallContext context)
         {
             try

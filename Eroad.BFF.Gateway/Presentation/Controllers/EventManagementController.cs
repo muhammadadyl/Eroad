@@ -1,17 +1,17 @@
-using Eroad.BFF.Gateway.Aggregators;
+using Eroad.BFF.Gateway.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Eroad.BFF.Gateway.Controllers;
+namespace Eroad.BFF.Gateway.Presentation.Controllers;
 
 [ApiController]
 [Route("api/events")]
 public class EventManagementController : ControllerBase
 {
-    private readonly EventManagementAggregator _aggregator;
+    private readonly IEventManagementService _aggregator;
     private readonly ILogger<EventManagementController> _logger;
 
     public EventManagementController(
-        EventManagementAggregator aggregator,
+        IEventManagementService aggregator,
         ILogger<EventManagementController> logger)
     {
         _aggregator = aggregator;

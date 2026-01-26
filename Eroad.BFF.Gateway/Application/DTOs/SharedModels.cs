@@ -1,26 +1,4 @@
-namespace Eroad.BFF.Gateway.Models;
-
-public class DeliveryContextView
-{
-    public Guid DeliveryId { get; set; }
-    public string Status { get; set; } = string.Empty;
-    public string? CurrentCheckpoint { get; set; }
-    public DateTime CreatedAt { get; set; }
-    
-    public RouteInfo Route { get; set; } = new();
-    public DriverInfo? Driver { get; set; }
-    public VehicleInfo? Vehicle { get; set; }
-    public List<CheckpointInfo> Checkpoints { get; set; } = new();
-    public List<IncidentInfo> Incidents { get; set; } = new();
-}
-
-public class RouteInfo
-{
-    public Guid RouteId { get; set; }
-    public string Origin { get; set; } = string.Empty;
-    public string Destination { get; set; } = string.Empty;
-    public string Status { get; set; } = string.Empty;
-}
+namespace Eroad.BFF.Gateway.Application.DTOs;
 
 public class DriverInfo
 {
@@ -35,6 +13,14 @@ public class VehicleInfo
     public Guid VehicleId { get; set; }
     public string Registration { get; set; } = string.Empty;
     public string VehicleType { get; set; } = string.Empty;
+    public string Status { get; set; } = string.Empty;
+}
+
+public class RouteInfo
+{
+    public Guid RouteId { get; set; }
+    public string Origin { get; set; } = string.Empty;
+    public string Destination { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
 }
 

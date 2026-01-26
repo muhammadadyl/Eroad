@@ -1,10 +1,11 @@
-using Eroad.BFF.Gateway.Models;
+using Eroad.BFF.Gateway.Application.DTOs;
+using Eroad.BFF.Gateway.Application.Interfaces;
 using Eroad.FleetManagement.Contracts;
 using Eroad.RouteManagement.Contracts;
 
-namespace Eroad.BFF.Gateway.Aggregators;
+namespace Eroad.BFF.Gateway.Application.Services;
 
-public class FleetManagementAggregator
+public class FleetManagementAggregator : IFleetManagementService
 {
     private readonly DriverLookup.DriverLookupClient _driverClient;
     private readonly VehicleLookup.VehicleLookupClient _vehicleClient;

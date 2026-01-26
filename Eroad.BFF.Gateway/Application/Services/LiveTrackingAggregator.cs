@@ -1,11 +1,12 @@
-using Eroad.BFF.Gateway.Models;
+using Eroad.BFF.Gateway.Application.DTOs;
+using Eroad.BFF.Gateway.Application.Interfaces;
 using Eroad.DeliveryTracking.Contracts;
 using Eroad.FleetManagement.Contracts;
 using Eroad.RouteManagement.Contracts;
 
-namespace Eroad.BFF.Gateway.Aggregators;
+namespace Eroad.BFF.Gateway.Application.Services;
 
-public class LiveTrackingAggregator
+public class LiveTrackingAggregator : ILiveTrackingService
 {
     private readonly DeliveryLookup.DeliveryLookupClient _deliveryClient;
     private readonly RouteLookup.RouteLookupClient _routeClient;
@@ -31,11 +32,12 @@ public class LiveTrackingAggregator
     {
         _logger.LogInformation("Fetching live tracking data for active deliveries");
 
-        // Fetch deliveries with InTransit and OutForDelivery status
-        var inTransitResponse = await _deliveryClient.GetDeliveriesByStatusAsync(new GetDeliveriesByStatusRequest { Status = "InTransit" });
-        var outForDeliveryResponse = await _deliveryClient.GetDeliveriesByStatusAsync(new GetDeliveriesByStatusRequest { Status = "OutForDelivery" });
-
-        var allDeliveries = inTransitResponse.Deliveries.Concat(outForDeliveryResponse.Deliveries).ToList();
+        // Fetch all deliveries and filter for active statuses
+        var allDeliveriesResponse = await _deliveryClient.GetAllDeliveriesAsync(new GetAllDeliveriesRequest());
+        
+        var allDeliveries = allDeliveriesResponse.Deliveries
+            .Where(d => d.Status == "InTransit" || d.Status == "OutForDelivery")
+            .ToList();
 
         if (!allDeliveries.Any())
         {

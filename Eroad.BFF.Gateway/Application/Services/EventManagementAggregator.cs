@@ -1,29 +1,24 @@
-using Eroad.BFF.Gateway.Models;
+using Eroad.BFF.Gateway.Application.DTOs;
+using Eroad.BFF.Gateway.Application.Interfaces;
 using Eroad.DeliveryTracking.Contracts;
 using Eroad.FleetManagement.Contracts;
 using Eroad.RouteManagement.Contracts;
 
-namespace Eroad.BFF.Gateway.Aggregators;
+namespace Eroad.BFF.Gateway.Application.Services;
 
-public class EventManagementAggregator
+public class EventManagementAggregator : IEventManagementService
 {
     private readonly DeliveryLookup.DeliveryLookupClient _deliveryClient;
     private readonly RouteLookup.RouteLookupClient _routeClient;
-    private readonly DriverLookup.DriverLookupClient _driverClient;
-    private readonly VehicleLookup.VehicleLookupClient _vehicleClient;
     private readonly ILogger<EventManagementAggregator> _logger;
 
     public EventManagementAggregator(
         DeliveryLookup.DeliveryLookupClient deliveryClient,
         RouteLookup.RouteLookupClient routeClient,
-        DriverLookup.DriverLookupClient driverClient,
-        VehicleLookup.VehicleLookupClient vehicleClient,
         ILogger<EventManagementAggregator> logger)
     {
         _deliveryClient = deliveryClient;
         _routeClient = routeClient;
-        _driverClient = driverClient;
-        _vehicleClient = vehicleClient;
         _logger = logger;
     }
 

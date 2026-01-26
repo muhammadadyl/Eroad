@@ -1,5 +1,6 @@
-using Eroad.BFF.Gateway.Aggregators;
-using Eroad.BFF.Gateway.Middleware;
+using Eroad.BFF.Gateway.Application.Interfaces;
+using Eroad.BFF.Gateway.Application.Services;
+using Eroad.BFF.Gateway.Presentation.Middleware;
 using Eroad.DeliveryTracking.Contracts;
 using Eroad.FleetManagement.Contracts;
 using Eroad.RouteManagement.Contracts;
@@ -138,13 +139,11 @@ builder.Services
         options.MaxReceiveMessageSize = 5 * 1024 * 1024; // 5 MB
     });
 
-// Register aggregator services
-builder.Services.AddScoped<DeliveryContextAggregator>();
-builder.Services.AddScoped<LiveTrackingAggregator>();
-builder.Services.AddScoped<CompletedDeliveryAggregator>();
-builder.Services.AddScoped<FleetManagementAggregator>();
-builder.Services.AddScoped<RouteManagementAggregator>();
-builder.Services.AddScoped<EventManagementAggregator>();
+// Register aggregator services with interfaces for dependency injection
+builder.Services.AddScoped<ILiveTrackingService, LiveTrackingAggregator>();
+builder.Services.AddScoped<IFleetManagementService, FleetManagementAggregator>();
+builder.Services.AddScoped<IRouteManagementService, RouteManagementAggregator>();
+builder.Services.AddScoped<IEventManagementService, EventManagementAggregator>();
 
 var app = builder.Build();
 

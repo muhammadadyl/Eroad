@@ -1,21 +1,21 @@
-using Eroad.BFF.Gateway.Aggregators;
+using Eroad.BFF.Gateway.Application.Interfaces;
 using Eroad.FleetManagement.Contracts;
 using Grpc.Core;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Eroad.BFF.Gateway.Controllers;
+namespace Eroad.BFF.Gateway.Presentation.Controllers;
 
 [ApiController]
 [Route("api/fleet")]
 public class FleetManagementController : ControllerBase
 {
-    private readonly FleetManagementAggregator _aggregator;
+    private readonly IFleetManagementService _aggregator;
     private readonly VehicleCommand.VehicleCommandClient _vehicleCommandClient;
     private readonly DriverCommand.DriverCommandClient _driverCommandClient;
     private readonly ILogger<FleetManagementController> _logger;
 
     public FleetManagementController(
-        FleetManagementAggregator aggregator,
+        IFleetManagementService aggregator,
         VehicleCommand.VehicleCommandClient vehicleCommandClient,
         DriverCommand.DriverCommandClient driverCommandClient,
         ILogger<FleetManagementController> logger)

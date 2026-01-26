@@ -17,7 +17,6 @@ service DriverLookup {
 service VehicleLookup {
   rpc GetVehicleById(GetVehicleByIdRequest) returns (VehicleLookupResponse);
   rpc GetVehiclesByStatus(GetVehiclesByStatusRequest) returns (VehicleLookupResponse);
-  rpc GetVehiclesByDriver(GetVehiclesByDriverRequest) returns (VehicleLookupResponse);
   rpc GetAllVehicles(GetAllVehiclesRequest) returns (VehicleLookupResponse);
 }
 
@@ -40,10 +39,6 @@ message GetVehicleByIdRequest {
 
 message GetVehiclesByStatusRequest {
   string status = 1;
-}
-
-message GetVehiclesByDriverRequest {
-  string driver_id = 1;
 }
 
 message GetAllVehiclesRequest {

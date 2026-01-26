@@ -1,11 +1,12 @@
-using Eroad.BFF.Gateway.Models;
+using Eroad.BFF.Gateway.Application.DTOs;
+using Eroad.BFF.Gateway.Application.Interfaces;
 using Eroad.DeliveryTracking.Contracts;
 using Eroad.FleetManagement.Contracts;
 using Eroad.RouteManagement.Contracts;
 
-namespace Eroad.BFF.Gateway.Aggregators;
+namespace Eroad.BFF.Gateway.Application.Services;
 
-public class RouteManagementAggregator
+public class RouteManagementAggregator : IRouteManagementService
 {
     private readonly RouteLookup.RouteLookupClient _routeClient;
     private readonly DeliveryLookup.DeliveryLookupClient _deliveryClient;

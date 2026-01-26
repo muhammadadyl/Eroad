@@ -1,19 +1,17 @@
-using Eroad.BFF.Gateway.Aggregators;
+using Eroad.BFF.Gateway.Application.Interfaces;
 using Eroad.DeliveryTracking.Contracts;
 using Eroad.FleetManagement.Contracts;
 using Eroad.RouteManagement.Contracts;
 using Grpc.Core;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Eroad.BFF.Gateway.Controllers;
+namespace Eroad.BFF.Gateway.Presentation.Controllers;
 
 [ApiController]
 [Route("api/deliveries")]
 public class DeliveryManagementController : ControllerBase
 {
-    private readonly DeliveryContextAggregator _deliveryContextAggregator;
-    private readonly LiveTrackingAggregator _liveTrackingAggregator;
-    private readonly CompletedDeliveryAggregator _completedDeliveryAggregator;
+    private readonly ILiveTrackingService _liveTrackingAggregator;
     private readonly DeliveryCommand.DeliveryCommandClient _deliveryCommandClient;
     private readonly DeliveryLookup.DeliveryLookupClient _deliveryLookupClient;
     private readonly DriverLookup.DriverLookupClient _driverLookupClient;
@@ -22,9 +20,7 @@ public class DeliveryManagementController : ControllerBase
     private readonly ILogger<DeliveryManagementController> _logger;
 
     public DeliveryManagementController(
-        DeliveryContextAggregator deliveryContextAggregator,
-        LiveTrackingAggregator liveTrackingAggregator,
-        CompletedDeliveryAggregator completedDeliveryAggregator,
+        ILiveTrackingService liveTrackingAggregator,
         DeliveryCommand.DeliveryCommandClient deliveryCommandClient,
         DeliveryLookup.DeliveryLookupClient deliveryLookupClient,
         DriverLookup.DriverLookupClient driverLookupClient,
@@ -32,9 +28,7 @@ public class DeliveryManagementController : ControllerBase
         RouteLookup.RouteLookupClient routeLookupClient,
         ILogger<DeliveryManagementController> logger)
     {
-        _deliveryContextAggregator = deliveryContextAggregator;
         _liveTrackingAggregator = liveTrackingAggregator;
-        _completedDeliveryAggregator = completedDeliveryAggregator;
         _deliveryCommandClient = deliveryCommandClient;
         _deliveryLookupClient = deliveryLookupClient;
         _driverLookupClient = driverLookupClient;
@@ -44,13 +38,6 @@ public class DeliveryManagementController : ControllerBase
     }
 
     #region Query Operations
-
-    [HttpGet("{id}/context")]
-    public async Task<IActionResult> GetDeliveryContext(Guid id)
-    {
-        var result = await _deliveryContextAggregator.GetDeliveryContextAsync(id);
-        return Ok(result);
-    }
 
     [HttpGet("live-tracking")]
     public async Task<IActionResult> GetLiveTracking()
@@ -62,8 +49,20 @@ public class DeliveryManagementController : ControllerBase
     [HttpGet("{id}/completed-summary")]
     public async Task<IActionResult> GetCompletedSummary(Guid id)
     {
-        var result = await _completedDeliveryAggregator.GetCompletedSummaryAsync(id);
-        return Ok(result);
+        _logger.LogInformation("Getting timeline for delivery: {DeliveryId}", id);
+        
+        var request = new GetDeliveryEventLogsRequest { DeliveryId = id.ToString() };
+        var response = await _deliveryLookupClient.GetDeliveryEventLogsAsync(request);
+
+        var timeline = response.EventLogs.Select(e => new
+        {
+            EventCategory = e.EventCategory,
+            EventType = e.EventType,
+            EventData = e.EventData,
+            OccurredAt = e.OccurredAt.ToDateTime()
+        }).OrderBy(e => e.OccurredAt).ToList();
+
+        return Ok(new { deliveryId = id, timeline });
     }
 
     #endregion
@@ -183,26 +182,6 @@ public class DeliveryManagementController : ControllerBase
         };
         var response = await _deliveryCommandClient.UpdateCurrentCheckpointAsync(request);
         return Ok(new { Message = response.Message });
-    }
-
-    [HttpGet("{id}/checkpoints")]
-    public async Task<IActionResult> GetDeliveryCheckpoints(string id)
-    {
-        _logger.LogInformation("Getting checkpoints for delivery: {DeliveryId}", id);
-        
-        var request = new GetDeliveryCheckpointsRequest { DeliveryId = id };
-        var response = await _deliveryLookupClient.GetDeliveryCheckpointsAsync(request);
-        
-        return Ok(new 
-        { 
-            RouteId = response.RouteId,
-            Checkpoints = response.Checkpoints.Select(c => new 
-            {
-                Sequence = c.Sequence,
-                Location = c.Location,
-                ReachedAt = c.ReachedAt.ToDateTime()
-            }).ToList()
-        });
     }
 
     [HttpPost("{id}/incidents")]

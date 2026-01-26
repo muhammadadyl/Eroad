@@ -50,50 +50,6 @@ public class DeliveryLookupGrpcService : DeliveryLookup.DeliveryLookupBase
         }
     }
 
-    public override async Task<DeliveryLookupResponse> GetDeliveriesByStatus(GetDeliveriesByStatusRequest request, ServerCallContext context)
-    {
-        try
-        {
-            var deliveries = await _mediator.Send(new FindDeliveriesByStatusQuery { Status = request.Status }, context.CancellationToken);
-            return new DeliveryLookupResponse
-            {
-                Message = "Deliveries retrieved successfully",
-                Deliveries = { deliveries.Select(MapToProto) }
-            };
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error getting deliveries by status: {Status}", request.Status);
-            throw new RpcException(new Status(StatusCode.Internal, "An error occurred while retrieving deliveries"));
-        }
-    }
-
-    public override async Task<DeliveryLookupResponse> GetDeliveriesByRoute(GetDeliveriesByRouteRequest request, ServerCallContext context)
-    {
-        try
-        {if (!Guid.TryParse(request.RouteId, out var routeId))
-            {
-                throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid route ID format"));
-            }
-
-            var deliveries = await _mediator.Send(new FindDeliveriesByRouteIdQuery { RouteId = routeId }, context.CancellationToken);
-            return new DeliveryLookupResponse
-            {
-                Message = "Deliveries retrieved successfully",
-                Deliveries = { deliveries.Select(MapToProto) }
-            };
-        }
-        catch (RpcException)
-        {
-            throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid route ID format"));
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error getting deliveries by route: {RouteId}", request.RouteId);
-            throw new RpcException(new Status(StatusCode.Internal, "An error occurred while retrieving deliveries"));
-        }
-    }
-
     public override async Task<DeliveryLookupResponse> GetAllDeliveries(GetAllDeliveriesRequest request, ServerCallContext context)
     {
         try
@@ -109,48 +65,6 @@ public class DeliveryLookupGrpcService : DeliveryLookup.DeliveryLookupBase
         {
             _logger.LogError(ex, "Error getting all deliveries");
             throw new RpcException(new Status(StatusCode.Internal, "An error occurred while retrieving deliveries"));
-        }
-    }
-
-    public override async Task<DeliveryCheckpointsResponse> GetDeliveryCheckpoints(GetDeliveryCheckpointsRequest request, ServerCallContext context)
-    {
-        try
-        {
-            if (!Guid.TryParse(request.DeliveryId, out var deliveryId))
-            {
-                throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid delivery ID format"));
-            }
-
-            var checkpoints = await _mediator.Send(new FindDeliveryCheckpointsQuery { DeliveryId = deliveryId }, context.CancellationToken);
-
-            var response = new DeliveryCheckpointsResponse
-            {
-                Message = $"Found {checkpoints.Count} checkpoint(s)",
-                RouteId = checkpoints.FirstOrDefault()?.RouteId.ToString() ?? string.Empty
-            };
-
-            foreach (var checkpoint in checkpoints)
-            {
-                response.Checkpoints.Add(new DeliveryCheckpointEntity
-                {
-                    DeliveryId = checkpoint.DeliveryId.ToString(),
-                    Sequence = checkpoint.Sequence,
-                    RouteId = checkpoint.RouteId.ToString(),
-                    Location = checkpoint.Location,
-                    ReachedAt = Timestamp.FromDateTime(DateTime.SpecifyKind(checkpoint.ReachedAt, DateTimeKind.Utc))
-                });
-            }
-
-            return response;
-        }
-        catch (RpcException)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error retrieving delivery checkpoints for delivery {DeliveryId}", request.DeliveryId);
-            throw new RpcException(new Status(StatusCode.Internal, "An error occurred while retrieving checkpoints"));
         }
     }
 

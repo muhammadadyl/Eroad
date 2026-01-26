@@ -2,7 +2,7 @@ using Grpc.Core;
 using System.Net;
 using System.Text.Json;
 
-namespace Eroad.BFF.Gateway.Middleware;
+namespace Eroad.BFF.Gateway.Presentation.Middleware;
 
 public class ExceptionHandlingMiddleware
 {

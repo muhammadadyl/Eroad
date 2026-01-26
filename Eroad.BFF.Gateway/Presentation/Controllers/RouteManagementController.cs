@@ -1,21 +1,21 @@
-using Eroad.BFF.Gateway.Aggregators;
+using Eroad.BFF.Gateway.Application.Interfaces;
 using Eroad.RouteManagement.Contracts;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Eroad.BFF.Gateway.Controllers;
+namespace Eroad.BFF.Gateway.Presentation.Controllers;
 
 [ApiController]
 [Route("api/routes")]
 public class RouteManagementController : ControllerBase
 {
-    private readonly RouteManagementAggregator _aggregator;
+    private readonly IRouteManagementService _aggregator;
     private readonly RouteCommand.RouteCommandClient _routeCommandClient;
     private readonly ILogger<RouteManagementController> _logger;
 
     public RouteManagementController(
-        RouteManagementAggregator aggregator,
+        IRouteManagementService aggregator,
         RouteCommand.RouteCommandClient routeCommandClient,
         ILogger<RouteManagementController> logger)
     {
