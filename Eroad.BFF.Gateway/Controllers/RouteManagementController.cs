@@ -36,21 +36,8 @@ public class RouteManagementController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetRouteDetail(Guid id)
     {
-        try
-        {
-            var result = await _aggregator.GetRouteDetailAsync(id);
-            return Ok(result);
-        }
-        catch (InvalidOperationException ex)
-        {
-            _logger.LogWarning(ex, "Invalid operation while fetching route detail for ID: {RouteId}", id);
-            return NotFound(new { Message = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error fetching route detail for ID: {RouteId}", id);
-            return StatusCode(500, new { Message = "An error occurred while fetching route detail" });
-        }
+        var result = await _aggregator.GetRouteDetailAsync(id);
+        return Ok(result);
     }
     #endregion
 

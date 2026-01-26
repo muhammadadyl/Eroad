@@ -51,6 +51,7 @@ builder.Services.AddScoped<IEventConsumer, EventConsumer>();
 builder.Services.AddScoped<IDeliveryRepository, DeliveryRepository>();
 builder.Services.AddScoped<IIncidentRepository, IncidentRepository>();
 builder.Services.AddScoped<IDeliveryCheckpointRepository, DeliveryCheckpointRepository>();
+builder.Services.AddScoped<IDeliveryEventLogRepository, DeliveryEventLogRepository>();
 
 // Register event handler
 builder.Services.AddScoped<IEventHandler, EventHandler>();

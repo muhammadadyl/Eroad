@@ -154,6 +154,48 @@ public class DeliveryLookupGrpcService : DeliveryLookup.DeliveryLookupBase
         }
     }
 
+    public override async Task<DeliveryEventLogsResponse> GetDeliveryEventLogs(GetDeliveryEventLogsRequest request, ServerCallContext context)
+    {
+        try
+        {
+            if (!Guid.TryParse(request.DeliveryId, out var deliveryId))
+            {
+                throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid delivery ID format"));
+            }
+
+            var eventLogs = await _mediator.Send(new FindDeliveryEventLogsQuery { DeliveryId = deliveryId }, context.CancellationToken);
+
+            var response = new DeliveryEventLogsResponse
+            {
+                Message = $"Found {eventLogs.Count} event log(s)"
+            };
+
+            foreach (var log in eventLogs)
+            {
+                response.EventLogs.Add(new DeliveryEventLogEntity
+                {
+                    Id = log.Id.ToString(),
+                    DeliveryId = log.DeliveryId.ToString(),
+                    EventCategory = log.EventCategory,
+                    EventType = log.EventType,
+                    EventData = log.EventData,
+                    OccurredAt = Timestamp.FromDateTime(DateTime.SpecifyKind(log.OccurredAt, DateTimeKind.Utc))
+                });
+            }
+
+            return response;
+        }
+        catch (RpcException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving delivery event logs for delivery {DeliveryId}", request.DeliveryId);
+            throw new RpcException(new Status(StatusCode.Internal, "An error occurred while retrieving event logs"));
+        }
+    }
+
     private static DeliveryEntity MapToProto(Query.Domain.Entities.DeliveryEntity entity)
     {
         var proto = new DeliveryEntity

@@ -76,72 +76,48 @@ public class DeliveryManagementController : ControllerBase
         _logger.LogInformation("Creating delivery for route: {RouteId}", dto.RouteId);
 
         // Validate route exists in RouteManagement
-        try
+        var routeLookupRequest = new GetRouteByIdRequest { Id = dto.RouteId };
+        var routeLookupResponse = await _routeLookupClient.GetRouteByIdAsync(routeLookupRequest);
+        
+        if (routeLookupResponse.Routes == null || !routeLookupResponse.Routes.Any())
         {
-            var routeLookupRequest = new GetRouteByIdRequest { Id = dto.RouteId };
-            var routeLookupResponse = await _routeLookupClient.GetRouteByIdAsync(routeLookupRequest);
-            
-            if (routeLookupResponse.Routes == null || !routeLookupResponse.Routes.Any())
-            {
-                _logger.LogWarning("Route {RouteId} not found in RouteManagement", dto.RouteId);
-                return NotFound(new { Message = $"Route with ID {dto.RouteId} does not exist in RouteManagement" });
-            }
+            _logger.LogWarning("Route {RouteId} not found in RouteManagement", dto.RouteId);
+            return NotFound(new { Message = $"Route with ID {dto.RouteId} does not exist in RouteManagement" });
+        }
 
-            var route = routeLookupResponse.Routes.First();
-            _logger.LogInformation("Route validated: {Origin} to {Destination} with status {Status}", route.Origin, route.Destination, route.Status);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error validating route {RouteId} in RouteManagement", dto.RouteId);
-            return StatusCode(500, new { Message = "Error validating route in RouteManagement" });
-        }
+        var route = routeLookupResponse.Routes.First();
+        _logger.LogInformation("Route validated: {Origin} to {Destination} with status {Status}", route.Origin, route.Destination, route.Status);
 
         // Validate driver exists in FleetManagement if provided
         if (!string.IsNullOrEmpty(dto.DriverId))
         {
-            try
+            var driverLookupRequest = new GetDriverByIdRequest { Id = dto.DriverId };
+            var driverLookupResponse = await _driverLookupClient.GetDriverByIdAsync(driverLookupRequest);
+            
+            if (driverLookupResponse.Drivers == null || !driverLookupResponse.Drivers.Any())
             {
-                var driverLookupRequest = new GetDriverByIdRequest { Id = dto.DriverId };
-                var driverLookupResponse = await _driverLookupClient.GetDriverByIdAsync(driverLookupRequest);
-                
-                if (driverLookupResponse.Drivers == null || !driverLookupResponse.Drivers.Any())
-                {
-                    _logger.LogWarning("Driver {DriverId} not found in FleetManagement", dto.DriverId);
-                    return NotFound(new { Message = $"Driver with ID {dto.DriverId} does not exist in FleetManagement" });
-                }
+                _logger.LogWarning("Driver {DriverId} not found in FleetManagement", dto.DriverId);
+                return NotFound(new { Message = $"Driver with ID {dto.DriverId} does not exist in FleetManagement" });
+            }
 
-                var driver = driverLookupResponse.Drivers.First();
-                _logger.LogInformation("Driver validated: {DriverName} with status {Status}", driver.Name, driver.Status);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error validating driver {DriverId} in FleetManagement", dto.DriverId);
-                return StatusCode(500, new { Message = "Error validating driver in FleetManagement" });
-            }
+            var driver = driverLookupResponse.Drivers.First();
+            _logger.LogInformation("Driver validated: {DriverName} with status {Status}", driver.Name, driver.Status);
         }
 
         // Validate vehicle exists in FleetManagement if provided
         if (!string.IsNullOrEmpty(dto.VehicleId))
         {
-            try
+            var vehicleLookupRequest = new GetVehicleByIdRequest { Id = dto.VehicleId };
+            var vehicleLookupResponse = await _vehicleLookupClient.GetVehicleByIdAsync(vehicleLookupRequest);
+            
+            if (vehicleLookupResponse.Vehicles == null || !vehicleLookupResponse.Vehicles.Any())
             {
-                var vehicleLookupRequest = new GetVehicleByIdRequest { Id = dto.VehicleId };
-                var vehicleLookupResponse = await _vehicleLookupClient.GetVehicleByIdAsync(vehicleLookupRequest);
-                
-                if (vehicleLookupResponse.Vehicles == null || !vehicleLookupResponse.Vehicles.Any())
-                {
-                    _logger.LogWarning("Vehicle {VehicleId} not found in FleetManagement", dto.VehicleId);
-                    return NotFound(new { Message = $"Vehicle with ID {dto.VehicleId} does not exist in FleetManagement" });
-                }
+                _logger.LogWarning("Vehicle {VehicleId} not found in FleetManagement", dto.VehicleId);
+                return NotFound(new { Message = $"Vehicle with ID {dto.VehicleId} does not exist in FleetManagement" });
+            }
 
-                var vehicle = vehicleLookupResponse.Vehicles.First();
-                _logger.LogInformation("Vehicle validated: {Registration} with status {Status}", vehicle.Registration, vehicle.Status);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error validating vehicle {VehicleId} in FleetManagement", dto.VehicleId);
-                return StatusCode(500, new { Message = "Error validating vehicle in FleetManagement" });
-            }
+            var vehicle = vehicleLookupResponse.Vehicles.First();
+            _logger.LogInformation("Vehicle validated: {Registration} with status {Status}", vehicle.Registration, vehicle.Status);
         }
 
         // Create delivery after validation
@@ -177,33 +153,25 @@ public class DeliveryManagementController : ControllerBase
         _logger.LogInformation("Updating checkpoint for delivery: {DeliveryId}, Sequence: {Sequence}", id, dto.Sequence);
 
         // Validate checkpoint exists in RouteManagement
-        try
+        var checkpointsRequest = new GetCheckpointsByRouteRequest { RouteId = dto.RouteId };
+        var checkpointsResponse = await _routeLookupClient.GetCheckpointsByRouteAsync(checkpointsRequest);
+        
+        var checkpoint = checkpointsResponse.Checkpoints.FirstOrDefault(c => c.Sequence == dto.Sequence);
+        if (checkpoint == null)
         {
-            var checkpointsRequest = new GetCheckpointsByRouteRequest { RouteId = dto.RouteId };
-            var checkpointsResponse = await _routeLookupClient.GetCheckpointsByRouteAsync(checkpointsRequest);
-            
-            var checkpoint = checkpointsResponse.Checkpoints.FirstOrDefault(c => c.Sequence == dto.Sequence);
-            if (checkpoint == null)
-            {
-                _logger.LogWarning("Checkpoint sequence {Sequence} not found for route {RouteId}", dto.Sequence, dto.RouteId);
-                return NotFound(new { Message = $"Checkpoint with sequence {dto.Sequence} does not exist for route {dto.RouteId}" });
-            }
-
-            // Validate location matches
-            if (checkpoint.Location != dto.Location)
-            {
-                _logger.LogWarning("Location mismatch for checkpoint {Sequence}. Expected: {Expected}, Provided: {Provided}", 
-                    dto.Sequence, checkpoint.Location, dto.Location);
-                return BadRequest(new { Message = $"Location mismatch. Expected '{checkpoint.Location}' but got '{dto.Location}'" });
-            }
-
-            _logger.LogInformation("Checkpoint validated successfully");
+            _logger.LogWarning("Checkpoint sequence {Sequence} not found for route {RouteId}", dto.Sequence, dto.RouteId);
+            return NotFound(new { Message = $"Checkpoint with sequence {dto.Sequence} does not exist for route {dto.RouteId}" });
         }
-        catch (Exception ex)
+
+        // Validate location matches
+        if (checkpoint.Location != dto.Location)
         {
-            _logger.LogError(ex, "Error validating checkpoint in RouteManagement");
-            return StatusCode(500, new { Message = "Error validating checkpoint in RouteManagement" });
+            _logger.LogWarning("Location mismatch for checkpoint {Sequence}. Expected: {Expected}, Provided: {Provided}", 
+                dto.Sequence, checkpoint.Location, dto.Location);
+            return BadRequest(new { Message = $"Location mismatch. Expected '{checkpoint.Location}' but got '{dto.Location}'" });
         }
+
+        _logger.LogInformation("Checkpoint validated successfully");
 
         // Update checkpoint in DeliveryTracking
         var request = new UpdateCurrentCheckpointRequest
@@ -222,27 +190,19 @@ public class DeliveryManagementController : ControllerBase
     {
         _logger.LogInformation("Getting checkpoints for delivery: {DeliveryId}", id);
         
-        try
-        {
-            var request = new GetDeliveryCheckpointsRequest { DeliveryId = id };
-            var response = await _deliveryLookupClient.GetDeliveryCheckpointsAsync(request);
-            
-            return Ok(new 
-            { 
-                RouteId = response.RouteId,
-                Checkpoints = response.Checkpoints.Select(c => new 
-                {
-                    Sequence = c.Sequence,
-                    Location = c.Location,
-                    ReachedAt = c.ReachedAt.ToDateTime()
-                }).ToList()
-            });
-        }
-        catch (RpcException ex)
-        {
-            _logger.LogError(ex, "Error getting delivery checkpoints");
-            return StatusCode((int)ex.StatusCode, new { Message = ex.Status.Detail });
-        }
+        var request = new GetDeliveryCheckpointsRequest { DeliveryId = id };
+        var response = await _deliveryLookupClient.GetDeliveryCheckpointsAsync(request);
+        
+        return Ok(new 
+        { 
+            RouteId = response.RouteId,
+            Checkpoints = response.Checkpoints.Select(c => new 
+            {
+                Sequence = c.Sequence,
+                Location = c.Location,
+                ReachedAt = c.ReachedAt.ToDateTime()
+            }).ToList()
+        });
     }
 
     [HttpPost("{id}/incidents")]
@@ -292,43 +252,27 @@ public class DeliveryManagementController : ControllerBase
         _logger.LogInformation("Assigning driver {DriverId} to delivery: {DeliveryId}", dto.DriverId, id);
 
         // Validate driver exists in FleetManagement
-        try
+        var driverLookupRequest = new GetDriverByIdRequest { Id = dto.DriverId };
+        var driverLookupResponse = await _driverLookupClient.GetDriverByIdAsync(driverLookupRequest);
+        
+        if (driverLookupResponse.Drivers == null || !driverLookupResponse.Drivers.Any())
         {
-            var driverLookupRequest = new GetDriverByIdRequest { Id = dto.DriverId };
-            var driverLookupResponse = await _driverLookupClient.GetDriverByIdAsync(driverLookupRequest);
-            
-            if (driverLookupResponse.Drivers == null || !driverLookupResponse.Drivers.Any())
-            {
-                _logger.LogWarning("Driver {DriverId} not found in FleetManagement", dto.DriverId);
-                return NotFound(new { Message = $"Driver with ID {dto.DriverId} does not exist in FleetManagement" });
-            }
+            _logger.LogWarning("Driver {DriverId} not found in FleetManagement", dto.DriverId);
+            return NotFound(new { Message = $"Driver with ID {dto.DriverId} does not exist in FleetManagement" });
+        }
 
-            var driver = driverLookupResponse.Drivers.First();
-            _logger.LogInformation("Driver found: {DriverName} with status {Status}", driver.Name, driver.Status);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error validating driver {DriverId} in FleetManagement", dto.DriverId);
-            return StatusCode(500, new { Message = "Error validating driver in FleetManagement" });
-        }
+        var driver = driverLookupResponse.Drivers.First();
+        _logger.LogInformation("Driver found: {DriverName} with status {Status}", driver.Name, driver.Status);
 
         // Assign driver to delivery
-        try
+        var assignRequest = new AssignDriverRequest
         {
-            var assignRequest = new AssignDriverRequest
-            {
-                Id = id,
-                DriverId = dto.DriverId
-            };
-            var response = await _deliveryCommandClient.AssignDriverAsync(assignRequest);
-            _logger.LogInformation("Driver {DriverId} successfully assigned to delivery {DeliveryId}", dto.DriverId, id);
-            return Ok(new { Message = response.Message });
-        }
-        catch (RpcException ex)
-        {
-            _logger.LogError(ex, "Error assigning driver to delivery");
-            return StatusCode((int)ex.StatusCode, new { Message = ex.Status.Detail });
-        }
+            Id = id,
+            DriverId = dto.DriverId
+        };
+        var response = await _deliveryCommandClient.AssignDriverAsync(assignRequest);
+        _logger.LogInformation("Driver {DriverId} successfully assigned to delivery {DeliveryId}", dto.DriverId, id);
+        return Ok(new { Message = response.Message });
     }
 
     [HttpPatch("{id}/assign-vehicle")]
@@ -337,43 +281,48 @@ public class DeliveryManagementController : ControllerBase
         _logger.LogInformation("Assigning vehicle {VehicleId} to delivery: {DeliveryId}", dto.VehicleId, id);
 
         // Validate vehicle exists in FleetManagement
-        try
+        var vehicleLookupRequest = new GetVehicleByIdRequest { Id = dto.VehicleId };
+        var vehicleLookupResponse = await _vehicleLookupClient.GetVehicleByIdAsync(vehicleLookupRequest);
+        
+        if (vehicleLookupResponse.Vehicles == null || !vehicleLookupResponse.Vehicles.Any())
         {
-            var vehicleLookupRequest = new GetVehicleByIdRequest { Id = dto.VehicleId };
-            var vehicleLookupResponse = await _vehicleLookupClient.GetVehicleByIdAsync(vehicleLookupRequest);
-            
-            if (vehicleLookupResponse.Vehicles == null || !vehicleLookupResponse.Vehicles.Any())
-            {
-                _logger.LogWarning("Vehicle {VehicleId} not found in FleetManagement", dto.VehicleId);
-                return NotFound(new { Message = $"Vehicle with ID {dto.VehicleId} does not exist in FleetManagement" });
-            }
+            _logger.LogWarning("Vehicle {VehicleId} not found in FleetManagement", dto.VehicleId);
+            return NotFound(new { Message = $"Vehicle with ID {dto.VehicleId} does not exist in FleetManagement" });
+        }
 
-            var vehicle = vehicleLookupResponse.Vehicles.First();
-            _logger.LogInformation("Vehicle found: {Registration} with status {Status}", vehicle.Registration, vehicle.Status);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error validating vehicle {VehicleId} in FleetManagement", dto.VehicleId);
-            return StatusCode(500, new { Message = "Error validating vehicle in FleetManagement" });
-        }
+        var vehicle = vehicleLookupResponse.Vehicles.First();
+        _logger.LogInformation("Vehicle found: {Registration} with status {Status}", vehicle.Registration, vehicle.Status);
 
         // Assign vehicle to delivery
-        try
+        var assignRequest = new AssignVehicleRequest
         {
-            var assignRequest = new AssignVehicleRequest
-            {
-                Id = id,
-                VehicleId = dto.VehicleId
-            };
-            var response = await _deliveryCommandClient.AssignVehicleAsync(assignRequest);
-            _logger.LogInformation("Vehicle {VehicleId} successfully assigned to delivery {DeliveryId}", dto.VehicleId, id);
-            return Ok(new { Message = response.Message });
-        }
-        catch (RpcException ex)
+            Id = id,
+            VehicleId = dto.VehicleId
+        };
+        var response = await _deliveryCommandClient.AssignVehicleAsync(assignRequest);
+        _logger.LogInformation("Vehicle {VehicleId} successfully assigned to delivery {DeliveryId}", dto.VehicleId, id);
+        return Ok(new { Message = response.Message });
+    }
+
+    [HttpGet("{id}/event-logs")]
+    public async Task<IActionResult> GetDeliveryEventLogs(string id)
+    {
+        _logger.LogInformation("Getting event logs for delivery: {DeliveryId}", id);
+        
+        var request = new GetDeliveryEventLogsRequest { DeliveryId = id };
+        var response = await _deliveryLookupClient.GetDeliveryEventLogsAsync(request);
+
+        var eventLogs = response.EventLogs.Select(e => new DeliveryEventLogDto
         {
-            _logger.LogError(ex, "Error assigning vehicle to delivery");
-            return StatusCode((int)ex.StatusCode, new { Message = ex.Status.Detail });
-        }
+            Id = Guid.Parse(e.Id),
+            DeliveryId = Guid.Parse(e.DeliveryId),
+            EventCategory = e.EventCategory,
+            EventType = e.EventType,
+            EventData = e.EventData,
+            OccurredAt = e.OccurredAt.ToDateTime()
+        }).ToList();
+
+        return Ok(new { message = response.Message, eventLogs });
     }
 
     #endregion
@@ -419,4 +368,14 @@ public class AssignDriverDto
 public class AssignVehicleDto
 {
     public string VehicleId { get; set; } = string.Empty;
+}
+
+public class DeliveryEventLogDto
+{
+    public Guid Id { get; set; }
+    public Guid DeliveryId { get; set; }
+    public string EventCategory { get; set; } = string.Empty;
+    public string EventType { get; set; } = string.Empty;
+    public string EventData { get; set; } = string.Empty;
+    public DateTime OccurredAt { get; set; }
 }

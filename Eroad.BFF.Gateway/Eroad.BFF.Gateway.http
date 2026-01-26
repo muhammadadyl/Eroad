@@ -320,6 +320,10 @@ Content-Type: application/json
 GET {{baseUrl}}/api/deliveries/{{deliveryId}}/checkpoints
 Accept: application/json
 
+### Get Delivery Event Logs
+GET {{baseUrl}}/api/deliveries/{{deliveryId}}/event-logs
+Accept: application/json
+
 ### Report Delay Incident
 POST {{baseUrl}}/api/deliveries/{{deliveryId}}/incidents
 Content-Type: application/json

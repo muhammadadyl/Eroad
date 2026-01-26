@@ -14,6 +14,7 @@ service DeliveryLookup {
   rpc GetDeliveriesByRoute(GetDeliveriesByRouteRequest) returns (DeliveryLookupResponse);
   rpc GetAllDeliveries(GetAllDeliveriesRequest) returns (DeliveryLookupResponse);
   rpc GetDeliveryCheckpoints(GetDeliveryCheckpointsRequest) returns (DeliveryCheckpointsResponse);
+  rpc GetDeliveryEventLogs(GetDeliveryEventLogsRequest) returns (DeliveryEventLogsResponse);
 }
 
 // Service for incident lookups
@@ -49,6 +50,10 @@ message GetDeliveryCheckpointsRequest {
   string delivery_id = 1;
 }
 
+message GetDeliveryEventLogsRequest {
+  string delivery_id = 1;
+}
+
 // Response messages
 message DeliveryLookupResponse {
   string message = 1;
@@ -64,6 +69,11 @@ message DeliveryCheckpointsResponse {
   string message = 1;
   string route_id = 2;
   repeated DeliveryCheckpointEntity checkpoints = 3;
+}
+
+message DeliveryEventLogsResponse {
+  string message = 1;
+  repeated DeliveryEventLogEntity event_logs = 2;
 }
 
 // Entity messages (mirror REST DTOs)
@@ -97,4 +107,13 @@ message DeliveryCheckpointEntity {
   string route_id = 3;
   string location = 4;
   google.protobuf.Timestamp reached_at = 5;
+}
+
+message DeliveryEventLogEntity {
+  string id = 1;
+  string delivery_id = 2;
+  string event_category = 3;
+  string event_type = 4;
+  string event_data = 5;
+  google.protobuf.Timestamp occurred_at = 6;
 }

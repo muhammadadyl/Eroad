@@ -12,6 +12,7 @@ namespace Eroad.DeliveryTracking.Query.Infrastructure.DataAccess
         public DbSet<DeliveryEntity> Deliveries { get; set; }
         public DbSet<IncidentEntity> Incidents { get; set; }
         public DbSet<DeliveryCheckpointEntity> DeliveryCheckpoints { get; set; }
+        public DbSet<DeliveryEventLogEntity> DeliveryEventLogs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -43,6 +44,16 @@ namespace Eroad.DeliveryTracking.Query.Infrastructure.DataAccess
 
             modelBuilder.Entity<DeliveryCheckpointEntity>()
                 .HasIndex(dc => dc.RouteId);
+
+            // Configure indexes for DeliveryEventLog
+            modelBuilder.Entity<DeliveryEventLogEntity>()
+                .HasIndex(e => e.DeliveryId);
+
+            modelBuilder.Entity<DeliveryEventLogEntity>()
+                .HasIndex(e => e.EventCategory);
+
+            modelBuilder.Entity<DeliveryEventLogEntity>()
+                .HasIndex(e => e.OccurredAt);
         }
     }
 }

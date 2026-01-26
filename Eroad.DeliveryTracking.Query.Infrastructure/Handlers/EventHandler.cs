@@ -1,6 +1,7 @@
 using Eroad.DeliveryTracking.Common;
 using Eroad.DeliveryTracking.Query.Domain.Entities;
 using Eroad.DeliveryTracking.Query.Domain.Repositories;
+using System.Text.Json;
 
 namespace Eroad.DeliveryTracking.Query.Infrastructure.Handlers
 {
@@ -9,15 +10,32 @@ namespace Eroad.DeliveryTracking.Query.Infrastructure.Handlers
         private readonly IDeliveryRepository _deliveryRepository;
         private readonly IIncidentRepository _incidentRepository;
         private readonly IDeliveryCheckpointRepository _checkpointRepository;
+        private readonly IDeliveryEventLogRepository _eventLogRepository;
 
         public EventHandler(
             IDeliveryRepository deliveryRepository, 
             IIncidentRepository incidentRepository,
-            IDeliveryCheckpointRepository checkpointRepository)
+            IDeliveryCheckpointRepository checkpointRepository,
+            IDeliveryEventLogRepository eventLogRepository)
         {
             _deliveryRepository = deliveryRepository;
             _incidentRepository = incidentRepository;
             _checkpointRepository = checkpointRepository;
+            _eventLogRepository = eventLogRepository;
+        }
+
+        private async Task LogEventAsync(Guid deliveryId, string eventCategory, string eventType, object eventData, DateTime occurredAt)
+        {
+            var eventLog = new DeliveryEventLogEntity
+            {
+                Id = Guid.NewGuid(),
+                DeliveryId = deliveryId,
+                EventCategory = eventCategory,
+                EventType = eventType,
+                EventData = JsonSerializer.Serialize(eventData),
+                OccurredAt = occurredAt
+            };
+            await _eventLogRepository.CreateAsync(eventLog);
         }
 
         public async Task On(DeliveryCreatedEvent @event)
@@ -33,6 +51,15 @@ namespace Eroad.DeliveryTracking.Query.Infrastructure.Handlers
             };
 
             await _deliveryRepository.CreateAsync(delivery);
+
+            // Log event
+            await LogEventAsync(
+                @event.Id,
+                "DeliveryStatus",
+                nameof(DeliveryCreatedEvent),
+                @event,
+                DateTime.UtcNow
+            );
         }
 
         public async Task On(DeliveryStatusChangedEvent @event)
@@ -49,6 +76,15 @@ namespace Eroad.DeliveryTracking.Query.Infrastructure.Handlers
             }
 
             await _deliveryRepository.UpdateAsync(delivery);
+
+            // Log event
+            await LogEventAsync(
+                @event.DeliveryId,
+                "DeliveryStatus",
+                nameof(DeliveryStatusChangedEvent),
+                @event,
+                @event.ChangedAt
+            );
         }
 
         public async Task On(CheckpointReachedEvent @event)
@@ -81,6 +117,15 @@ namespace Eroad.DeliveryTracking.Query.Infrastructure.Handlers
             delivery.CurrentCheckpoint = $"{@event.Sequence}: {@event.Location}";
 
             await _deliveryRepository.UpdateAsync(delivery);
+
+            // Log event
+            await LogEventAsync(
+                @event.DeliveryId,
+                "Checkpoint",
+                nameof(CheckpointReachedEvent),
+                @event,
+                @event.ReachedAt
+            );
         }
 
         public async Task On(IncidentReportedEvent @event)
@@ -97,6 +142,15 @@ namespace Eroad.DeliveryTracking.Query.Infrastructure.Handlers
             };
 
             await _incidentRepository.CreateAsync(incident);
+
+            // Log event
+            await LogEventAsync(
+                @event.Id,
+                "Incident",
+                nameof(IncidentReportedEvent),
+                @event,
+                @event.Incident.ReportedTimestamp
+            );
         }
 
         public async Task On(IncidentResolvedEvent @event)
@@ -109,6 +163,15 @@ namespace Eroad.DeliveryTracking.Query.Infrastructure.Handlers
             incident.ResolvedTimestamp = @event.ResolvedTimestamp;
 
             await _incidentRepository.UpdateAsync(incident);
+
+            // Log event
+            await LogEventAsync(
+                incident.DeliveryId,
+                "Incident",
+                nameof(IncidentResolvedEvent),
+                @event,
+                @event.ResolvedTimestamp
+            );
         }
 
         public async Task On(ProofOfDeliveryCapturedEvent @event)
@@ -123,6 +186,53 @@ namespace Eroad.DeliveryTracking.Query.Infrastructure.Handlers
             delivery.Status = DeliveryStatus.Delivered.ToString();
 
             await _deliveryRepository.UpdateAsync(delivery);
+
+            // Log event
+            await LogEventAsync(
+                @event.DeliveryId,
+                "DeliveryStatus",
+                nameof(ProofOfDeliveryCapturedEvent),
+                @event,
+                @event.DeliveredAt
+            );
+        }
+
+        public async Task On(DriverAssignedEvent @event)
+        {
+            var delivery = await _deliveryRepository.GetByIdAsync(@event.Id);
+
+            if (delivery == null) return;
+
+            delivery.DriverId = @event.DriverId;
+            await _deliveryRepository.UpdateAsync(delivery);
+
+            // Log event
+            await LogEventAsync(
+                @event.Id,
+                "DeliveryStatus",
+                nameof(DriverAssignedEvent),
+                @event,
+                @event.AssignedAt
+            );
+        }
+
+        public async Task On(VehicleAssignedEvent @event)
+        {
+            var delivery = await _deliveryRepository.GetByIdAsync(@event.Id);
+
+            if (delivery == null) return;
+
+            delivery.VehicleId = @event.VehicleId;
+            await _deliveryRepository.UpdateAsync(delivery);
+
+            // Log event
+            await LogEventAsync(
+                @event.Id,
+                "DeliveryStatus",
+                nameof(VehicleAssignedEvent),
+                @event,
+                @event.AssignedAt
+            );
         }
     }
 }
