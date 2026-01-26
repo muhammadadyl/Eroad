@@ -144,5 +144,43 @@ namespace Eroad.DeliveryTracking.Command.Domain.Aggregates
             _id = @event.Id;
             _status = DeliveryStatus.Delivered;
         }
+
+        public void AssignDriver(Guid driverId)
+        {
+            if (driverId == Guid.Empty)
+                throw new ArgumentException("Driver ID cannot be empty", nameof(driverId));
+            if (_driverId == driverId)
+                throw new InvalidOperationException("Driver is already assigned to this delivery");
+
+            RaiseEvent(new DriverAssignedEvent(_id, driverId, DateTime.UtcNow)
+            {
+                Id = _id
+            });
+        }
+
+        public void Apply(DriverAssignedEvent @event)
+        {
+            _id = @event.Id;
+            _driverId = @event.DriverId;
+        }
+
+        public void AssignVehicle(Guid vehicleId)
+        {
+            if (vehicleId == Guid.Empty)
+                throw new ArgumentException("Vehicle ID cannot be empty", nameof(vehicleId));
+            if (_vehicleId == vehicleId)
+                throw new InvalidOperationException("Vehicle is already assigned to this delivery");
+
+            RaiseEvent(new VehicleAssignedEvent(_id, vehicleId, DateTime.UtcNow)
+            {
+                Id = _id
+            });
+        }
+
+        public void Apply(VehicleAssignedEvent @event)
+        {
+            _id = @event.Id;
+            _vehicleId = @event.VehicleId;
+        }
     }
 }

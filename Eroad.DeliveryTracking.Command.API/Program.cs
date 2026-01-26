@@ -34,6 +34,8 @@ BsonClassMap.RegisterClassMap<CheckpointReachedEvent>();
 BsonClassMap.RegisterClassMap<IncidentReportedEvent>();
 BsonClassMap.RegisterClassMap<IncidentResolvedEvent>();
 BsonClassMap.RegisterClassMap<ProofOfDeliveryCapturedEvent>();
+BsonClassMap.RegisterClassMap<DriverAssignedEvent>();
+BsonClassMap.RegisterClassMap<VehicleAssignedEvent>();
 
 // Add services to the container.
 builder.Services.Configure<MongoDbConfig>(builder.Configuration.GetSection(nameof(MongoDbConfig)));

@@ -22,4 +22,8 @@ namespace Eroad.DeliveryTracking.Common
         string SignatureUrl,
         string ReceiverName,
         DateTime DeliveredAt) : DomainEvent(nameof(ProofOfDeliveryCapturedEvent));
+
+    public record DriverAssignedEvent(Guid DeliveryId, Guid DriverId, DateTime AssignedAt) : DomainEvent(nameof(DriverAssignedEvent));
+
+    public record VehicleAssignedEvent(Guid DeliveryId, Guid VehicleId, DateTime AssignedAt) : DomainEvent(nameof(VehicleAssignedEvent));
 }

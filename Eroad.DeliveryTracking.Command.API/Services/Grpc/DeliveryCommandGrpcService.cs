@@ -310,5 +310,95 @@ namespace Eroad.DeliveryTracking.Command.API.Services.Grpc
                 throw new RpcException(new Status(StatusCode.Internal, "An error occurred while capturing proof of delivery"));
             }
         }
+
+        public override async Task<AssignDriverResponse> AssignDriver(AssignDriverRequest request, ServerCallContext context)
+        {
+            try
+            {
+                if (!Guid.TryParse(request.Id, out var deliveryId))
+                {
+                    throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid delivery ID format"));
+                }
+
+                if (!Guid.TryParse(request.DriverId, out var driverId))
+                {
+                    throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid driver ID format"));
+                }
+
+                var command = new AssignDriverCommand
+                {
+                    Id = deliveryId,
+                    DriverId = driverId
+                };
+
+                await _mediator.Send(command, context.CancellationToken);
+
+                _logger.LogInformation("Driver {DriverId} assigned to delivery {DeliveryId}", driverId, deliveryId);
+
+                return new AssignDriverResponse
+                {
+                    Message = "Driver assigned successfully"
+                };
+            }
+            catch (RpcException)
+            {
+                throw;
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex, "Invalid operation when assigning driver");
+                throw new RpcException(new Status(StatusCode.InvalidArgument, ex.Message));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error assigning driver to delivery {DeliveryId}", request.Id);
+                throw new RpcException(new Status(StatusCode.Internal, "An error occurred while assigning driver"));
+            }
+        }
+
+        public override async Task<AssignVehicleResponse> AssignVehicle(AssignVehicleRequest request, ServerCallContext context)
+        {
+            try
+            {
+                if (!Guid.TryParse(request.Id, out var deliveryId))
+                {
+                    throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid delivery ID format"));
+                }
+
+                if (!Guid.TryParse(request.VehicleId, out var vehicleId))
+                {
+                    throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid vehicle ID format"));
+                }
+
+                var command = new AssignVehicleCommand
+                {
+                    Id = deliveryId,
+                    VehicleId = vehicleId
+                };
+
+                await _mediator.Send(command, context.CancellationToken);
+
+                _logger.LogInformation("Vehicle {VehicleId} assigned to delivery {DeliveryId}", vehicleId, deliveryId);
+
+                return new AssignVehicleResponse
+                {
+                    Message = "Vehicle assigned successfully"
+                };
+            }
+            catch (RpcException)
+            {
+                throw;
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex, "Invalid operation when assigning vehicle");
+                throw new RpcException(new Status(StatusCode.InvalidArgument, ex.Message));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error assigning vehicle to delivery {DeliveryId}", request.Id);
+                throw new RpcException(new Status(StatusCode.Internal, "An error occurred while assigning vehicle"));
+            }
+        }
     }
 }

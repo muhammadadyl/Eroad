@@ -12,6 +12,8 @@ service DeliveryCommand {
   rpc ReportIncident(ReportIncidentRequest) returns (ReportIncidentResponse);
   rpc ResolveIncident(ResolveIncidentRequest) returns (ResolveIncidentResponse);
   rpc CaptureProofOfDelivery(CaptureProofOfDeliveryRequest) returns (CaptureProofOfDeliveryResponse);
+  rpc AssignDriver(AssignDriverRequest) returns (AssignDriverResponse);
+  rpc AssignVehicle(AssignVehicleRequest) returns (AssignVehicleResponse);
 }
 
 // Request messages
@@ -49,6 +51,16 @@ message CaptureProofOfDeliveryRequest {
   string receiver_name = 3;
 }
 
+message AssignDriverRequest {
+  string id = 1;
+  string driver_id = 2;
+}
+
+message AssignVehicleRequest {
+  string id = 1;
+  string vehicle_id = 2;
+}
+
 // Response messages
 message CreateDeliveryResponse {
   string message = 1;
@@ -72,5 +84,13 @@ message ResolveIncidentResponse {
 }
 
 message CaptureProofOfDeliveryResponse {
+  string message = 1;
+}
+
+message AssignDriverResponse {
+  string message = 1;
+}
+
+message AssignVehicleResponse {
   string message = 1;
 }
