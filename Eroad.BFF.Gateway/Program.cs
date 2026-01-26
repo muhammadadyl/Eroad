@@ -139,11 +139,10 @@ builder.Services
         options.MaxReceiveMessageSize = 5 * 1024 * 1024; // 5 MB
     });
 
-// Register aggregator services with interfaces for dependency injection
-builder.Services.AddScoped<ILiveTrackingService, LiveTrackingAggregator>();
-builder.Services.AddScoped<IFleetManagementService, FleetManagementAggregator>();
-builder.Services.AddScoped<IRouteManagementService, RouteManagementAggregator>();
-builder.Services.AddScoped<IEventManagementService, EventManagementAggregator>();
+// Register application services with interfaces for dependency injection
+builder.Services.AddScoped<IDeliveryTrackingService, DeliveryTrackingService>();
+builder.Services.AddScoped<IFleetManagementService, FleetManagementService>();
+builder.Services.AddScoped<IRouteManagementService, RouteManagementService>();
 
 var app = builder.Build();
 

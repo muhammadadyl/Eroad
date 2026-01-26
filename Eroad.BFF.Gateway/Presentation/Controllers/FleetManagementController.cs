@@ -1,6 +1,6 @@
+using Eroad.BFF.Gateway.Application.Models;
 using Eroad.BFF.Gateway.Application.Interfaces;
 using Eroad.FleetManagement.Contracts;
-using Grpc.Core;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Eroad.BFF.Gateway.Presentation.Controllers;
@@ -10,19 +10,13 @@ namespace Eroad.BFF.Gateway.Presentation.Controllers;
 public class FleetManagementController : ControllerBase
 {
     private readonly IFleetManagementService _aggregator;
-    private readonly VehicleCommand.VehicleCommandClient _vehicleCommandClient;
-    private readonly DriverCommand.DriverCommandClient _driverCommandClient;
     private readonly ILogger<FleetManagementController> _logger;
 
     public FleetManagementController(
         IFleetManagementService aggregator,
-        VehicleCommand.VehicleCommandClient vehicleCommandClient,
-        DriverCommand.DriverCommandClient driverCommandClient,
         ILogger<FleetManagementController> logger)
     {
         _aggregator = aggregator;
-        _vehicleCommandClient = vehicleCommandClient;
-        _driverCommandClient = driverCommandClient;
         _logger = logger;
     }
 
@@ -56,36 +50,22 @@ public class FleetManagementController : ControllerBase
     [HttpPost("vehicles")]
     public async Task<IActionResult> AddVehicle([FromBody] AddVehicleRequest request)
     {
-        _logger.LogInformation("Adding new vehicle with registration: {Registration}", request.Registration);
-        var response = await _vehicleCommandClient.AddVehicleAsync(request);
-        return Ok(new { Message = response.Message });
+        var result = await _aggregator.AddVehicleAsync(request.Id, request.Registration, request.VehicleType);
+        return Ok(result);
     }
 
     [HttpPut("vehicles/{id}")]
-    public async Task<IActionResult> UpdateVehicle(string id, [FromBody] UpdateVehicleDto dto)
+    public async Task<IActionResult> UpdateVehicle(string id, [FromBody] UpdateVehicleModel dto)
     {
-        _logger.LogInformation("Updating vehicle: {VehicleId}", id);
-        var request = new UpdateVehicleRequest
-        {
-            Id = id,
-            Registration = dto.Registration,
-            VehicleType = dto.VehicleType
-        };
-        var response = await _vehicleCommandClient.UpdateVehicleAsync(request);
-        return Ok(new { Message = response.Message });
+        var result = await _aggregator.UpdateVehicleAsync(id, dto.Registration, dto.VehicleType);
+        return Ok(result);
     }
 
     [HttpPatch("vehicles/{id}/status")]
-    public async Task<IActionResult> ChangeVehicleStatus(string id, [FromBody] ChangeStatusDto dto)
+    public async Task<IActionResult> ChangeVehicleStatus(string id, [FromBody] ChangeStatusModel dto)
     {
-        _logger.LogInformation("Changing vehicle status: {VehicleId} to {Status}", id, dto.Status);
-        var request = new ChangeVehicleStatusRequest
-        {
-            Id = id,
-            Status = dto.Status
-        };
-        var response = await _vehicleCommandClient.ChangeVehicleStatusAsync(request);
-        return Ok(new { Message = response.Message });
+        var result = await _aggregator.ChangeVehicleStatusAsync(id, dto.Status);
+        return Ok(result);
     }
 
     #endregion
@@ -95,54 +75,23 @@ public class FleetManagementController : ControllerBase
     [HttpPost("drivers")]
     public async Task<IActionResult> AddDriver([FromBody] AddDriverRequest request)
     {
-        _logger.LogInformation("Adding new driver: {Name}", request.Name);
-        var response = await _driverCommandClient.AddDriverAsync(request);
-        return Ok(new { Message = response.Message });
+        var result = await _aggregator.AddDriverAsync(request.Id, request.Name, request.DriverLicense);
+        return Ok(result);
     }
 
     [HttpPut("drivers/{id}")]
-    public async Task<IActionResult> UpdateDriver(string id, [FromBody] UpdateDriverDto dto)
+    public async Task<IActionResult> UpdateDriver(string id, [FromBody] UpdateDriverModel dto)
     {
-        _logger.LogInformation("Updating driver: {DriverId}", id);
-        var request = new UpdateDriverRequest
-        {
-            Id = id,
-            Name = dto.Name,
-            DriverLicense = dto.DriverLicense
-        };
-        var response = await _driverCommandClient.UpdateDriverAsync(request);
-        return Ok(new { Message = response.Message });
+        var result = await _aggregator.UpdateDriverAsync(id, dto.Name, dto.DriverLicense);
+        return Ok(result);
     }
 
     [HttpPatch("drivers/{id}/status")]
-    public async Task<IActionResult> ChangeDriverStatus(string id, [FromBody] ChangeStatusDto dto)
+    public async Task<IActionResult> ChangeDriverStatus(string id, [FromBody] ChangeStatusModel dto)
     {
-        _logger.LogInformation("Changing driver status: {DriverId} to {Status}", id, dto.Status);
-        var request = new ChangeDriverStatusRequest
-        {
-            Id = id,
-            Status = dto.Status
-        };
-        var response = await _driverCommandClient.ChangeDriverStatusAsync(request);
-        return Ok(new { Message = response.Message });
+        var result = await _aggregator.ChangeDriverStatusAsync(id, dto.Status);
+        return Ok(result);
     }
 
     #endregion
-}
-
-public class UpdateVehicleDto
-{
-    public string Registration { get; set; } = string.Empty;
-    public string VehicleType { get; set; } = string.Empty;
-}
-
-public class UpdateDriverDto
-{
-    public string Name { get; set; } = string.Empty;
-    public string DriverLicense { get; set; } = string.Empty;
-}
-
-public class ChangeStatusDto
-{
-    public string Status { get; set; } = string.Empty;
 }

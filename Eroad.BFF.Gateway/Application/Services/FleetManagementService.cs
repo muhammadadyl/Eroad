@@ -1,26 +1,28 @@
-using Eroad.BFF.Gateway.Application.DTOs;
+using Eroad.BFF.Gateway.Application.Models;
 using Eroad.BFF.Gateway.Application.Interfaces;
 using Eroad.FleetManagement.Contracts;
-using Eroad.RouteManagement.Contracts;
 
 namespace Eroad.BFF.Gateway.Application.Services;
 
-public class FleetManagementAggregator : IFleetManagementService
+public class FleetManagementService : IFleetManagementService
 {
     private readonly DriverLookup.DriverLookupClient _driverClient;
     private readonly VehicleLookup.VehicleLookupClient _vehicleClient;
-    private readonly RouteLookup.RouteLookupClient _routeClient;
-    private readonly ILogger<FleetManagementAggregator> _logger;
+    private readonly VehicleCommand.VehicleCommandClient _vehicleCommandClient;
+    private readonly DriverCommand.DriverCommandClient _driverCommandClient;
+    private readonly ILogger<FleetManagementService> _logger;
 
-    public FleetManagementAggregator(
+    public FleetManagementService(
         DriverLookup.DriverLookupClient driverClient,
         VehicleLookup.VehicleLookupClient vehicleClient,
-        RouteLookup.RouteLookupClient routeClient,
-        ILogger<FleetManagementAggregator> logger)
+        VehicleCommand.VehicleCommandClient vehicleCommandClient,
+        DriverCommand.DriverCommandClient driverCommandClient,
+        ILogger<FleetManagementService> logger)
     {
         _driverClient = driverClient;
         _vehicleClient = vehicleClient;
-        _routeClient = routeClient;
+        _vehicleCommandClient = vehicleCommandClient;
+        _driverCommandClient = driverCommandClient;
         _logger = logger;
     }
 
@@ -118,5 +120,81 @@ public class FleetManagementAggregator : IFleetManagementService
             Status = driver.Status,
             RouteHistory = new List<RouteHistoryItem>() // Route assignment removed from FleetManagement
         };
+    }
+
+    public async Task<object> AddVehicleAsync(string id, string registration, string vehicleType)
+    {
+        _logger.LogInformation("Adding new vehicle with registration: {Registration}", registration);
+        var request = new AddVehicleRequest
+        {
+            Id = id,
+            Registration = registration,
+            VehicleType = vehicleType
+        };
+        var response = await _vehicleCommandClient.AddVehicleAsync(request);
+        return new { Message = response.Message };
+    }
+
+    public async Task<object> UpdateVehicleAsync(string id, string registration, string vehicleType)
+    {
+        _logger.LogInformation("Updating vehicle: {VehicleId}", id);
+        var request = new UpdateVehicleRequest
+        {
+            Id = id,
+            Registration = registration,
+            VehicleType = vehicleType
+        };
+        var response = await _vehicleCommandClient.UpdateVehicleAsync(request);
+        return new { Message = response.Message };
+    }
+
+    public async Task<object> ChangeVehicleStatusAsync(string id, string status)
+    {
+        _logger.LogInformation("Changing vehicle status: {VehicleId} to {Status}", id, status);
+        var request = new ChangeVehicleStatusRequest
+        {
+            Id = id,
+            Status = status
+        };
+        var response = await _vehicleCommandClient.ChangeVehicleStatusAsync(request);
+        return new { Message = response.Message };
+    }
+
+    public async Task<object> AddDriverAsync(string id, string name, string driverLicense)
+    {
+        _logger.LogInformation("Adding new driver: {Name}", name);
+        var request = new AddDriverRequest
+        {
+            Id = id,
+            Name = name,
+            DriverLicense = driverLicense
+        };
+        var response = await _driverCommandClient.AddDriverAsync(request);
+        return new { Message = response.Message };
+    }
+
+    public async Task<object> UpdateDriverAsync(string id, string name, string driverLicense)
+    {
+        _logger.LogInformation("Updating driver: {DriverId}", id);
+        var request = new UpdateDriverRequest
+        {
+            Id = id,
+            Name = name,
+            DriverLicense = driverLicense
+        };
+        var response = await _driverCommandClient.UpdateDriverAsync(request);
+        return new { Message = response.Message };
+    }
+
+    public async Task<object> ChangeDriverStatusAsync(string id, string status)
+    {
+        _logger.LogInformation("Changing driver status: {DriverId} to {Status}", id, status);
+        var request = new ChangeDriverStatusRequest
+        {
+            Id = id,
+            Status = status
+        };
+        var response = await _driverCommandClient.ChangeDriverStatusAsync(request);
+        return new { Message = response.Message };
     }
 }

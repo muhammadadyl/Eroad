@@ -34,32 +34,8 @@ GET {{baseUrl}}/api/routes/{{routeId}}
 Accept: application/json
 
 ###############################################################################
-# EVENT MANAGEMENT - QUERY APIs
-###############################################################################
-
-### Get Delivery Events
-GET {{baseUrl}}/api/events/deliveries/{{deliveryId}}
-Accept: application/json
-
-### Get Incident Dashboard
-GET {{baseUrl}}/api/events/incidents/dashboard
-Accept: application/json
-
-### Get Incident Timeline
-GET {{baseUrl}}/api/events/incidents/{{incidentId}}/timeline
-Accept: application/json
-
-### Get Event Statistics
-GET {{baseUrl}}/api/events/statistics
-Accept: application/json
-
-###############################################################################
 # DELIVERY MANAGEMENT - QUERY APIs
 ###############################################################################
-
-### Get Delivery Context
-GET {{baseUrl}}/api/deliveries/{{deliveryId}}/context
-Accept: application/json
 
 ### Get Live Tracking
 GET {{baseUrl}}/api/deliveries/live-tracking
@@ -461,23 +437,17 @@ Content-Type: application/json
   "status": "InTransit"
 }
 
-### STEP 9: Update Checkpoint 1 Arrival
-PATCH {{baseUrl}}/api/routes/550e8400-e29b-41d4-a716-446655440103/checkpoints/1
-Content-Type: application/json
-
-{
-  "actualTime": "2026-01-25T08:05:00Z"
-}
-
-### STEP 8: Update Delivery Current Checkpoint
+### STEP 9: Update Delivery Current Checkpoint
 PATCH {{baseUrl}}/api/deliveries/550e8400-e29b-41d4-a716-446655440104/checkpoint
 Content-Type: application/json
 
 {
-  "checkpoint": "Highway Entrance"
+  "routeId": "550e8400-e29b-41d4-a716-446655440103",
+  "sequence": 1,
+  "location": "Highway Entrance"
 }
 
-### STEP 9: Report Incident (Optional)
+### STEP 10: Report Incident (Optional)
 POST {{baseUrl}}/api/deliveries/550e8400-e29b-41d4-a716-446655440104/incidents
 Content-Type: application/json
 
@@ -486,7 +456,7 @@ Content-Type: application/json
   "description": "Construction on main road"
 }
 
-### STEP 10: Update Delivery Status to OutForDelivery
+### STEP 11: Update Delivery Status to OutForDelivery
 PATCH {{baseUrl}}/api/deliveries/550e8400-e29b-41d4-a716-446655440104/status
 Content-Type: application/json
 
@@ -494,7 +464,7 @@ Content-Type: application/json
   "status": "OutForDelivery"
 }
 
-### STEP 11: Capture Proof of Delivery
+### STEP 12: Capture Proof of Delivery
 POST {{baseUrl}}/api/deliveries/550e8400-e29b-41d4-a716-446655440104/proof-of-delivery
 Content-Type: application/json
 
@@ -503,7 +473,7 @@ Content-Type: application/json
   "receiverName": "Customer Representative"
 }
 
-### STEP 12: Complete Delivery
+### STEP 13: Complete Delivery
 PATCH {{baseUrl}}/api/deliveries/550e8400-e29b-41d4-a716-446655440104/status
 Content-Type: application/json
 
@@ -511,7 +481,7 @@ Content-Type: application/json
   "status": "Delivered"
 }
 
-### STEP 13: Complete Route
+### STEP 14: Complete Route
 PATCH {{baseUrl}}/api/routes/550e8400-e29b-41d4-a716-446655440103/status
 Content-Type: application/json
 
@@ -519,10 +489,6 @@ Content-Type: application/json
   "status": "Completed"
 }
 
-### STEP 14: Verify Fleet Overview
+### STEP 15: Verify Fleet Overview
 GET {{baseUrl}}/api/fleet/overview
-Accept: application/json
-
-### STEP 15: Verify Event Statistics
-GET {{baseUrl}}/api/events/statistics
 Accept: application/json

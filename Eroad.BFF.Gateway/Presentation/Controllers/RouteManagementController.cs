@@ -1,7 +1,6 @@
+using Eroad.BFF.Gateway.Application.Models;
 using Eroad.BFF.Gateway.Application.Interfaces;
 using Eroad.RouteManagement.Contracts;
-using Google.Protobuf.WellKnownTypes;
-using Grpc.Core;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Eroad.BFF.Gateway.Presentation.Controllers;
@@ -11,16 +10,13 @@ namespace Eroad.BFF.Gateway.Presentation.Controllers;
 public class RouteManagementController : ControllerBase
 {
     private readonly IRouteManagementService _aggregator;
-    private readonly RouteCommand.RouteCommandClient _routeCommandClient;
     private readonly ILogger<RouteManagementController> _logger;
 
     public RouteManagementController(
         IRouteManagementService aggregator,
-        RouteCommand.RouteCommandClient routeCommandClient,
         ILogger<RouteManagementController> logger)
     {
         _aggregator = aggregator;
-        _routeCommandClient = routeCommandClient;
         _logger = logger;
     }
 
@@ -46,70 +42,30 @@ public class RouteManagementController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateRoute([FromBody] CreateRouteRequest request)
     {
-        _logger.LogInformation("Creating new route from {Origin} to {Destination}", request.Origin, request.Destination);
-        var response = await _routeCommandClient.CreateRouteAsync(request);
-        return Ok(new { Message = response.Message });
+        var result = await _aggregator.CreateRouteAsync(request.Id, request.Origin, request.Destination);
+        return Ok(result);
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateRoute(string id, [FromBody] UpdateRouteDto dto)
+    public async Task<IActionResult> UpdateRoute(string id, [FromBody] UpdateRouteModel dto)
     {
-        _logger.LogInformation("Updating route: {RouteId}", id);
-        var request = new UpdateRouteRequest
-        {
-            Id = id,
-            Origin = dto.Origin,
-            Destination = dto.Destination
-        };
-        var response = await _routeCommandClient.UpdateRouteAsync(request);
-        return Ok(new { Message = response.Message });
+        var result = await _aggregator.UpdateRouteAsync(id, dto.Origin, dto.Destination);
+        return Ok(result);
     }
 
     [HttpPatch("{id}/status")]
-    public async Task<IActionResult> ChangeRouteStatus(string id, [FromBody] ChangeRouteStatusDto dto)
+    public async Task<IActionResult> ChangeRouteStatus(string id, [FromBody] ChangeRouteStatusModel dto)
     {
-        _logger.LogInformation("Changing route status: {RouteId} to {Status}", id, dto.Status);
-        var request = new ChangeRouteStatusRequest
-        {
-            Id = id,
-            Status = dto.Status
-        };
-        var response = await _routeCommandClient.ChangeRouteStatusAsync(request);
-        return Ok(new { Message = response.Message });
+        var result = await _aggregator.ChangeRouteStatusAsync(id, dto.Status);
+        return Ok(result);
     }
 
     [HttpPost("{id}/checkpoints")]
-    public async Task<IActionResult> AddCheckpoint(string id, [FromBody] AddCheckpointDto dto)
+    public async Task<IActionResult> AddCheckpoint(string id, [FromBody] AddCheckpointModel dto)
     {
-        _logger.LogInformation("Adding checkpoint to route: {RouteId}", id);
-        var request = new AddCheckpointRequest
-        {
-            Id = id,
-            Sequence = dto.Sequence,
-            Location = dto.Location,
-            ExpectedTime = Timestamp.FromDateTime(dto.ExpectedTime.ToUniversalTime())
-        };
-        var response = await _routeCommandClient.AddCheckpointAsync(request);
-        return Ok(new { Message = response.Message });
+        var result = await _aggregator.AddCheckpointAsync(id, dto.Sequence, dto.Location, dto.ExpectedTime);
+        return Ok(result);
     }
 
     #endregion
-}
-
-public class UpdateRouteDto
-{
-    public string Origin { get; set; } = string.Empty;
-    public string Destination { get; set; } = string.Empty;
-}
-
-public class ChangeRouteStatusDto
-{
-    public string Status { get; set; } = string.Empty;
-}
-
-public class AddCheckpointDto
-{
-    public int Sequence { get; set; }
-    public string Location { get; set; } = string.Empty;
-    public DateTime ExpectedTime { get; set; }
 }

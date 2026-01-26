@@ -1,30 +1,26 @@
-using Eroad.BFF.Gateway.Application.DTOs;
+using Eroad.BFF.Gateway.Application.Models;
 using Eroad.BFF.Gateway.Application.Interfaces;
 using Eroad.DeliveryTracking.Contracts;
-using Eroad.FleetManagement.Contracts;
 using Eroad.RouteManagement.Contracts;
 
 namespace Eroad.BFF.Gateway.Application.Services;
 
-public class RouteManagementAggregator : IRouteManagementService
+public class RouteManagementService : IRouteManagementService
 {
     private readonly RouteLookup.RouteLookupClient _routeClient;
     private readonly DeliveryLookup.DeliveryLookupClient _deliveryClient;
-    private readonly DriverLookup.DriverLookupClient _driverClient;
-    private readonly VehicleLookup.VehicleLookupClient _vehicleClient;
-    private readonly ILogger<RouteManagementAggregator> _logger;
+    private readonly RouteCommand.RouteCommandClient _routeCommandClient;
+    private readonly ILogger<RouteManagementService> _logger;
 
-    public RouteManagementAggregator(
+    public RouteManagementService(
         RouteLookup.RouteLookupClient routeClient,
         DeliveryLookup.DeliveryLookupClient deliveryClient,
-        DriverLookup.DriverLookupClient driverClient,
-        VehicleLookup.VehicleLookupClient vehicleClient,
-        ILogger<RouteManagementAggregator> logger)
+        RouteCommand.RouteCommandClient routeCommandClient,
+        ILogger<RouteManagementService> logger)
     {
         _routeClient = routeClient;
         _deliveryClient = deliveryClient;
-        _driverClient = driverClient;
-        _vehicleClient = vehicleClient;
+        _routeCommandClient = routeCommandClient;
         _logger = logger;
     }
 
@@ -100,5 +96,57 @@ public class RouteManagementAggregator : IRouteManagementService
             Checkpoints = checkpoints,
             Deliveries = deliveries
         };
+    }
+
+    public async Task<object> CreateRouteAsync(string id, string origin, string destination)
+    {
+        _logger.LogInformation("Creating new route from {Origin} to {Destination}", origin, destination);
+        var request = new CreateRouteRequest
+        {
+            Id = id,
+            Origin = origin,
+            Destination = destination
+        };
+        var response = await _routeCommandClient.CreateRouteAsync(request);
+        return new { Message = response.Message };
+    }
+
+    public async Task<object> UpdateRouteAsync(string id, string origin, string destination)
+    {
+        _logger.LogInformation("Updating route: {RouteId}", id);
+        var request = new UpdateRouteRequest
+        {
+            Id = id,
+            Origin = origin,
+            Destination = destination
+        };
+        var response = await _routeCommandClient.UpdateRouteAsync(request);
+        return new { Message = response.Message };
+    }
+
+    public async Task<object> ChangeRouteStatusAsync(string id, string status)
+    {
+        _logger.LogInformation("Changing route status: {RouteId} to {Status}", id, status);
+        var request = new ChangeRouteStatusRequest
+        {
+            Id = id,
+            Status = status
+        };
+        var response = await _routeCommandClient.ChangeRouteStatusAsync(request);
+        return new { Message = response.Message };
+    }
+
+    public async Task<object> AddCheckpointAsync(string id, int sequence, string location, DateTime expectedTime)
+    {
+        _logger.LogInformation("Adding checkpoint to route: {RouteId}", id);
+        var request = new AddCheckpointRequest
+        {
+            Id = id,
+            Sequence = sequence,
+            Location = location,
+            ExpectedTime = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(expectedTime.ToUniversalTime())
+        };
+        var response = await _routeCommandClient.AddCheckpointAsync(request);
+        return new { Message = response.Message };
     }
 }

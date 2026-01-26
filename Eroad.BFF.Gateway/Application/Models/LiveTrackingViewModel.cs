@@ -1,6 +1,6 @@
-namespace Eroad.BFF.Gateway.Application.DTOs;
+namespace Eroad.BFF.Gateway.Application.Models;
 
-public class LiveTrackingView
+public class LiveTrackingViewModel
 {
     public List<ActiveDeliveryItem> ActiveDeliveries { get; set; } = new();
 }

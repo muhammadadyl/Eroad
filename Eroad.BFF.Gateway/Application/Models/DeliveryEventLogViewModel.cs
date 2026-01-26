@@ -1,6 +1,6 @@
-namespace Eroad.BFF.Gateway.Application.DTOs
+namespace Eroad.BFF.Gateway.Application.Models
 {
-    public class DeliveryEventLogDto
+    public class DeliveryEventLogViewModel
     {
         public Guid Id { get; set; }
         public Guid DeliveryId { get; set; }

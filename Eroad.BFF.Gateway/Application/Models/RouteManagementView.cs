@@ -1,4 +1,4 @@
-namespace Eroad.BFF.Gateway.Application.DTOs;
+namespace Eroad.BFF.Gateway.Application.Models;
 
 public class RouteOverviewView
 {
