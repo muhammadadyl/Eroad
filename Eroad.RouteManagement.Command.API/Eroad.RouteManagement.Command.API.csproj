@@ -16,7 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Eroad.Common\Eroad.Common.csproj" />
     <ProjectReference Include="..\Eroad.CQRS.Core\Eroad.CQRS.Core.csproj" />
     <ProjectReference Include="..\Eroad.RouteManagement.Command.Domain\Eroad.RouteManagement.Command.Domain.csproj" />
     <ProjectReference Include="..\Eroad.RouteManagement.Command.Infrastructure\Eroad.RouteManagement.Command.Infrastructure.csproj" />

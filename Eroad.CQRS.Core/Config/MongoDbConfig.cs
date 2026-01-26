@@ -1,4 +1,4 @@
-﻿namespace Eroad.FleetManagement.Command.Infrastructure.Config
+namespace Eroad.CQRS.Core.Config
 {
     public class MongoDbConfig
     {

@@ -20,6 +20,16 @@ namespace Eroad.CQRS.Core.Infrastructure.Stores
             _kafkaTopic = kafkaConfig.Value?.Topic ?? throw new ArgumentNullException(nameof(kafkaConfig), "Kafka topic configuration is missing");
         }
 
+        public async Task<List<Guid>> GetAggregateIdsAsync()
+        {
+            var eventStream = await _eventStoreRepository.FindAllAsync();
+
+            if (eventStream == null || !eventStream.Any())
+                throw new ArgumentNullException(nameof(eventStream), "Could not retrieve event stream from the event store!");
+
+            return eventStream.Select(x => x.AggregateIdentifier).Distinct().ToList();
+        }
+
         public async Task<List<Guid>> GetAggregateIdsByTypeAsync(string aggregateType)
         {
             var eventStream = await _eventStoreRepository.FindByAggregateType(aggregateType);
@@ -35,7 +45,7 @@ namespace Eroad.CQRS.Core.Infrastructure.Stores
             var eventStream = await _eventStoreRepository.FindByAggregateId(aggregateId);
 
             if (eventStream == null || !eventStream.Any())
-                throw new AggregateNotFoundException("Incorrect post ID provided!");
+                throw new AggregateNotFoundException("Aggregate not found!");
 
             return eventStream.OrderBy(x => x.Version).Select(x => x.EventData).ToList();
         }

@@ -19,7 +19,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Eroad.Common\Eroad.Common.csproj" />
     <ProjectReference Include="..\Eroad.CQRS.Core\Eroad.CQRS.Core.csproj" />
     <ProjectReference Include="..\Eroad.DeliveryTracking.Common\Eroad.DeliveryTracking.Common.csproj" />
     <ProjectReference Include="..\Eroad.DeliveryTracking.Contracts\Eroad.DeliveryTracking.Contracts.csproj" />

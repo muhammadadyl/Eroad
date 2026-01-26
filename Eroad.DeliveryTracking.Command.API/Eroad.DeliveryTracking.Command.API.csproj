@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Confluent.Kafka" Version="1.8.2" />
+    <PackageReference Include="Confluent.Kafka" Version="2.3.0" />
     <PackageReference Include="Grpc.AspNetCore" Version="2.60.0" />
     <PackageReference Include="Grpc.AspNetCore.Server.Reflection" Version="2.60.0" />
     <PackageReference Include="Grpc.HealthCheck" Version="2.60.0" />
@@ -16,7 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Eroad.Common\Eroad.Common.csproj" />
     <ProjectReference Include="..\Eroad.CQRS.Core\Eroad.CQRS.Core.csproj" />
     <ProjectReference Include="..\Eroad.DeliveryTracking.Command.Domain\Eroad.DeliveryTracking.Command.Domain.csproj" />
     <ProjectReference Include="..\Eroad.DeliveryTracking.Command.Infrastructure\Eroad.DeliveryTracking.Command.Infrastructure.csproj" />

@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34622.214
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Eroad.Common", "..\Eroad.Common\Eroad.Common.csproj", "{6C4CDFA0-A6C5-4E4E-A662-FD3646710423}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Eroad.DeliveryTracking.Common", "..\Eroad.DeliveryTracking.Common\Eroad.DeliveryTracking.Common.csproj", "{C7D84D5E-09EF-42BA-82CD-2E00B4D9B7D8}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Eroad.RouteManagement.Common", "..\Eroad.RouteManagement.Common\Eroad.RouteManagement.Common.csproj", "{D8861589-8F57-4A26-8FD1-7D3A7099553A}"
@@ -74,10 +72,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{6C4CDFA0-A6C5-4E4E-A662-FD3646710423}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6C4CDFA0-A6C5-4E4E-A662-FD3646710423}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6C4CDFA0-A6C5-4E4E-A662-FD3646710423}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6C4CDFA0-A6C5-4E4E-A662-FD3646710423}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C7D84D5E-09EF-42BA-82CD-2E00B4D9B7D8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C7D84D5E-09EF-42BA-82CD-2E00B4D9B7D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C7D84D5E-09EF-42BA-82CD-2E00B4D9B7D8}.Release|Any CPU.ActiveCfg = Release|Any CPU

@@ -1,8 +1,8 @@
-using System.Text.Json;
 using Confluent.Kafka;
 using Eroad.CQRS.Core.Events;
 using Eroad.CQRS.Core.Producers;
 using Microsoft.Extensions.Options;
+using System.Text.Json;
 
 namespace Eroad.CQRS.Core.Infrastructure.Producers
 {

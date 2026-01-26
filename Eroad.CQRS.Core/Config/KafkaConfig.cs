@@ -1,4 +1,4 @@
-namespace Eroad.DeliveryTracking.Command.Infrastructure.Config
+namespace Eroad.CQRS.Core.Config
 {
     public class KafkaConfig
     {

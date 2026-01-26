@@ -1,6 +1,6 @@
+using Eroad.CQRS.Core.Config;
 using Eroad.CQRS.Core.Domain;
 using Eroad.CQRS.Core.Events;
-using Eroad.FleetManagement.Command.Infrastructure.Config;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 

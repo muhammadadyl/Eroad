@@ -1,4 +1,5 @@
 using Confluent.Kafka;
+using Eroad.CQRS.Core.Config;
 using Eroad.CQRS.Core.Domain;
 using Eroad.CQRS.Core.Events;
 using Eroad.CQRS.Core.Handlers;
@@ -10,7 +11,6 @@ using Eroad.FleetManagement.Command.API.Commands;
 using Eroad.FleetManagement.Command.API.Commands.Driver;
 using Eroad.FleetManagement.Command.API.Commands.Vehicle;
 using Eroad.FleetManagement.Command.Domain.Aggregates;
-using Eroad.FleetManagement.Command.Infrastructure.Config;
 using Eroad.FleetManagement.Command.Infrastructure.Handlers;
 using Eroad.FleetManagement.Common;
 using Microsoft.AspNetCore.Server.Kestrel.Core;

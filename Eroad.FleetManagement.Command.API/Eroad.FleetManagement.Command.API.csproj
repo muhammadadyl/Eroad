@@ -22,7 +22,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Eroad.Common\Eroad.Common.csproj" />
     <ProjectReference Include="..\Eroad.CQRS.Core\Eroad.CQRS.Core.csproj" />
     <ProjectReference Include="..\Eroad.FleetManagement.Common\Eroad.FleetManagement.Common.csproj" />
     <ProjectReference Include="..\Eroad.FleetManagement.Command.Domain\Eroad.FleetManagement.Command.Domain.csproj" />
