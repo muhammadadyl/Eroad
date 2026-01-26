@@ -29,6 +29,9 @@ namespace Eroad.DeliveryTracking.Query.Domain.Entities
         public string? CurrentCheckpoint { get; set; }
         
         [JsonIgnore]
-        public virtual ICollection<IncidentEntity> Incidents { get; set; }
+        public virtual ICollection<IncidentEntity> Incidents { get; set; } = new List<IncidentEntity>();
+
+        [JsonIgnore]
+        public virtual ICollection<DeliveryCheckpointEntity> Checkpoints { get; set; } = new List<DeliveryCheckpointEntity>();
     }
 }

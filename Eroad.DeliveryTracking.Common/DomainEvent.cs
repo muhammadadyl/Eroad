@@ -11,7 +11,12 @@ namespace Eroad.DeliveryTracking.Common
         DeliveryStatus NewStatus,
         DateTime ChangedAt) : DomainEvent(nameof(DeliveryStatusChangedEvent));
 
-    public record CheckpointReachedEvent(string Checkpoint) : DomainEvent(nameof(CheckpointReachedEvent));
+    public record CheckpointReachedEvent(
+        Guid DeliveryId,
+        Guid RouteId,
+        int Sequence,
+        string Location,
+        DateTime ReachedAt) : DomainEvent(nameof(CheckpointReachedEvent));
 
     public record IncidentReportedEvent(Incident Incident) : DomainEvent(nameof(IncidentReportedEvent));
 

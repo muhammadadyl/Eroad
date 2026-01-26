@@ -100,41 +100,4 @@ public class RouteManagementAggregator
             Deliveries = deliveries
         };
     }
-
-    public async Task<RoutePerformanceView> GetRoutePerformanceAsync(Guid routeId)
-    {
-        _logger.LogInformation("Fetching route performance for ID: {RouteId}", routeId);
-
-        var routeResponse = await _routeClient.GetRouteByIdAsync(new GetRouteByIdRequest { Id = routeId.ToString() });
-        var route = routeResponse.Routes.FirstOrDefault();
-
-        if (route == null)
-        {
-            throw new InvalidOperationException($"Route with ID {routeId} not found");
-        }
-
-        // Fetch deliveries for this route
-        var deliveriesResponse = await _deliveryClient.GetAllDeliveriesAsync(new GetAllDeliveriesRequest());
-        var deliveries = deliveriesResponse.Deliveries.Where(d => d.RouteId == routeId.ToString()).ToList();
-
-        var totalCheckpoints = route.Checkpoints.Count;
-        var totalDeliveries = deliveries.Count;
-        var completedDeliveries = deliveries.Count(d => d.Status == "Delivered");
-
-        var completionPercentage = totalDeliveries > 0 
-            ? (double)completedDeliveries / totalDeliveries * 100 
-            : 0;
-
-        return new RoutePerformanceView
-        {
-            RouteId = Guid.Parse(route.Id),
-            Origin = route.Origin,
-            Destination = route.Destination,
-            TotalCheckpoints = totalCheckpoints,
-            CompletedCheckpoints = 0, // Checkpoint completion tracking removed
-            TotalDeliveries = totalDeliveries,
-            CompletedDeliveries = completedDeliveries,
-            CompletionPercentage = Math.Round(completionPercentage, 2)
-        };
-    }
 }

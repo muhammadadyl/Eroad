@@ -31,7 +31,9 @@ message UpdateDeliveryStatusRequest {
 
 message UpdateCurrentCheckpointRequest {
   string id = 1;
-  string checkpoint = 2;
+  string route_id = 2;
+  int32 sequence = 3;
+  string location = 4;
 }
 
 message ReportIncidentRequest {

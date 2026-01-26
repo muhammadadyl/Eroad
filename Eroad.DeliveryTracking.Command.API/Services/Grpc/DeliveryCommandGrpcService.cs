@@ -155,17 +155,24 @@ namespace Eroad.DeliveryTracking.Command.API.Services.Grpc
                     throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid delivery ID format"));
                 }
 
+                if (!Guid.TryParse(request.RouteId, out var routeId))
+                {
+                    throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid route ID format"));
+                }
+
                 var command = new UpdateCurrentCheckpointCommand
                 {
                     Id = deliveryId,
-                    Checkpoint = request.Checkpoint
+                    RouteId = routeId,
+                    Sequence = request.Sequence,
+                    Location = request.Location
                 };
 
                 await _mediator.Send(command, context.CancellationToken);
 
                 return new UpdateCurrentCheckpointResponse
                 {
-                    Message = "Current checkpoint updated successfully"
+                    Message = "Checkpoint reached successfully"
                 };
             }
             catch (RpcException)
@@ -174,13 +181,13 @@ namespace Eroad.DeliveryTracking.Command.API.Services.Grpc
             }
             catch (InvalidOperationException ex)
             {
-                _logger.LogWarning(ex, "Invalid operation when updating current checkpoint");
+                _logger.LogWarning(ex, "Invalid operation when updating checkpoint");
                 throw new RpcException(new Status(StatusCode.InvalidArgument, ex.Message));
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error updating current checkpoint");
-                throw new RpcException(new Status(StatusCode.Internal, "An error occurred while updating current checkpoint"));
+                _logger.LogError(ex, "Error updating checkpoint");
+                throw new RpcException(new Status(StatusCode.Internal, "An error occurred while updating checkpoint"));
             }
         }
 

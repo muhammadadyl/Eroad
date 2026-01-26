@@ -52,27 +52,6 @@ public class RouteManagementController : ControllerBase
             return StatusCode(500, new { Message = "An error occurred while fetching route detail" });
         }
     }
-
-    [HttpGet("{id}/performance")]
-    public async Task<IActionResult> GetRoutePerformance(Guid id)
-    {
-        try
-        {
-            var result = await _aggregator.GetRoutePerformanceAsync(id);
-            return Ok(result);
-        }
-        catch (InvalidOperationException ex)
-        {
-            _logger.LogWarning(ex, "Invalid operation while fetching route performance for ID: {RouteId}", id);
-            return NotFound(new { Message = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error fetching route performance for ID: {RouteId}", id);
-            return StatusCode(500, new { Message = "An error occurred while fetching route performance" });
-        }
-    }
-
     #endregion
 
     #region Command Operations

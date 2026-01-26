@@ -311,8 +311,14 @@ PATCH {{baseUrl}}/api/deliveries/{{deliveryId}}/checkpoint
 Content-Type: application/json
 
 {
-  "checkpoint": "Highway Junction A"
+  "routeId": "{{routeId}}",
+  "sequence": 1,
+  "location": "Highway Junction A"
 }
+
+### Get Delivery Checkpoints
+GET {{baseUrl}}/api/deliveries/{{deliveryId}}/checkpoints
+Accept: application/json
 
 ### Report Delay Incident
 POST {{baseUrl}}/api/deliveries/{{deliveryId}}/incidents

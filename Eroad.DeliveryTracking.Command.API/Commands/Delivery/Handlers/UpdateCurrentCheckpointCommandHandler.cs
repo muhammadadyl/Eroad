@@ -22,7 +22,7 @@ namespace Eroad.DeliveryTracking.Command.API.Commands.Delivery.Handlers
                 throw new AggregateNotFoundException($"Delivery aggregate with ID {request.Id} not found.");
             }
 
-            aggregate.UpdateCurrentCheckpoint(request.Checkpoint);
+            aggregate.UpdateCurrentCheckpoint(request.RouteId, request.Sequence, request.Location);
             await _eventSourcingHandler.SaveAsync(aggregate);
         }
     }

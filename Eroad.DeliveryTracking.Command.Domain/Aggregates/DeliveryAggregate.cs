@@ -61,12 +61,16 @@ namespace Eroad.DeliveryTracking.Command.Domain.Aggregates
             _status = @event.NewStatus;
         }
 
-        public void UpdateCurrentCheckpoint(string checkpoint)
+        public void UpdateCurrentCheckpoint(Guid routeId, int sequence, string location)
         {
-            if (string.IsNullOrWhiteSpace(checkpoint))
-                throw new ArgumentException("Checkpoint cannot be empty", nameof(checkpoint));
+            if (routeId == Guid.Empty)
+                throw new ArgumentException("Route ID cannot be empty", nameof(routeId));
+            if (sequence <= 0)
+                throw new ArgumentException("Sequence must be greater than zero", nameof(sequence));
+            if (string.IsNullOrWhiteSpace(location))
+                throw new ArgumentException("Location cannot be empty", nameof(location));
 
-            RaiseEvent(new CheckpointReachedEvent(checkpoint)
+            RaiseEvent(new CheckpointReachedEvent(_id, routeId, sequence, location, DateTime.UtcNow)
             {
                 Id = _id
             });
@@ -75,7 +79,7 @@ namespace Eroad.DeliveryTracking.Command.Domain.Aggregates
         public void Apply(CheckpointReachedEvent @event)
         {
             _id = @event.Id;
-            _currentCheckpoint = @event.Checkpoint;
+            _currentCheckpoint = $"{@event.Sequence}: {@event.Location}";
         }
 
         public void ReportIncident(Incident incident)

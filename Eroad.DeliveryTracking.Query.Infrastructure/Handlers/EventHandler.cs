@@ -8,11 +8,16 @@ namespace Eroad.DeliveryTracking.Query.Infrastructure.Handlers
     {
         private readonly IDeliveryRepository _deliveryRepository;
         private readonly IIncidentRepository _incidentRepository;
+        private readonly IDeliveryCheckpointRepository _checkpointRepository;
 
-        public EventHandler(IDeliveryRepository deliveryRepository, IIncidentRepository incidentRepository)
+        public EventHandler(
+            IDeliveryRepository deliveryRepository, 
+            IIncidentRepository incidentRepository,
+            IDeliveryCheckpointRepository checkpointRepository)
         {
             _deliveryRepository = deliveryRepository;
             _incidentRepository = incidentRepository;
+            _checkpointRepository = checkpointRepository;
         }
 
         public async Task On(DeliveryCreatedEvent @event)
@@ -48,11 +53,32 @@ namespace Eroad.DeliveryTracking.Query.Infrastructure.Handlers
 
         public async Task On(CheckpointReachedEvent @event)
         {
-            var delivery = await _deliveryRepository.GetByIdAsync(@event.Id);
+            // Check if checkpoint already exists (handle duplicate events)
+            var existing = await _checkpointRepository.GetByIdAsync(@event.DeliveryId, @event.Sequence);
+            if (existing != null)
+            {
+                // Checkpoint already recorded, skip to prevent duplicates
+                return;
+            }
+
+            // Create checkpoint record
+            var checkpoint = new DeliveryCheckpointEntity
+            {
+                DeliveryId = @event.DeliveryId,
+                RouteId = @event.RouteId,
+                Sequence = @event.Sequence,
+                Location = @event.Location,
+                ReachedAt = @event.ReachedAt
+            };
+
+            await _checkpointRepository.CreateAsync(checkpoint);
+
+            // Update current checkpoint on delivery
+            var delivery = await _deliveryRepository.GetByIdAsync(@event.DeliveryId);
 
             if (delivery == null) return;
 
-            delivery.CurrentCheckpoint = @event.Checkpoint;
+            delivery.CurrentCheckpoint = $"{@event.Sequence}: {@event.Location}";
 
             await _deliveryRepository.UpdateAsync(delivery);
         }

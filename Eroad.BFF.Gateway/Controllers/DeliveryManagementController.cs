@@ -15,6 +15,7 @@ public class DeliveryManagementController : ControllerBase
     private readonly LiveTrackingAggregator _liveTrackingAggregator;
     private readonly CompletedDeliveryAggregator _completedDeliveryAggregator;
     private readonly DeliveryCommand.DeliveryCommandClient _deliveryCommandClient;
+    private readonly DeliveryLookup.DeliveryLookupClient _deliveryLookupClient;
     private readonly DriverLookup.DriverLookupClient _driverLookupClient;
     private readonly VehicleLookup.VehicleLookupClient _vehicleLookupClient;
     private readonly RouteLookup.RouteLookupClient _routeLookupClient;
@@ -25,6 +26,7 @@ public class DeliveryManagementController : ControllerBase
         LiveTrackingAggregator liveTrackingAggregator,
         CompletedDeliveryAggregator completedDeliveryAggregator,
         DeliveryCommand.DeliveryCommandClient deliveryCommandClient,
+        DeliveryLookup.DeliveryLookupClient deliveryLookupClient,
         DriverLookup.DriverLookupClient driverLookupClient,
         VehicleLookup.VehicleLookupClient vehicleLookupClient,
         RouteLookup.RouteLookupClient routeLookupClient,
@@ -34,6 +36,7 @@ public class DeliveryManagementController : ControllerBase
         _liveTrackingAggregator = liveTrackingAggregator;
         _completedDeliveryAggregator = completedDeliveryAggregator;
         _deliveryCommandClient = deliveryCommandClient;
+        _deliveryLookupClient = deliveryLookupClient;
         _driverLookupClient = driverLookupClient;
         _vehicleLookupClient = vehicleLookupClient;
         _routeLookupClient = routeLookupClient;
@@ -171,14 +174,75 @@ public class DeliveryManagementController : ControllerBase
     [HttpPatch("{id}/checkpoint")]
     public async Task<IActionResult> UpdateCurrentCheckpoint(string id, [FromBody] UpdateDeliveryCheckpointDto dto)
     {
-        _logger.LogInformation("Updating current checkpoint for delivery: {DeliveryId} to {Checkpoint}", id, dto.Checkpoint);
+        _logger.LogInformation("Updating checkpoint for delivery: {DeliveryId}, Sequence: {Sequence}", id, dto.Sequence);
+
+        // Validate checkpoint exists in RouteManagement
+        try
+        {
+            var checkpointsRequest = new GetCheckpointsByRouteRequest { RouteId = dto.RouteId };
+            var checkpointsResponse = await _routeLookupClient.GetCheckpointsByRouteAsync(checkpointsRequest);
+            
+            var checkpoint = checkpointsResponse.Checkpoints.FirstOrDefault(c => c.Sequence == dto.Sequence);
+            if (checkpoint == null)
+            {
+                _logger.LogWarning("Checkpoint sequence {Sequence} not found for route {RouteId}", dto.Sequence, dto.RouteId);
+                return NotFound(new { Message = $"Checkpoint with sequence {dto.Sequence} does not exist for route {dto.RouteId}" });
+            }
+
+            // Validate location matches
+            if (checkpoint.Location != dto.Location)
+            {
+                _logger.LogWarning("Location mismatch for checkpoint {Sequence}. Expected: {Expected}, Provided: {Provided}", 
+                    dto.Sequence, checkpoint.Location, dto.Location);
+                return BadRequest(new { Message = $"Location mismatch. Expected '{checkpoint.Location}' but got '{dto.Location}'" });
+            }
+
+            _logger.LogInformation("Checkpoint validated successfully");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error validating checkpoint in RouteManagement");
+            return StatusCode(500, new { Message = "Error validating checkpoint in RouteManagement" });
+        }
+
+        // Update checkpoint in DeliveryTracking
         var request = new UpdateCurrentCheckpointRequest
         {
             Id = id,
-            Checkpoint = dto.Checkpoint
+            RouteId = dto.RouteId,
+            Sequence = dto.Sequence,
+            Location = dto.Location
         };
         var response = await _deliveryCommandClient.UpdateCurrentCheckpointAsync(request);
         return Ok(new { Message = response.Message });
+    }
+
+    [HttpGet("{id}/checkpoints")]
+    public async Task<IActionResult> GetDeliveryCheckpoints(string id)
+    {
+        _logger.LogInformation("Getting checkpoints for delivery: {DeliveryId}", id);
+        
+        try
+        {
+            var request = new GetDeliveryCheckpointsRequest { DeliveryId = id };
+            var response = await _deliveryLookupClient.GetDeliveryCheckpointsAsync(request);
+            
+            return Ok(new 
+            { 
+                RouteId = response.RouteId,
+                Checkpoints = response.Checkpoints.Select(c => new 
+                {
+                    Sequence = c.Sequence,
+                    Location = c.Location,
+                    ReachedAt = c.ReachedAt.ToDateTime()
+                }).ToList()
+            });
+        }
+        catch (RpcException ex)
+        {
+            _logger.LogError(ex, "Error getting delivery checkpoints");
+            return StatusCode((int)ex.StatusCode, new { Message = ex.Status.Detail });
+        }
     }
 
     [HttpPost("{id}/incidents")]
@@ -330,7 +394,9 @@ public class UpdateStatusDto
 
 public class UpdateDeliveryCheckpointDto
 {
-    public string Checkpoint { get; set; } = string.Empty;
+    public string RouteId { get; set; } = string.Empty;
+    public int Sequence { get; set; }
+    public string Location { get; set; } = string.Empty;
 }
 
 public class ReportIncidentDto

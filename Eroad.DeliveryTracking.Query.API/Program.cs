@@ -50,6 +50,7 @@ builder.Services.AddScoped<IEventConsumer, EventConsumer>();
 // Register repositories
 builder.Services.AddScoped<IDeliveryRepository, DeliveryRepository>();
 builder.Services.AddScoped<IIncidentRepository, IncidentRepository>();
+builder.Services.AddScoped<IDeliveryCheckpointRepository, DeliveryCheckpointRepository>();
 
 // Register event handler
 builder.Services.AddScoped<IEventHandler, EventHandler>();

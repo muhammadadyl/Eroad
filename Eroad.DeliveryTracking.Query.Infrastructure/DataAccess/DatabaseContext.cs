@@ -11,6 +11,7 @@ namespace Eroad.DeliveryTracking.Query.Infrastructure.DataAccess
 
         public DbSet<DeliveryEntity> Deliveries { get; set; }
         public DbSet<IncidentEntity> Incidents { get; set; }
+        public DbSet<DeliveryCheckpointEntity> DeliveryCheckpoints { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -31,6 +32,17 @@ namespace Eroad.DeliveryTracking.Query.Infrastructure.DataAccess
             // Add index on Resolved status
             modelBuilder.Entity<IncidentEntity>()
                 .HasIndex(i => i.Resolved);
+
+            // Configure composite key for DeliveryCheckpoint
+            modelBuilder.Entity<DeliveryCheckpointEntity>()
+                .HasKey(dc => new { dc.DeliveryId, dc.Sequence });
+
+            // Add indexes for DeliveryCheckpoint
+            modelBuilder.Entity<DeliveryCheckpointEntity>()
+                .HasIndex(dc => dc.DeliveryId);
+
+            modelBuilder.Entity<DeliveryCheckpointEntity>()
+                .HasIndex(dc => dc.RouteId);
         }
     }
 }
