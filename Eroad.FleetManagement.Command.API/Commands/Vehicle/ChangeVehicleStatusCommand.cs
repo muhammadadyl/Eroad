@@ -1,19 +1,18 @@
-﻿using Eroad.FleetManagement.Common;
+﻿using Eroad.CQRS.Core.Commands;
+using Eroad.FleetManagement.Common;
 using System.ComponentModel.DataAnnotations;
 
 namespace Eroad.FleetManagement.Command.API.Commands.Vehicle
 {
-    public class ChangeVehicleStatusCommand
+    public record ChangeVehicleStatusCommand : BaseCommand
     {
-        public Guid Id { get; set; }
-
         [Required(ErrorMessage = "Old status is required")]
-        public VehicleStatus OldStatus { get; set; }
+        public VehicleStatus OldStatus { get; init; }
 
         [Required(ErrorMessage = "New status is required")]
-        public VehicleStatus NewStatus { get; set; }
+        public VehicleStatus NewStatus { get; init; }
 
         [StringLength(200, ErrorMessage = "Reason must not exceed 200 characters")]
-        public string Reason { get; set; }
+        public string Reason { get; init; }
     }
 }

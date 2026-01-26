@@ -1,18 +1,19 @@
 using Eroad.FleetManagement.Contracts;
-using Eroad.FleetManagement.Query.Domain.Repositories;
+using Eroad.FleetManagement.Query.API.Queries;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
+using MediatR;
 
 namespace Eroad.FleetManagement.Query.API.Services.Grpc
 {
     public class DriverLookupGrpcService : DriverLookup.DriverLookupBase
     {
-        private readonly IDriverRepository _driverRepository;
+        private readonly IMediator _mediator;
         private readonly ILogger<DriverLookupGrpcService> _logger;
 
-        public DriverLookupGrpcService(IDriverRepository driverRepository, ILogger<DriverLookupGrpcService> logger)
+        public DriverLookupGrpcService(IMediator mediator, ILogger<DriverLookupGrpcService> logger)
         {
-            _driverRepository = driverRepository;
+            _mediator = mediator;
             _logger = logger;
         }
 
@@ -25,8 +26,8 @@ namespace Eroad.FleetManagement.Query.API.Services.Grpc
                     throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid driver ID format"));
                 }
 
-                var driver = await _driverRepository.GetByIdAsync(driverId);
-                if (driver == null)
+                var drivers = await _mediator.Send(new FindDriverByIdQuery { Id = driverId }, context.CancellationToken);
+                if (drivers == null || drivers.Count == 0)
                 {
                     throw new RpcException(new Status(StatusCode.NotFound, $"Driver with ID {request.Id} not found"));
                 }
@@ -34,7 +35,7 @@ namespace Eroad.FleetManagement.Query.API.Services.Grpc
                 return new DriverLookupResponse
                 {
                     Message = "Successfully returned driver",
-                    Drivers = { MapToProto(driver) }
+                    Drivers = { MapToProto(drivers[0]) }
                 };
             }
             catch (RpcException)
@@ -52,7 +53,7 @@ namespace Eroad.FleetManagement.Query.API.Services.Grpc
         {
             try
             {
-                var drivers = await _driverRepository.GetAllAsync();
+                var drivers = await _mediator.Send(new FindAllDriversQuery(), context.CancellationToken);
                 
                 var response = new DriverLookupResponse
                 {
@@ -73,7 +74,7 @@ namespace Eroad.FleetManagement.Query.API.Services.Grpc
         {
             try
             {
-                var drivers = await _driverRepository.GetByStatusAsync(request.Status);
+                var drivers = await _mediator.Send(new FindDriversByStatusQuery { Status = request.Status }, context.CancellationToken);
                 
                 var response = new DriverLookupResponse
                 {

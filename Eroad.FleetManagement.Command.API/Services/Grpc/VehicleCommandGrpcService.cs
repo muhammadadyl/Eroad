@@ -1,24 +1,24 @@
 using Eroad.CQRS.Core.Handlers;
-using Eroad.FleetManagement.Command.API.Commands;
 using Eroad.FleetManagement.Command.API.Commands.Vehicle;
 using Eroad.FleetManagement.Command.Domain.Aggregates;
 using Eroad.FleetManagement.Contracts;
 using Grpc.Core;
+using MediatR;
 
 namespace Eroad.FleetManagement.Command.API.Services.Grpc
 {
     public class VehicleCommandGrpcService : VehicleCommand.VehicleCommandBase
     {
-        private readonly IVehicleCommandHandler _commandHandler;
+        private readonly IMediator _mediator;
         private readonly IEventSourcingHandler<VehicleAggregate> _eventSourcingHandler;
         private readonly ILogger<VehicleCommandGrpcService> _logger;
 
         public VehicleCommandGrpcService(
-            IVehicleCommandHandler commandHandler, 
+            IMediator mediator,
             IEventSourcingHandler<VehicleAggregate> eventSourcingHandler,
             ILogger<VehicleCommandGrpcService> logger)
         {
-            _commandHandler = commandHandler;
+            _mediator = mediator;
             _eventSourcingHandler = eventSourcingHandler;
             _logger = logger;
         }
@@ -39,7 +39,7 @@ namespace Eroad.FleetManagement.Command.API.Services.Grpc
                     VehicleType = request.VehicleType
                 };
 
-                await _commandHandler.HandleAsync(command);
+                await _mediator.Send(command, context.CancellationToken);
 
                 return new AddVehicleResponse
                 {
@@ -78,7 +78,7 @@ namespace Eroad.FleetManagement.Command.API.Services.Grpc
                     VehicleType = request.VehicleType
                 };
 
-                await _commandHandler.HandleAsync(command);
+                await _mediator.Send(command, context.CancellationToken);
 
                 return new UpdateVehicleResponse
                 {
@@ -141,7 +141,7 @@ namespace Eroad.FleetManagement.Command.API.Services.Grpc
                     Reason = string.Empty
                 };
 
-                await _commandHandler.HandleAsync(command);
+                await _mediator.Send(command, context.CancellationToken);
 
                 _logger.LogInformation("Vehicle {VehicleId} status changed from {OldStatus} to {NewStatus}", vehicleId, aggregate.Status, newStatus);
 

@@ -1,8 +1,10 @@
-﻿namespace Eroad.FleetManagement.Command.API.Commands.Vehicle
+﻿using Eroad.CQRS.Core.Commands;
+
+namespace Eroad.FleetManagement.Command.API.Commands.Vehicle
 {
-    public class AssignDriverToVehicleCommand
+    public record AssignDriverToVehicleCommand : BaseCommand
     {
-        public Guid VehicleId { get; set; }
-        public Guid DriverId { get; set; }
+        public Guid VehicleId { get; init; }
+        public Guid DriverId { get; init; }
     }
 }

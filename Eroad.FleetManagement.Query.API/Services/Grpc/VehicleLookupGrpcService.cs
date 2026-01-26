@@ -1,18 +1,19 @@
 using Eroad.FleetManagement.Contracts;
-using Eroad.FleetManagement.Query.Domain.Repositories;
+using Eroad.FleetManagement.Query.API.Queries;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
+using MediatR;
 
 namespace Eroad.FleetManagement.Query.API.Services.Grpc
 {
     public class VehicleLookupGrpcService : VehicleLookup.VehicleLookupBase
     {
-        private readonly IVehicleRepository _vehicleRepository;
+        private readonly IMediator _mediator;
         private readonly ILogger<VehicleLookupGrpcService> _logger;
 
-        public VehicleLookupGrpcService(IVehicleRepository vehicleRepository, ILogger<VehicleLookupGrpcService> logger)
+        public VehicleLookupGrpcService(IMediator mediator, ILogger<VehicleLookupGrpcService> logger)
         {
-            _vehicleRepository = vehicleRepository;
+            _mediator = mediator;
             _logger = logger;
         }
 
@@ -25,8 +26,8 @@ namespace Eroad.FleetManagement.Query.API.Services.Grpc
                     throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid vehicle ID format"));
                 }
 
-                var vehicle = await _vehicleRepository.GetByIdAsync(vehicleId);
-                if (vehicle == null)
+                var vehicles = await _mediator.Send(new FindVehicleByIdQuery { Id = vehicleId }, context.CancellationToken);
+                if (vehicles == null || vehicles.Count == 0)
                 {
                     throw new RpcException(new Status(StatusCode.NotFound, $"Vehicle with ID {request.Id} not found"));
                 }
@@ -34,7 +35,7 @@ namespace Eroad.FleetManagement.Query.API.Services.Grpc
                 return new VehicleLookupResponse
                 {
                     Message = "Successfully returned vehicle",
-                    Vehicles = { MapToProto(vehicle) }
+                    Vehicles = { MapToProto(vehicles[0]) }
                 };
             }
             catch (RpcException)
@@ -52,7 +53,7 @@ namespace Eroad.FleetManagement.Query.API.Services.Grpc
         {
             try
             {
-                var vehicles = await _vehicleRepository.GetAllAsync();
+                var vehicles = await _mediator.Send(new FindAllVehiclesQuery(), context.CancellationToken);
                 
                 var response = new VehicleLookupResponse
                 {
@@ -78,7 +79,7 @@ namespace Eroad.FleetManagement.Query.API.Services.Grpc
                     throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid driver ID format"));
                 }
 
-                var vehicles = await _vehicleRepository.GetByDriverIdAsync(driverId);
+                var vehicles = await _mediator.Send(new FindVehicleByDriverIdQuery { DriverId = driverId }, context.CancellationToken);
                 
                 var response = new VehicleLookupResponse
                 {
@@ -103,7 +104,7 @@ namespace Eroad.FleetManagement.Query.API.Services.Grpc
         {
             try
             {
-                var vehicles = await _vehicleRepository.GetByStatusAsync(request.Status);
+                var vehicles = await _mediator.Send(new FindVehiclesByStatusQuery { Status = request.Status }, context.CancellationToken);
                 
                 var response = new VehicleLookupResponse
                 {

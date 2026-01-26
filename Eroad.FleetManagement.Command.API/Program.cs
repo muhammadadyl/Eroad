@@ -47,8 +47,9 @@ builder.Services.AddScoped<IEventProducer, EventProducer>();
 builder.Services.AddScoped<IEventStore, EventStore>();
 builder.Services.AddScoped<IEventSourcingHandler<VehicleAggregate>, VehicleEventSourcingHandler>();
 builder.Services.AddScoped<IEventSourcingHandler<DriverAggregate>, DriverEventSourcingHandler>();
-builder.Services.AddScoped<IVehicleCommandHandler, VehicleCommandHandler>();
-builder.Services.AddScoped<IDriverCommandHandler, DriverCommandHandler>();
+
+// Register MediatR
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
 
 builder.Services.AddHealthChecks();
 

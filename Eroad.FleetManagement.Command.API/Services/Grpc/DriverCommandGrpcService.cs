@@ -1,28 +1,25 @@
 using Eroad.CQRS.Core.Handlers;
-using Eroad.FleetManagement.Command.API.Commands;
 using Eroad.FleetManagement.Command.API.Commands.Driver;
 using Eroad.FleetManagement.Command.API.Commands.Vehicle;
 using Eroad.FleetManagement.Command.Domain.Aggregates;
 using Eroad.FleetManagement.Contracts;
 using Grpc.Core;
+using MediatR;
 
 namespace Eroad.FleetManagement.Command.API.Services.Grpc
 {
     public class DriverCommandGrpcService : DriverCommand.DriverCommandBase
     {
-        private readonly IDriverCommandHandler _commandHandler;
-        private readonly IVehicleCommandHandler _vehicleCommandHandler;
+        private readonly IMediator _mediator;
         private readonly IEventSourcingHandler<DriverAggregate> _eventSourcingHandler;
         private readonly ILogger<DriverCommandGrpcService> _logger;
 
         public DriverCommandGrpcService(
-            IDriverCommandHandler commandHandler, 
-            IVehicleCommandHandler vehicleCommandHandler, 
+            IMediator mediator,
             IEventSourcingHandler<DriverAggregate> eventSourcingHandler,
             ILogger<DriverCommandGrpcService> logger)
         {
-            _commandHandler = commandHandler;
-            _vehicleCommandHandler = vehicleCommandHandler;
+            _mediator = mediator;
             _eventSourcingHandler = eventSourcingHandler;
             _logger = logger;
         }
@@ -44,7 +41,7 @@ namespace Eroad.FleetManagement.Command.API.Services.Grpc
                     DriverStatus = FleetManagement.Common.DriverStatus.Available
                 };
 
-                await _commandHandler.HandleAsync(command);
+                await _mediator.Send(command, context.CancellationToken);
 
                 return new AddDriverResponse
                 {
@@ -82,7 +79,7 @@ namespace Eroad.FleetManagement.Command.API.Services.Grpc
                     DriverLicense = request.DriverLicense
                 };
 
-                await _commandHandler.HandleAsync(command);
+                await _mediator.Send(command, context.CancellationToken);
 
                 return new UpdateDriverResponse
                 {
@@ -144,7 +141,7 @@ namespace Eroad.FleetManagement.Command.API.Services.Grpc
                     NewStatus = newStatus
                 };
 
-                await _commandHandler.HandleAsync(command);
+                await _mediator.Send(command, context.CancellationToken);
 
                 _logger.LogInformation("Driver {DriverId} status changed from {OldStatus} to {NewStatus}", driverId, aggregate.Status, newStatus);
 
@@ -189,7 +186,7 @@ namespace Eroad.FleetManagement.Command.API.Services.Grpc
                     DriverId = driverId
                 };
 
-                await _vehicleCommandHandler.HandleAsync(command);
+                await _mediator.Send(command, context.CancellationToken);
 
                 return new AssignDriverToVehicleResponse
                 {
