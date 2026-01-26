@@ -362,6 +362,22 @@ Content-Type: application/json
   "receiverName": "Jane Doe"
 }
 
+### Assign Driver to Delivery
+PATCH {{baseUrl}}/api/deliveries/{{deliveryId}}/assign-driver
+Content-Type: application/json
+
+{
+  "driverId": "{{driverId}}"
+}
+
+### Assign Vehicle to Delivery
+PATCH {{baseUrl}}/api/deliveries/{{deliveryId}}/assign-vehicle
+Content-Type: application/json
+
+{
+  "vehicleId": "{{vehicleId}}"
+}
+
 ###############################################################################
 # COMPLETE WORKFLOW - END TO END
 ###############################################################################

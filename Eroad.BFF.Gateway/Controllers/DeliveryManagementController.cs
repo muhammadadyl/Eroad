@@ -1,6 +1,7 @@
 using Eroad.BFF.Gateway.Aggregators;
 using Eroad.DeliveryTracking.Contracts;
 using Eroad.FleetManagement.Contracts;
+using Eroad.RouteManagement.Contracts;
 using Grpc.Core;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,6 +17,7 @@ public class DeliveryManagementController : ControllerBase
     private readonly DeliveryCommand.DeliveryCommandClient _deliveryCommandClient;
     private readonly DriverLookup.DriverLookupClient _driverLookupClient;
     private readonly VehicleLookup.VehicleLookupClient _vehicleLookupClient;
+    private readonly RouteLookup.RouteLookupClient _routeLookupClient;
     private readonly ILogger<DeliveryManagementController> _logger;
 
     public DeliveryManagementController(
@@ -25,6 +27,7 @@ public class DeliveryManagementController : ControllerBase
         DeliveryCommand.DeliveryCommandClient deliveryCommandClient,
         DriverLookup.DriverLookupClient driverLookupClient,
         VehicleLookup.VehicleLookupClient vehicleLookupClient,
+        RouteLookup.RouteLookupClient routeLookupClient,
         ILogger<DeliveryManagementController> logger)
     {
         _deliveryContextAggregator = deliveryContextAggregator;
@@ -33,6 +36,7 @@ public class DeliveryManagementController : ControllerBase
         _deliveryCommandClient = deliveryCommandClient;
         _driverLookupClient = driverLookupClient;
         _vehicleLookupClient = vehicleLookupClient;
+        _routeLookupClient = routeLookupClient;
         _logger = logger;
     }
 
@@ -67,6 +71,27 @@ public class DeliveryManagementController : ControllerBase
     public async Task<IActionResult> CreateDelivery([FromBody] CreateDeliveryDto dto)
     {
         _logger.LogInformation("Creating delivery for route: {RouteId}", dto.RouteId);
+
+        // Validate route exists in RouteManagement
+        try
+        {
+            var routeLookupRequest = new GetRouteByIdRequest { Id = dto.RouteId };
+            var routeLookupResponse = await _routeLookupClient.GetRouteByIdAsync(routeLookupRequest);
+            
+            if (routeLookupResponse.Routes == null || !routeLookupResponse.Routes.Any())
+            {
+                _logger.LogWarning("Route {RouteId} not found in RouteManagement", dto.RouteId);
+                return NotFound(new { Message = $"Route with ID {dto.RouteId} does not exist in RouteManagement" });
+            }
+
+            var route = routeLookupResponse.Routes.First();
+            _logger.LogInformation("Route validated: {Origin} to {Destination} with status {Status}", route.Origin, route.Destination, route.Status);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error validating route {RouteId} in RouteManagement", dto.RouteId);
+            return StatusCode(500, new { Message = "Error validating route in RouteManagement" });
+        }
 
         // Validate driver exists in FleetManagement if provided
         if (!string.IsNullOrEmpty(dto.DriverId))
