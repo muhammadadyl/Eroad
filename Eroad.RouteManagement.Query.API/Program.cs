@@ -1,12 +1,8 @@
 using Confluent.Kafka;
 using Eroad.CQRS.Core.Consumers;
-using Eroad.CQRS.Core.Infrastructure;
-using Eroad.RouteManagement.Query.API.Queries;
-using Eroad.RouteManagement.Query.Domain.Entities;
 using Eroad.RouteManagement.Query.Domain.Repositories;
 using Eroad.RouteManagement.Query.Infrastructure.Consumers;
 using Eroad.RouteManagement.Query.Infrastructure.DataAccess;
-using Eroad.RouteManagement.Query.Infrastructure.Dispatchers;
 using Eroad.RouteManagement.Query.Infrastructure.Handlers;
 using Eroad.RouteManagement.Query.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -37,27 +33,12 @@ dataContext.Database.EnsureCreated();
 
 builder.Services.AddScoped<IRouteRepository, RouteRepository>();
 builder.Services.AddScoped<ICheckpointRepository, CheckpointRepository>();
-builder.Services.AddScoped<IQueryHandler, QueryHandler>();
 builder.Services.AddScoped<IEventHandler, EventHandler>();
 builder.Services.Configure<ConsumerConfig>(builder.Configuration.GetSection(nameof(ConsumerConfig)));
 builder.Services.AddScoped<IEventConsumer, EventConsumer>();
 
-// Register Query Handler
-var queryHandler = builder.Services.BuildServiceProvider().GetRequiredService<IQueryHandler>();
-
-var routeDispatcher = new RouteQueryDispatcher();
-routeDispatcher.RegisterHandler<FindAllRoutesQuery>(queryHandler.HandleAsync);
-routeDispatcher.RegisterHandler<FindRouteByIdQuery>(queryHandler.HandleAsync);
-routeDispatcher.RegisterHandler<FindRoutesByStatusQuery>(queryHandler.HandleAsync);
-routeDispatcher.RegisterHandler<FindRoutesByDriverIdQuery>(queryHandler.HandleAsync);
-routeDispatcher.RegisterHandler<FindRoutesByVehicleIdQuery>(queryHandler.HandleAsync);
-
-var checkpointDispatcher = new CheckpointQueryDispatcher();
-checkpointDispatcher.RegisterHandler<FindCheckpointsByRouteIdQuery>(queryHandler.HandleAsync);
-
-// Register Query Dispatcher
-builder.Services.AddSingleton<IQueryDispatcher<RouteEntity>>(routeDispatcher);
-builder.Services.AddSingleton<IQueryDispatcher<CheckpointEntity>>(checkpointDispatcher);
+// Register MediatR
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
 
 builder.Services.AddHostedService<ConsumerHostedService>();
 builder.Services.AddHealthChecks();

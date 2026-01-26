@@ -1,23 +1,21 @@
 using Eroad.RouteManagement.Contracts;
-using Eroad.RouteManagement.Query.Domain.Repositories;
+using Eroad.RouteManagement.Query.API.Queries;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
+using MediatR;
 
 namespace Eroad.RouteManagement.Query.API.Services.Grpc
 {
     public class RouteLookupGrpcService : RouteLookup.RouteLookupBase
     {
-        private readonly IRouteRepository _routeRepository;
-        private readonly ICheckpointRepository _checkpointRepository;
+        private readonly IMediator _mediator;
         private readonly ILogger<RouteLookupGrpcService> _logger;
 
         public RouteLookupGrpcService(
-            IRouteRepository routeRepository,
-            ICheckpointRepository checkpointRepository,
+            IMediator mediator,
             ILogger<RouteLookupGrpcService> logger)
         {
-            _routeRepository = routeRepository;
-            _checkpointRepository = checkpointRepository;
+            _mediator = mediator;
             _logger = logger;
         }
 
@@ -30,7 +28,8 @@ namespace Eroad.RouteManagement.Query.API.Services.Grpc
                     throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid route ID format"));
                 }
 
-                var route = await _routeRepository.GetByIdAsync(routeId);
+                var routes = await _mediator.Send(new FindRouteByIdQuery { Id = routeId }, context.CancellationToken);
+                var route = routes.FirstOrDefault();
                 if (route == null)
                 {
                     throw new RpcException(new Status(StatusCode.NotFound, $"Route with ID {request.Id} not found"));
@@ -57,7 +56,7 @@ namespace Eroad.RouteManagement.Query.API.Services.Grpc
         {
             try
             {
-                var routes = await _routeRepository.GetAllAsync();
+                var routes = await _mediator.Send(new FindAllRoutesQuery(), context.CancellationToken);
                 
                 var response = new RouteLookupResponse
                 {
@@ -78,7 +77,7 @@ namespace Eroad.RouteManagement.Query.API.Services.Grpc
         {
             try
             {
-                var routes = await _routeRepository.GetByStatusAsync(request.Status);
+                var routes = await _mediator.Send(new FindRoutesByStatusQuery { Status = request.Status }, context.CancellationToken);
                 
                 var response = new RouteLookupResponse
                 {
@@ -104,7 +103,7 @@ namespace Eroad.RouteManagement.Query.API.Services.Grpc
                     throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid driver ID format"));
                 }
 
-                var routes = await _routeRepository.GetByDriverIdAsync(driverId);
+                var routes = await _mediator.Send(new FindRoutesByDriverIdQuery { DriverId = driverId }, context.CancellationToken);
                 
                 var response = new RouteLookupResponse
                 {
@@ -134,7 +133,7 @@ namespace Eroad.RouteManagement.Query.API.Services.Grpc
                     throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid vehicle ID format"));
                 }
 
-                var routes = await _routeRepository.GetByVehicleIdAsync(vehicleId);
+                var routes = await _mediator.Send(new FindRoutesByVehicleIdQuery { VehicleId = vehicleId }, context.CancellationToken);
                 
                 var response = new RouteLookupResponse
                 {
@@ -164,7 +163,7 @@ namespace Eroad.RouteManagement.Query.API.Services.Grpc
                     throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid route ID format"));
                 }
 
-                var checkpoints = await _checkpointRepository.GetByRouteIdAsync(routeId);
+                var checkpoints = await _mediator.Send(new FindCheckpointsByRouteIdQuery { RouteId = routeId }, context.CancellationToken);
                 
                 var response = new CheckpointLookupResponse
                 {

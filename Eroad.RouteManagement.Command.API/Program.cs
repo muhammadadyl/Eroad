@@ -4,8 +4,6 @@ using Eroad.CQRS.Core.Events;
 using Eroad.CQRS.Core.Handlers;
 using Eroad.CQRS.Core.Infrastructure;
 using Eroad.CQRS.Core.Producers;
-using Eroad.RouteManagement.Command.API.Commands;
-using Eroad.RouteManagement.Command.API.Commands.Route;
 using Eroad.RouteManagement.Command.Domain.Aggregates;
 using Eroad.RouteManagement.Command.Infrastructure.Config;
 using Eroad.RouteManagement.Command.Infrastructure.Handlers;
@@ -46,7 +44,9 @@ builder.Services.AddScoped<IEventStoreRepository, EventStoreRepository>();
 builder.Services.AddScoped<IEventProducer, EventProducer>();
 builder.Services.AddScoped<IEventStore, EventStore>();
 builder.Services.AddScoped<IEventSourcingHandler<RouteAggregate>, RouteEventSourcingHandler>();
-builder.Services.AddScoped<IRouteCommandHandler, RouteCommandHandler>();
+
+// Register MediatR
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
 
 builder.Services.AddHealthChecks();
 

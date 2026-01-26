@@ -1,25 +1,25 @@
 using Eroad.CQRS.Core.Handlers;
-using Eroad.RouteManagement.Command.API.Commands;
 using Eroad.RouteManagement.Command.API.Commands.Route;
 using Eroad.RouteManagement.Command.Domain.Aggregates;
 using Eroad.RouteManagement.Contracts;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
+using MediatR;
 
 namespace Eroad.RouteManagement.Command.API.Services.Grpc
 {
     public class RouteCommandGrpcService : RouteCommand.RouteCommandBase
     {
-        private readonly IRouteCommandHandler _commandHandler;
+        private readonly IMediator _mediator;
         private readonly IEventSourcingHandler<RouteAggregate> _eventSourcingHandler;
         private readonly ILogger<RouteCommandGrpcService> _logger;
 
         public RouteCommandGrpcService(
-            IRouteCommandHandler commandHandler, 
+            IMediator mediator, 
             IEventSourcingHandler<RouteAggregate> eventSourcingHandler,
             ILogger<RouteCommandGrpcService> logger)
         {
-            _commandHandler = commandHandler;
+            _mediator = mediator;
             _eventSourcingHandler = eventSourcingHandler;
             _logger = logger;
         }
@@ -42,7 +42,7 @@ namespace Eroad.RouteManagement.Command.API.Services.Grpc
                     AssignedVehicleId = Guid.Empty
                 };
 
-                await _commandHandler.HandleAsync(command);
+                await _mediator.Send(command, context.CancellationToken);
 
                 return new CreateRouteResponse
                 {
@@ -81,7 +81,7 @@ namespace Eroad.RouteManagement.Command.API.Services.Grpc
                     Destination = request.Destination
                 };
 
-                await _commandHandler.HandleAsync(command);
+                await _mediator.Send(command, context.CancellationToken);
 
                 return new UpdateRouteResponse
                 {
@@ -143,7 +143,7 @@ namespace Eroad.RouteManagement.Command.API.Services.Grpc
                     NewStatus = newStatus
                 };
 
-                await _commandHandler.HandleAsync(command);
+                await _mediator.Send(command, context.CancellationToken);
 
                 _logger.LogInformation("Route {RouteId} status changed from {OldStatus} to {NewStatus}", routeId, aggregate.Status, newStatus);
 
@@ -190,7 +190,7 @@ namespace Eroad.RouteManagement.Command.API.Services.Grpc
                     Checkpoint = checkpoint
                 };
 
-                await _commandHandler.HandleAsync(command);
+                await _mediator.Send(command, context.CancellationToken);
 
                 return new AddCheckpointResponse
                 {
@@ -235,7 +235,7 @@ namespace Eroad.RouteManagement.Command.API.Services.Grpc
                     ActualTime = actualTime
                 };
 
-                await _commandHandler.HandleAsync(command);
+                await _mediator.Send(command, context.CancellationToken);
 
                 return new UpdateCheckpointResponse
                 {
@@ -278,7 +278,7 @@ namespace Eroad.RouteManagement.Command.API.Services.Grpc
                     DriverId = driverId
                 };
 
-                await _commandHandler.HandleAsync(command);
+                await _mediator.Send(command, context.CancellationToken);
 
                 return new AssignDriverToRouteResponse
                 {
@@ -321,7 +321,7 @@ namespace Eroad.RouteManagement.Command.API.Services.Grpc
                     VehicleId = vehicleId
                 };
 
-                await _commandHandler.HandleAsync(command);
+                await _mediator.Send(command, context.CancellationToken);
 
                 return new AssignVehicleToRouteResponse
                 {
