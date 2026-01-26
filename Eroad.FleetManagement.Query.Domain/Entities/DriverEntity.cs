@@ -15,11 +15,5 @@ namespace Eroad.FleetManagement.Query.Domain.Entities
         public string DriverLicense { get; set; }
         
         public string Status { get; set; }
-        
-        public Guid? AssignedVehicleId { get; set; }
-        
-        [ForeignKey(nameof(AssignedVehicleId))]
-        [JsonIgnore]
-        public virtual VehicleEntity? AssignedVehicle { get; set; }
     }
 }

@@ -2,9 +2,6 @@
 
 namespace Eroad.FleetManagement.Common
 {
-    public record DriverAssignedEvent(
-        Guid DriverId) : DomainEvent(nameof(DriverAssignedEvent));
-
     public record VehicleAddedEvent(
         string Registration,
         string VehicleType,

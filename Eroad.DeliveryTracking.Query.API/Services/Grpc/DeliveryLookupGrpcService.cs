@@ -85,7 +85,6 @@ public class DeliveryLookupGrpcService : DeliveryLookup.DeliveryLookupBase
         }
         catch (RpcException)
         {
-            throw
             throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid route ID format"));
         }
         catch (Exception ex)

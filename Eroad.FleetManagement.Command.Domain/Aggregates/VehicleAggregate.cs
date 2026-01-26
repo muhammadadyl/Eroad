@@ -5,10 +5,8 @@ namespace Eroad.FleetManagement.Command.Domain.Aggregates
 {
     public class VehicleAggregate : AggregateRoot
     {
-        private Guid _assignedDriverId;
         private VehicleStatus _vehicleStatus;
 
-        public Guid AssignedDriverId => _assignedDriverId;
         public VehicleStatus Status => _vehicleStatus;
 
         public VehicleAggregate() { }
@@ -29,7 +27,6 @@ namespace Eroad.FleetManagement.Command.Domain.Aggregates
         public void Apply(VehicleAddedEvent @event)
         {
             _id = @event.Id;
-            _assignedDriverId = Guid.Empty;
             _vehicleStatus = @event.VehicleStatus;
         }
 
@@ -62,17 +59,6 @@ namespace Eroad.FleetManagement.Command.Domain.Aggregates
         {
             _id = @event.Id;
             _vehicleStatus = @event.NewStatus;
-        }
-
-        public void AssignDriver(Guid driverId)
-        {
-            RaiseEvent(new DriverAssignedEvent(driverId) { Id = _id });
-        }
-
-        public void Apply(DriverAssignedEvent @event)
-        {
-            _id = @event.Id;
-            _assignedDriverId = @event.DriverId;
         }
     }
 }

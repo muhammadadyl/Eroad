@@ -85,24 +85,5 @@ namespace Eroad.FleetManagement.Query.Infrastructure.Handlers
 
             await _vehicleRepository.UpdateAsync(vehicle);
         }
-
-        public async Task On(DriverAssignedEvent @event)
-        {
-            var driver = await _driverRepository.GetByIdAsync(@event.DriverId);
-
-            if (driver == null) return;
-
-            driver.AssignedVehicleId = @event.Id;
-
-            await _driverRepository.UpdateAsync(driver);
-
-            var vehicle = await _vehicleRepository.GetByIdAsync(@event.Id);
-
-            if (vehicle == null) return;
-
-            vehicle.AssignedDriverId = @event.DriverId;
-
-            await _vehicleRepository.UpdateAsync(vehicle);
-        }
     }
 }

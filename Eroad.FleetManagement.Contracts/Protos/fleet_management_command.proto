@@ -16,7 +16,6 @@ service DriverCommand {
   rpc AddDriver(AddDriverRequest) returns (AddDriverResponse);
   rpc UpdateDriver(UpdateDriverRequest) returns (UpdateDriverResponse);
   rpc ChangeDriverStatus(ChangeDriverStatusRequest) returns (ChangeDriverStatusResponse);
-  rpc AssignDriverToVehicle(AssignDriverToVehicleRequest) returns (AssignDriverToVehicleResponse);
 }
 
 // Request messages - Vehicle
@@ -55,11 +54,6 @@ message ChangeDriverStatusRequest {
   string status = 2;
 }
 
-message AssignDriverToVehicleRequest {
-  string id = 1;
-  string vehicle_id = 2;
-}
-
 // Response messages
 message AddVehicleResponse {
   string message = 1;
@@ -82,9 +76,5 @@ message UpdateDriverResponse {
 }
 
 message ChangeDriverStatusResponse {
-  string message = 1;
-}
-
-message AssignDriverToVehicleResponse {
   string message = 1;
 }

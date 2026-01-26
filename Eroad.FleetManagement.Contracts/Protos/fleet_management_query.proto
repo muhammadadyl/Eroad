@@ -66,7 +66,6 @@ message DriverEntity {
   string name = 2;
   string driver_license = 3;
   string status = 4;
-  google.protobuf.StringValue assigned_vehicle_id = 5;
 }
 
 message VehicleEntity {
@@ -74,5 +73,4 @@ message VehicleEntity {
   string registration = 2;
   string vehicle_type = 3;
   string status = 4;
-  google.protobuf.StringValue assigned_driver_id = 5;
 }

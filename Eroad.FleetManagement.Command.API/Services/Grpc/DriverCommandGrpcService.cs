@@ -1,6 +1,5 @@
 using Eroad.CQRS.Core.Handlers;
 using Eroad.FleetManagement.Command.API.Commands.Driver;
-using Eroad.FleetManagement.Command.API.Commands.Vehicle;
 using Eroad.FleetManagement.Command.Domain.Aggregates;
 using Eroad.FleetManagement.Contracts;
 using Grpc.Core;
@@ -163,49 +162,6 @@ namespace Eroad.FleetManagement.Command.API.Services.Grpc
             {
                 _logger.LogError(ex, "Error changing driver status for driver {DriverId}", request.Id);
                 throw new RpcException(new Status(StatusCode.Internal, "An error occurred while changing driver status"));
-            }
-        }
-
-        public override async Task<AssignDriverToVehicleResponse> AssignDriverToVehicle(AssignDriverToVehicleRequest request, ServerCallContext context)
-        {
-            try
-            {
-                if (!Guid.TryParse(request.Id, out var driverId))
-                {
-                    throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid driver ID format"));
-                }
-
-                if (!Guid.TryParse(request.VehicleId, out var vehicleId))
-                {
-                    throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid vehicle ID format"));
-                }
-
-                var command = new AssignDriverToVehicleCommand
-                {
-                    VehicleId = vehicleId,
-                    DriverId = driverId
-                };
-
-                await _mediator.Send(command, context.CancellationToken);
-
-                return new AssignDriverToVehicleResponse
-                {
-                    Message = "Driver assigned to vehicle successfully"
-                };
-            }
-            catch (RpcException)
-            {
-                throw;
-            }
-            catch (InvalidOperationException ex)
-            {
-                _logger.LogWarning(ex, "Invalid operation when assigning driver to vehicle");
-                throw new RpcException(new Status(StatusCode.InvalidArgument, ex.Message));
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error assigning driver to vehicle");
-                throw new RpcException(new Status(StatusCode.Internal, "An error occurred while assigning driver to vehicle"));
             }
         }
     }

@@ -43,7 +43,6 @@ namespace Eroad.FleetManagement.Query.Infrastructure.Repositories
             using DatabaseContext context = _contextFactory.CreateDbContext();
             return await context.Drivers
                 .AsNoTracking()
-                .Include(d => d.AssignedVehicle)
                 .FirstOrDefaultAsync(x => x.Id == driverId);
         }
 
@@ -52,7 +51,6 @@ namespace Eroad.FleetManagement.Query.Infrastructure.Repositories
             using DatabaseContext context = _contextFactory.CreateDbContext();
             return await context.Drivers
                 .AsNoTracking()
-                .Include(d => d.AssignedVehicle)
                 .ToListAsync();
         }
 
@@ -61,7 +59,6 @@ namespace Eroad.FleetManagement.Query.Infrastructure.Repositories
             using DatabaseContext context = _contextFactory.CreateDbContext();
             return await context.Drivers
                 .AsNoTracking()
-                .Include(d => d.AssignedVehicle)
                 .Where(d => d.Status == status)
                 .ToListAsync();
         }

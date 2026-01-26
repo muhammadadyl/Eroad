@@ -127,19 +127,6 @@ public class FleetManagementController : ControllerBase
         return Ok(new { Message = response.Message });
     }
 
-    [HttpPost("drivers/{id}/assign-vehicle")]
-    public async Task<IActionResult> AssignDriverToVehicle(string id, [FromBody] AssignVehicleDto dto)
-    {
-        _logger.LogInformation("Assigning driver {DriverId} to vehicle {VehicleId}", id, dto.VehicleId);
-        var request = new AssignDriverToVehicleRequest
-        {
-            Id = id,
-            VehicleId = dto.VehicleId
-        };
-        var response = await _driverCommandClient.AssignDriverToVehicleAsync(request);
-        return Ok(new { Message = response.Message });
-    }
-
     #endregion
 }
 
@@ -158,9 +145,4 @@ public class UpdateDriverDto
 public class ChangeStatusDto
 {
     public string Status { get; set; } = string.Empty;
-}
-
-public class AssignVehicleDto
-{
-    public string VehicleId { get; set; } = string.Empty;
 }

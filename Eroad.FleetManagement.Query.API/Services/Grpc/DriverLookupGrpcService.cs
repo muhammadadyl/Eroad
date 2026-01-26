@@ -93,20 +93,13 @@ namespace Eroad.FleetManagement.Query.API.Services.Grpc
 
         private static DriverEntity MapToProto(Domain.Entities.DriverEntity driver)
         {
-            var entity = new DriverEntity
+            return new DriverEntity
             {
                 Id = driver.Id.ToString(),
                 Name = driver.Name,
                 DriverLicense = driver.DriverLicense,
                 Status = driver.Status
             };
-
-            if (driver.AssignedVehicleId.HasValue)
-            {
-                entity.AssignedVehicleId = driver.AssignedVehicleId.Value.ToString();
-            }
-
-            return entity;
         }
     }
 }

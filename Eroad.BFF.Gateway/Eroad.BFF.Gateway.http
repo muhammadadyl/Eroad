@@ -166,14 +166,6 @@ Content-Type: application/json
   "status": "Unavailable"
 }
 
-### Assign Driver to Vehicle
-POST {{baseUrl}}/api/fleet/drivers/{{driverId}}/assign-vehicle
-Content-Type: application/json
-
-{
-  "vehicleId": "{{vehicleId}}"
-}
-
 ###############################################################################
 # ROUTE MANAGEMENT - COMMAND APIs
 ###############################################################################

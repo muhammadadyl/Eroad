@@ -131,11 +131,6 @@ namespace Eroad.FleetManagement.Query.API.Services.Grpc
                 Status = vehicle.Status
             };
 
-            if (vehicle.AssignedDriverId.HasValue)
-            {
-                entity.AssignedDriverId = vehicle.AssignedDriverId.Value.ToString();
-            }
-
             return entity;
         }
     }

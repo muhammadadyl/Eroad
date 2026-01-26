@@ -140,25 +140,6 @@ public class FleetManagementAggregator
         var routesResponse = await _routeClient.GetRoutesByVehicleAsync(new GetRoutesByVehicleRequest { VehicleId = vehicleId.ToString() });
         var routes = routesResponse.Routes.ToList();
 
-        // Fetch assigned driver if exists
-        DriverInfo? driverInfo = null;
-        var activeRoute = routes.FirstOrDefault(r => r.Status == "Active" || r.Status == "InProgress");
-        if (activeRoute != null && !string.IsNullOrEmpty(activeRoute.AssignedDriverId))
-        {
-            var driverResponse = await _driverClient.GetDriverByIdAsync(new GetDriverByIdRequest { Id = activeRoute.AssignedDriverId });
-            var driver = driverResponse.Drivers.FirstOrDefault();
-            if (driver != null)
-            {
-                driverInfo = new DriverInfo
-                {
-                    DriverId = Guid.Parse(driver.Id),
-                    Name = driver.Name,
-                    DriverLicense = driver.DriverLicense,
-                    Status = driver.Status
-                };
-            }
-        }
-
         var routeHistory = routes.Select(r => new RouteHistoryItem
         {
             RouteId = Guid.Parse(r.Id),
@@ -173,7 +154,6 @@ public class FleetManagementAggregator
             Registration = vehicle.Registration,
             VehicleType = vehicle.VehicleType,
             Status = vehicle.Status,
-            AssignedDriver = driverInfo,
             RouteHistory = routeHistory
         };
     }
@@ -194,25 +174,6 @@ public class FleetManagementAggregator
         var routesResponse = await _routeClient.GetRoutesByDriverAsync(new GetRoutesByDriverRequest { DriverId = driverId.ToString() });
         var routes = routesResponse.Routes.ToList();
 
-        // Fetch assigned vehicle if exists
-        VehicleInfo? vehicleInfo = null;
-        var activeRoute = routes.FirstOrDefault(r => r.Status == "Active" || r.Status == "InProgress");
-        if (activeRoute != null && !string.IsNullOrEmpty(activeRoute.AssignedVehicleId))
-        {
-            var vehicleResponse = await _vehicleClient.GetVehicleByIdAsync(new GetVehicleByIdRequest { Id = activeRoute.AssignedVehicleId });
-            var vehicle = vehicleResponse.Vehicles.FirstOrDefault();
-            if (vehicle != null)
-            {
-                vehicleInfo = new VehicleInfo
-                {
-                    VehicleId = Guid.Parse(vehicle.Id),
-                    Registration = vehicle.Registration,
-                    VehicleType = vehicle.VehicleType,
-                    Status = vehicle.Status
-                };
-            }
-        }
-
         var routeHistory = routes.Select(r => new RouteHistoryItem
         {
             RouteId = Guid.Parse(r.Id),
@@ -227,7 +188,6 @@ public class FleetManagementAggregator
             Name = driver.Name,
             DriverLicense = driver.DriverLicense,
             Status = driver.Status,
-            AssignedVehicle = vehicleInfo,
             RouteHistory = routeHistory
         };
     }

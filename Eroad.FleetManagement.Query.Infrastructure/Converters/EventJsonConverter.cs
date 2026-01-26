@@ -39,7 +39,6 @@ namespace Eroad.FleetManagement.Query.Infrastructure.Converters
                 nameof(VehicleAddedEvent) => JsonSerializer.Deserialize<VehicleAddedEvent>(json, newOptions),
                 nameof(VehicleUpdatedEvent) => JsonSerializer.Deserialize<VehicleUpdatedEvent>(json, newOptions),
                 nameof(VehicleStatusChangedEvent) => JsonSerializer.Deserialize<VehicleStatusChangedEvent>(json, newOptions),
-                nameof(DriverAssignedEvent) => JsonSerializer.Deserialize<DriverAssignedEvent>(json, newOptions),
                 _ => throw new JsonException($"{typeDiscriminator} is not supported yet!")
             };
         }

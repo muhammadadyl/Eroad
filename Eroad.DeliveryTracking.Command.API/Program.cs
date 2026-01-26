@@ -4,7 +4,6 @@ using Eroad.CQRS.Core.Events;
 using Eroad.CQRS.Core.Handlers;
 using Eroad.CQRS.Core.Infrastructure;
 using Eroad.CQRS.Core.Producers;
-using Eroad.DeliveryTracking.Command.API.Commands.Delivery;
 using Eroad.DeliveryTracking.Command.Domain.Aggregates;
 using Eroad.DeliveryTracking.Command.Infrastructure.Config;
 using Eroad.DeliveryTracking.Command.Infrastructure.Handlers;

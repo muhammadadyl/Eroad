@@ -10,6 +10,5 @@ namespace Eroad.FleetManagement.Query.Infrastructure.Handlers
         Task On(VehicleAddedEvent @event);
         Task On(VehicleUpdatedEvent @event);
         Task On(VehicleStatusChangedEvent @event);
-        Task On(DriverAssignedEvent @event);
     }
 }
