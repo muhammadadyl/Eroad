@@ -6,23 +6,27 @@ namespace Eroad.DeliveryTracking.Command.Domain.Aggregates
     public class DeliveryAggregate : AggregateRoot
     {
         private Guid _routeId;
+        private Guid? _driverId;
+        private Guid? _vehicleId;
         private DeliveryStatus _status;
         private string _currentCheckpoint;
         private List<Incident> _incidents = new();
 
         public Guid RouteId => _routeId;
+        public Guid? DriverId => _driverId;
+        public Guid? VehicleId => _vehicleId;
         public DeliveryStatus Status => _status;
         public string CurrentCheckpoint => _currentCheckpoint;
         public IReadOnlyList<Incident> Incidents => _incidents.AsReadOnly();
 
         public DeliveryAggregate() { }
 
-        public DeliveryAggregate(Guid deliveryId, Guid routeId)
+        public DeliveryAggregate(Guid deliveryId, Guid routeId, Guid? driverId, Guid? vehicleId)
         {
             if (routeId == Guid.Empty)
                 throw new ArgumentException("Route ID cannot be empty", nameof(routeId));
 
-            RaiseEvent(new DeliveryCreatedEvent(routeId)
+            RaiseEvent(new DeliveryCreatedEvent(routeId, driverId, vehicleId)
             {
                 Id = deliveryId
             });
@@ -32,6 +36,8 @@ namespace Eroad.DeliveryTracking.Command.Domain.Aggregates
         {
             _id = @event.Id;
             _routeId = @event.RouteId;
+            _driverId = @event.DriverId;
+            _vehicleId = @event.VehicleId;
             _status = DeliveryStatus.PickedUp;
             _currentCheckpoint = string.Empty;
         }

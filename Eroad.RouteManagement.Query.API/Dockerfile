@@ -15,7 +15,6 @@ COPY ["Eroad.RouteManagement.Query.Domain/Eroad.RouteManagement.Query.Domain.csp
 COPY ["Eroad.RouteManagement.Query.Infrastructure/Eroad.RouteManagement.Query.Infrastructure.csproj", "Eroad.RouteManagement.Query.Infrastructure/"]
 COPY ["Eroad.RouteManagement.Common/Eroad.RouteManagement.Common.csproj", "Eroad.RouteManagement.Common/"]
 COPY ["Eroad.RouteManagement.Contracts/Eroad.RouteManagement.Contracts.csproj", "Eroad.RouteManagement.Contracts/"]
-COPY ["Eroad.Common/Eroad.Common.csproj", "Eroad.Common/"]
 COPY ["Eroad.CQRS.Core/Eroad.CQRS.Core.csproj", "Eroad.CQRS.Core/"]
 
 # Restore dependencies
@@ -27,7 +26,6 @@ COPY ["Eroad.RouteManagement.Query.Domain/", "Eroad.RouteManagement.Query.Domain
 COPY ["Eroad.RouteManagement.Query.Infrastructure/", "Eroad.RouteManagement.Query.Infrastructure/"]
 COPY ["Eroad.RouteManagement.Common/", "Eroad.RouteManagement.Common/"]
 COPY ["Eroad.RouteManagement.Contracts/", "Eroad.RouteManagement.Contracts/"]
-COPY ["Eroad.Common/", "Eroad.Common/"]
 COPY ["Eroad.CQRS.Core/", "Eroad.CQRS.Core/"]
 
 # Build the project

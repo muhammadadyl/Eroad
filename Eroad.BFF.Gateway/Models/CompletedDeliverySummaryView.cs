@@ -8,6 +8,8 @@ public class CompletedDeliverySummaryView
     public DateTime DeliveredAt { get; set; }
     public string? SignatureUrl { get; set; }
     public string? ReceiverName { get; set; }
+    public DriverInfo? Driver { get; set; }
+    public VehicleInfo? Vehicle { get; set; }
     public double DurationMinutes { get; set; }
     public List<IncidentInfo> Incidents { get; set; } = new();
 }

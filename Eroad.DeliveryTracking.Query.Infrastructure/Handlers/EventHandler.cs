@@ -21,6 +21,8 @@ namespace Eroad.DeliveryTracking.Query.Infrastructure.Handlers
             {
                 Id = @event.Id,
                 RouteId = @event.RouteId,
+                DriverId = @event.DriverId,
+                VehicleId = @event.VehicleId,
                 Status = DeliveryStatus.PickedUp.ToString(),
                 CreatedAt = DateTime.UtcNow
             };

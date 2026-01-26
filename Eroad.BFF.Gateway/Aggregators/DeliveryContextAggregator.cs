@@ -51,6 +51,44 @@ public class DeliveryContextAggregator
             throw new InvalidOperationException($"Route with ID {delivery.RouteId} not found");
         }
 
+        // Fetch driver if assigned
+        DriverInfo? driverInfo = null;
+        if (!string.IsNullOrEmpty(delivery.DriverId))
+        {
+            var driverRequest = new GetDriverByIdRequest { Id = delivery.DriverId };
+            var driverResponse = await _driverClient.GetDriverByIdAsync(driverRequest);
+            var driver = driverResponse.Drivers.FirstOrDefault();
+            if (driver != null)
+            {
+                driverInfo = new DriverInfo
+                {
+                    DriverId = Guid.Parse(driver.Id),
+                    Name = driver.Name,
+                    DriverLicense = driver.DriverLicense,
+                    Status = driver.Status
+                };
+            }
+        }
+
+        // Fetch vehicle if assigned
+        VehicleInfo? vehicleInfo = null;
+        if (!string.IsNullOrEmpty(delivery.VehicleId))
+        {
+            var vehicleRequest = new GetVehicleByIdRequest { Id = delivery.VehicleId };
+            var vehicleResponse = await _vehicleClient.GetVehicleByIdAsync(vehicleRequest);
+            var vehicle = vehicleResponse.Vehicles.FirstOrDefault();
+            if (vehicle != null)
+            {
+                vehicleInfo = new VehicleInfo
+                {
+                    VehicleId = Guid.Parse(vehicle.Id),
+                    Registration = vehicle.Registration,
+                    VehicleType = vehicle.VehicleType,
+                    Status = vehicle.Status
+                };
+            }
+        }
+
         // Map to view model
         return new DeliveryContextView
         {
@@ -65,6 +103,8 @@ public class DeliveryContextAggregator
                 Destination = route.Destination,
                 Status = route.Status
             },
+            Driver = driverInfo,
+            Vehicle = vehicleInfo,
             Checkpoints = route.Checkpoints.Select(c => new CheckpointInfo
             {
                 Sequence = c.Sequence,

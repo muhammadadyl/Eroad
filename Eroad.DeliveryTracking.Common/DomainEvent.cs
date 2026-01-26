@@ -3,7 +3,7 @@
 namespace Eroad.DeliveryTracking.Common
 {
     // Delivery Events
-    public record DeliveryCreatedEvent(Guid RouteId) : DomainEvent(nameof(DeliveryCreatedEvent));
+    public record DeliveryCreatedEvent(Guid RouteId, Guid? DriverId, Guid? VehicleId) : DomainEvent(nameof(DeliveryCreatedEvent));
 
     public record DeliveryStatusChangedEvent(
         Guid DeliveryId,

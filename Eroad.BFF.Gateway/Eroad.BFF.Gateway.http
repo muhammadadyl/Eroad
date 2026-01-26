@@ -261,6 +261,16 @@ Content-Type: application/json
 
 {
   "id": "{{deliveryId}}",
+  "routeId": "{{routeId}}",
+  "driverId": "{{driverId}}",
+  "vehicleId": "{{vehicleId}}"
+}
+
+### Create Delivery without Driver/Vehicle Assignment
+POST {{baseUrl}}/api/deliveries
+Content-Type: application/json
+
+{
   "routeId": "{{routeId}}"
 }
 
@@ -412,7 +422,9 @@ Content-Type: application/json
 
 {
   "id": "550e8400-e29b-41d4-a716-446655440104",
-  "routeId": "550e8400-e29b-41d4-a716-446655440103"
+  "routeId": "550e8400-e29b-41d4-a716-446655440103",
+  "driverId": "550e8400-e29b-41d4-a716-446655440101",
+  "vehicleId": "550e8400-e29b-41d4-a716-446655440100"
 }
 
 ### STEP 7: Start Route

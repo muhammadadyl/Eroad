@@ -18,6 +18,8 @@ service DeliveryCommand {
 message CreateDeliveryRequest {
   string id = 1;
   string route_id = 2;
+  string driver_id = 3;
+  string vehicle_id = 4;
 }
 
 message UpdateDeliveryStatusRequest {

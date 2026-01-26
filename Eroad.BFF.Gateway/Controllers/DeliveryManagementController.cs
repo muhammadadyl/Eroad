@@ -57,9 +57,16 @@ public class DeliveryManagementController : ControllerBase
     #region Command Operations
 
     [HttpPost]
-    public async Task<IActionResult> CreateDelivery([FromBody] CreateDeliveryRequest request)
+    public async Task<IActionResult> CreateDelivery([FromBody] CreateDeliveryDto dto)
     {
-        _logger.LogInformation("Creating delivery for route: {RouteId}", request.RouteId);
+        _logger.LogInformation("Creating delivery for route: {RouteId}", dto.RouteId);
+        var request = new CreateDeliveryRequest
+        {
+            Id = dto.Id ?? Guid.NewGuid().ToString(),
+            RouteId = dto.RouteId,
+            DriverId = dto.DriverId ?? string.Empty,
+            VehicleId = dto.VehicleId ?? string.Empty
+        };
         var response = await _deliveryCommandClient.CreateDeliveryAsync(request);
         return Ok(new { Message = response.Message, Id = response.Id });
     }
@@ -132,6 +139,14 @@ public class DeliveryManagementController : ControllerBase
     }
 
     #endregion
+}
+
+public class CreateDeliveryDto
+{
+    public string? Id { get; set; }
+    public string RouteId { get; set; } = string.Empty;
+    public string? DriverId { get; set; }
+    public string? VehicleId { get; set; }
 }
 
 public class UpdateStatusDto

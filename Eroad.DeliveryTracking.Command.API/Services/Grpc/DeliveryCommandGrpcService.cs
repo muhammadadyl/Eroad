@@ -38,10 +38,24 @@ namespace Eroad.DeliveryTracking.Command.API.Services.Grpc
                     throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid route ID format"));
                 }
 
+                Guid? driverId = null;
+                if (!string.IsNullOrEmpty(request.DriverId) && Guid.TryParse(request.DriverId, out var parsedDriverId))
+                {
+                    driverId = parsedDriverId;
+                }
+
+                Guid? vehicleId = null;
+                if (!string.IsNullOrEmpty(request.VehicleId) && Guid.TryParse(request.VehicleId, out var parsedVehicleId))
+                {
+                    vehicleId = parsedVehicleId;
+                }
+
                 var command = new CreateDeliveryCommand
                 {
                     Id = deliveryId,
-                    RouteId = routeId
+                    RouteId = routeId,
+                    DriverId = driverId,
+                    VehicleId = vehicleId
                 };
 
                 await _mediator.Send(command, context.CancellationToken);

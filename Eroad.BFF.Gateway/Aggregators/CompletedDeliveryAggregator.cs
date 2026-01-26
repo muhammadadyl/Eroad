@@ -62,6 +62,44 @@ public class CompletedDeliveryAggregator
             throw new InvalidOperationException($"Route with ID {delivery.RouteId} not found");
         }
 
+        // Fetch driver if assigned
+        DriverInfo? driverInfo = null;
+        if (!string.IsNullOrEmpty(delivery.DriverId))
+        {
+            var driverRequest = new GetDriverByIdRequest { Id = delivery.DriverId };
+            var driverResponse = await _driverClient.GetDriverByIdAsync(driverRequest);
+            var driver = driverResponse.Drivers.FirstOrDefault();
+            if (driver != null)
+            {
+                driverInfo = new DriverInfo
+                {
+                    DriverId = Guid.Parse(driver.Id),
+                    Name = driver.Name,
+                    DriverLicense = driver.DriverLicense,
+                    Status = driver.Status
+                };
+            }
+        }
+
+        // Fetch vehicle if assigned
+        VehicleInfo? vehicleInfo = null;
+        if (!string.IsNullOrEmpty(delivery.VehicleId))
+        {
+            var vehicleRequest = new GetVehicleByIdRequest { Id = delivery.VehicleId };
+            var vehicleResponse = await _vehicleClient.GetVehicleByIdAsync(vehicleRequest);
+            var vehicle = vehicleResponse.Vehicles.FirstOrDefault();
+            if (vehicle != null)
+            {
+                vehicleInfo = new VehicleInfo
+                {
+                    VehicleId = Guid.Parse(vehicle.Id),
+                    Registration = vehicle.Registration,
+                    VehicleType = vehicle.VehicleType,
+                    Status = vehicle.Status
+                };
+            }
+        }
+
         // Calculate duration
         var deliveredAt = delivery.DeliveredAt.ToDateTime();
         var createdAt = delivery.CreatedAt.ToDateTime();
@@ -76,6 +114,8 @@ public class CompletedDeliveryAggregator
             DeliveredAt = deliveredAt,
             SignatureUrl = delivery.SignatureUrl,
             ReceiverName = delivery.ReceiverName,
+            Driver = driverInfo,
+            Vehicle = vehicleInfo,
             DurationMinutes = Math.Round(durationMinutes, 2),
             Incidents = delivery.Incidents.Select(i => new IncidentInfo
             {

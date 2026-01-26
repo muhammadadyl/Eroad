@@ -10,5 +10,9 @@ namespace Eroad.DeliveryTracking.Command.API.Commands.Delivery
 
         [Required(ErrorMessage = "Route ID is required")]
         public Guid RouteId { get; init; }
+
+        public Guid? DriverId { get; init; }
+
+        public Guid? VehicleId { get; init; }
     }
 }

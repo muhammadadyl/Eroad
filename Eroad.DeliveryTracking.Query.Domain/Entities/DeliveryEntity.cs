@@ -12,6 +12,10 @@ namespace Eroad.DeliveryTracking.Query.Domain.Entities
         
         public Guid RouteId { get; set; }
         
+        public Guid? DriverId { get; set; }
+        
+        public Guid? VehicleId { get; set; }
+        
         public string Status { get; set; }
         
         public DateTime CreatedAt { get; set; }

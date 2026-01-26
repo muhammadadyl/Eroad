@@ -59,13 +59,15 @@ message IncidentLookupResponse {
 message DeliveryEntity {
   string id = 1;
   string route_id = 2;
-  string status = 3;
-  google.protobuf.Timestamp created_at = 4;
-  google.protobuf.Timestamp delivered_at = 5;
-  google.protobuf.StringValue signature_url = 6;
-  google.protobuf.StringValue receiver_name = 7;
-  google.protobuf.StringValue current_checkpoint = 8;
-  repeated IncidentEntity incidents = 9;
+  google.protobuf.StringValue driver_id = 3;
+  google.protobuf.StringValue vehicle_id = 4;
+  string status = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp delivered_at = 7;
+  google.protobuf.StringValue signature_url = 8;
+  google.protobuf.StringValue receiver_name = 9;
+  google.protobuf.StringValue current_checkpoint = 10;
+  repeated IncidentEntity incidents = 11;
 }
 
 message IncidentEntity {

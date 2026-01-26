@@ -15,7 +15,7 @@ namespace Eroad.DeliveryTracking.Command.API.Commands.Delivery.Handlers
 
         public async Task Handle(CreateDeliveryCommand request, CancellationToken cancellationToken)
         {
-            var aggregate = new DeliveryAggregate(request.Id, request.RouteId);
+            var aggregate = new DeliveryAggregate(request.Id, request.RouteId, request.DriverId, request.VehicleId);
             await _eventSourcingHandler.SaveAsync(aggregate);
         }
     }

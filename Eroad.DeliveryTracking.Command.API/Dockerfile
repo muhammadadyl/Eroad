@@ -15,7 +15,6 @@ COPY ["Eroad.DeliveryTracking.Command.Domain/Eroad.DeliveryTracking.Command.Doma
 COPY ["Eroad.DeliveryTracking.Command.Infrastructure/Eroad.DeliveryTracking.Command.Infrastructure.csproj", "Eroad.DeliveryTracking.Command.Infrastructure/"]
 COPY ["Eroad.DeliveryTracking.Common/Eroad.DeliveryTracking.Common.csproj", "Eroad.DeliveryTracking.Common/"]
 COPY ["Eroad.DeliveryTracking.Contracts/Eroad.DeliveryTracking.Contracts.csproj", "Eroad.DeliveryTracking.Contracts/"]
-COPY ["Eroad.Common/Eroad.Common.csproj", "Eroad.Common/"]
 COPY ["Eroad.CQRS.Core/Eroad.CQRS.Core.csproj", "Eroad.CQRS.Core/"]
 
 # Restore dependencies
@@ -27,7 +26,6 @@ COPY ["Eroad.DeliveryTracking.Command.Domain/", "Eroad.DeliveryTracking.Command.
 COPY ["Eroad.DeliveryTracking.Command.Infrastructure/", "Eroad.DeliveryTracking.Command.Infrastructure/"]
 COPY ["Eroad.DeliveryTracking.Common/", "Eroad.DeliveryTracking.Common/"]
 COPY ["Eroad.DeliveryTracking.Contracts/", "Eroad.DeliveryTracking.Contracts/"]
-COPY ["Eroad.Common/", "Eroad.Common/"]
 COPY ["Eroad.CQRS.Core/", "Eroad.CQRS.Core/"]
 
 # Build the project

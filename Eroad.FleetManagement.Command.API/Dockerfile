@@ -15,7 +15,6 @@ COPY ["Eroad.FleetManagement.Command.Domain/Eroad.FleetManagement.Command.Domain
 COPY ["Eroad.FleetManagement.Command.Infrastructure/Eroad.FleetManagement.Command.Infrastructure.csproj", "Eroad.FleetManagement.Command.Infrastructure/"]
 COPY ["Eroad.FleetManagement.Common/Eroad.FleetManagement.Common.csproj", "Eroad.FleetManagement.Common/"]
 COPY ["Eroad.FleetManagement.Contracts/Eroad.FleetManagement.Contracts.csproj", "Eroad.FleetManagement.Contracts/"]
-COPY ["Eroad.Common/Eroad.Common.csproj", "Eroad.Common/"]
 COPY ["Eroad.CQRS.Core/Eroad.CQRS.Core.csproj", "Eroad.CQRS.Core/"]
 
 # Restore dependencies
@@ -27,7 +26,6 @@ COPY ["Eroad.FleetManagement.Command.Domain/", "Eroad.FleetManagement.Command.Do
 COPY ["Eroad.FleetManagement.Command.Infrastructure/", "Eroad.FleetManagement.Command.Infrastructure/"]
 COPY ["Eroad.FleetManagement.Common/", "Eroad.FleetManagement.Common/"]
 COPY ["Eroad.FleetManagement.Contracts/", "Eroad.FleetManagement.Contracts/"]
-COPY ["Eroad.Common/", "Eroad.Common/"]
 COPY ["Eroad.CQRS.Core/", "Eroad.CQRS.Core/"]
 
 # Build the project
