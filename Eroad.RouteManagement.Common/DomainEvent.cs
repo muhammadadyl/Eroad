@@ -5,7 +5,7 @@ namespace Eroad.RouteManagement.Common
     public record RouteCreatedEvent(
         string Origin,
         string Destination,
-        RouteStatus RouteStatus = RouteStatus.Planned
+        RouteStatus RouteStatus = RouteStatus.Planning
         ) : DomainEvent(nameof(RouteCreatedEvent));
 
     public record RouteUpdatedEvent(

@@ -48,7 +48,7 @@ message RouteEntity {
   string destination = 3;
   string status = 4;
   google.protobuf.Timestamp created_date = 5;
-  google.protobuf.Timestamp completed_date = 6;
+  google.protobuf.Timestamp updated_date = 6;
   repeated CheckpointEntity checkpoints = 7;
 }
 

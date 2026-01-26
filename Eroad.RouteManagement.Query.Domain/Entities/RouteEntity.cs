@@ -18,7 +18,7 @@ namespace Eroad.RouteManagement.Query.Domain.Entities
         
         public DateTime CreatedDate { get; set; }
         
-        public DateTime? CompletedDate { get; set; }
+        public DateTime? UpdatedDate { get; set; }
         
         [JsonIgnore]
         public virtual ICollection<CheckpointEntity> Checkpoints { get; set; }

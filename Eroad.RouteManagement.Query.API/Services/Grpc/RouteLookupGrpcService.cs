@@ -135,9 +135,9 @@ namespace Eroad.RouteManagement.Query.API.Services.Grpc
                 CreatedDate = Timestamp.FromDateTime(DateTime.SpecifyKind(route.CreatedDate, DateTimeKind.Utc))
             };
 
-            if (route.CompletedDate.HasValue)
+            if (route.UpdatedDate.HasValue)
             {
-                entity.CompletedDate = Timestamp.FromDateTime(DateTime.SpecifyKind(route.CompletedDate.Value, DateTimeKind.Utc));
+                entity.UpdatedDate = Timestamp.FromDateTime(DateTime.SpecifyKind(route.UpdatedDate.Value, DateTimeKind.Utc));
             }
 
             return entity;

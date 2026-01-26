@@ -79,6 +79,8 @@ namespace Eroad.RouteManagement.Command.Domain.Aggregates
                 throw new ArgumentException("Checkpoint location cannot be empty");
             if (_checkpoints.Any(c => c.Sequence == checkpoint.Sequence))
                 throw new InvalidOperationException($"Checkpoint with sequence {checkpoint.Sequence} already exists");
+            if (_routeStatus != RouteStatus.Planning)
+                throw new InvalidOperationException("Checkpoints can only be added when the route is in Planning status");
 
             RaiseEvent(new CheckpointAddedEvent(checkpoint) { Id = _id });
         }

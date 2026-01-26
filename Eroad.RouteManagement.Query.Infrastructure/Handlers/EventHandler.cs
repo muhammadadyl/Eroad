@@ -37,6 +37,7 @@ namespace Eroad.RouteManagement.Query.Infrastructure.Handlers
 
             route.Origin = @event.Origin;
             route.Destination = @event.Destination;
+            route.UpdatedDate = DateTime.UtcNow;
 
             await _routeRepository.UpdateAsync(route);
         }
@@ -48,11 +49,7 @@ namespace Eroad.RouteManagement.Query.Infrastructure.Handlers
             if (route == null) return;
 
             route.Status = @event.NewStatus.ToString();
-
-            if (@event.NewStatus == RouteStatus.Completed)
-            {
-                route.CompletedDate = DateTime.UtcNow;
-            }
+            route.UpdatedDate = DateTime.UtcNow;
 
             await _routeRepository.UpdateAsync(route);
         }
