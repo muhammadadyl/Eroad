@@ -243,7 +243,6 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__Redis=redis:6379
-      - ConnectionStrings__DeliveryTrackingDb=Server=sql;Database=DeliveryTrackingQuery;User Id=sa;Password=$$tr0ngS@P@ssw0rd02;TrustServerCertificate=true;
       - ServiceEndpoints__DeliveryTrackingBaseUrl=http://delivery-tracking-query-api:8080
       - ServiceEndpoints__DeliveryTrackingCommandBaseUrl=http://delivery-tracking-command-api:8080
       - ServiceEndpoints__FleetManagementBaseUrl=http://fleet-management-query-api:8080
