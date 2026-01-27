@@ -5,6 +5,45 @@ namespace Eroad.DeliveryTracking.Command.Domain.Aggregates
 {
     public class DeliveryAggregate : AggregateRoot
     {
+        private static readonly Dictionary<DeliveryStatus, HashSet<DeliveryStatus>> _validTransitions = new()
+        {
+            { 
+                DeliveryStatus.PickedUp, 
+                new HashSet<DeliveryStatus> 
+                { 
+                    DeliveryStatus.InTransit,
+                    DeliveryStatus.Failed 
+                } 
+            },
+            { 
+                DeliveryStatus.InTransit, 
+                new HashSet<DeliveryStatus> 
+                { 
+                    DeliveryStatus.OutForDelivery,
+                    DeliveryStatus.Failed 
+                } 
+            },
+            { 
+                DeliveryStatus.OutForDelivery, 
+                new HashSet<DeliveryStatus> 
+                { 
+                    DeliveryStatus.Delivered,
+                    DeliveryStatus.Failed 
+                } 
+            },
+            { 
+                DeliveryStatus.Delivered, 
+                new HashSet<DeliveryStatus>() // Terminal state - no transitions allowed
+            },
+            { 
+                DeliveryStatus.Failed, 
+                new HashSet<DeliveryStatus> 
+                { 
+                    DeliveryStatus.PickedUp // Allow retry from failed state
+                } 
+            }
+        };
+
         private Guid _routeId;
         private Guid? _driverId;
         private Guid? _vehicleId;
@@ -46,13 +85,45 @@ namespace Eroad.DeliveryTracking.Command.Domain.Aggregates
         {
             if (_status != oldStatus)
                 throw new InvalidOperationException($"Current delivery status is {_status}, not {oldStatus}");
+            
             if (_status == newStatus)
                 throw new InvalidOperationException("New status must be different from current status");
+
+            // Validate state transition using the state machine
+            if (!IsValidTransition(_status, newStatus))
+            {
+                var validTransitions = GetValidTransitionsMessage(_status);
+                throw new InvalidOperationException(
+                    $"Invalid status transition from {_status} to {newStatus}. {validTransitions}");
+            }
 
             RaiseEvent(new DeliveryStatusChangedEvent(_id, oldStatus, newStatus, DateTime.UtcNow)
             {
                 Id = _id
             });
+        }
+
+        private static bool IsValidTransition(DeliveryStatus currentStatus, DeliveryStatus newStatus)
+        {
+            if (currentStatus == newStatus)
+                return false;
+
+            if (!_validTransitions.TryGetValue(currentStatus, out var allowedStatuses))
+                return false;
+
+            return allowedStatuses.Contains(newStatus);
+        }
+
+        private static string GetValidTransitionsMessage(DeliveryStatus currentStatus)
+        {
+            if (!_validTransitions.TryGetValue(currentStatus, out var allowedStatuses))
+                return $"No valid transitions defined for status {currentStatus}";
+
+            if (allowedStatuses.Count == 0)
+                return $"{currentStatus} is a terminal state. No further transitions are allowed.";
+
+            var statusList = string.Join(", ", allowedStatuses);
+            return $"Valid transitions: {statusList}";
         }
 
         public void Apply(DeliveryStatusChangedEvent @event)
