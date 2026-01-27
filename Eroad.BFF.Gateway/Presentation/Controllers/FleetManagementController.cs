@@ -48,7 +48,7 @@ public class FleetManagementController : ControllerBase
     #region Vehicle Commands
 
     [HttpPost("vehicles")]
-    public async Task<IActionResult> AddVehicle([FromBody] AddVehicleRequest request)
+    public async Task<IActionResult> AddVehicle([FromBody] AddVehicleModel request)
     {
         var result = await _aggregator.AddVehicleAsync(request.Id, request.Registration, request.VehicleType);
         return Ok(result);
@@ -73,7 +73,7 @@ public class FleetManagementController : ControllerBase
     #region Driver Commands
 
     [HttpPost("drivers")]
-    public async Task<IActionResult> AddDriver([FromBody] AddDriverRequest request)
+    public async Task<IActionResult> AddDriver([FromBody] AddDriverModel request)
     {
         var result = await _aggregator.AddDriverAsync(request.Id, request.Name, request.DriverLicense);
         return Ok(result);

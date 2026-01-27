@@ -26,12 +26,13 @@ builder.WebHost.UseKestrel(options =>
 });
 
 // Register BSON class maps for domain events
-MongoDB.Bson.Serialization.BsonSerializer.RegisterSerializer(new MongoDB.Bson.Serialization.Serializers.GuidSerializer(MongoDB.Bson.GuidRepresentation.Standard));
+BsonSerializer.RegisterSerializer(new MongoDB.Bson.Serialization.Serializers.GuidSerializer(MongoDB.Bson.GuidRepresentation.Standard));
 BsonClassMap.RegisterClassMap<DomainEvent>();
 BsonClassMap.RegisterClassMap<RouteCreatedEvent>();
 BsonClassMap.RegisterClassMap<RouteUpdatedEvent>();
 BsonClassMap.RegisterClassMap<RouteStatusChangedEvent>();
 BsonClassMap.RegisterClassMap<CheckpointAddedEvent>();
+BsonClassMap.RegisterClassMap<RouteScheduledEndTimeUpdatedEvent>();
 
 // Add services to the container.
 builder.Services.Configure<MongoDbConfig>(builder.Configuration.GetSection(nameof(MongoDbConfig)));

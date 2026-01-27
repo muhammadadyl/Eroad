@@ -17,6 +17,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Eroad.CQRS.Core\Eroad.CQRS.Core.csproj" />
+    <ProjectReference Include="..\Eroad.RouteManagement.Query.Domain\Eroad.RouteManagement.Query.Domain.csproj" />
     <ProjectReference Include="..\Eroad.RouteManagement.Contracts\Eroad.RouteManagement.Contracts.csproj" />
     <ProjectReference Include="..\Eroad.RouteManagement.Query.Infrastructure\Eroad.RouteManagement.Query.Infrastructure.csproj" />
   </ItemGroup>

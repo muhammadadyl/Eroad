@@ -7,9 +7,9 @@ namespace Eroad.DeliveryTracking.Query.Infrastructure.Repositories
 {
     public class DeliveryCheckpointRepository : IDeliveryCheckpointRepository
     {
-        private readonly IDbContextFactory<DatabaseContext> _contextFactory;
+        private readonly DatabaseContextFactory _contextFactory;
 
-        public DeliveryCheckpointRepository(IDbContextFactory<DatabaseContext> contextFactory)
+        public DeliveryCheckpointRepository(DatabaseContextFactory contextFactory)
         {
             _contextFactory = contextFactory;
         }

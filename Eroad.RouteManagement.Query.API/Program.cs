@@ -20,6 +20,14 @@ builder.WebHost.UseKestrel(options =>
     });
 });
 
+// Add Logging
+builder.Services.AddLogging(config =>
+{
+    config.ClearProviders();
+    config.AddConsole();
+    config.SetMinimumLevel(LogLevel.Information);
+});
+
 // Configure Action to Configure DbContext
 Action<DbContextOptionsBuilder> configureDbContext = (o => o.UseLazyLoadingProxies().UseSqlServer(builder.Configuration.GetConnectionString("SqlServer")));
 

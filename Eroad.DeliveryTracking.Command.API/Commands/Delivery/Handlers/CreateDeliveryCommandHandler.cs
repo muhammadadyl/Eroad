@@ -13,9 +13,15 @@ namespace Eroad.DeliveryTracking.Command.API.Commands.Delivery.Handlers
             _eventSourcingHandler = eventSourcingHandler;
         }
 
-        public async Task Handle(CreateDeliveryCommand request, CancellationToken cancellationToken)
+        public async Task Handle(CreateDeliveryCommand command, CancellationToken cancellationToken)
         {
-            var aggregate = new DeliveryAggregate(request.Id, request.RouteId, request.DriverId, request.VehicleId);
+            var existAggregate = _eventSourcingHandler.GetByIdAsync(command.Id);
+            if (existAggregate != null)
+            {
+                throw new InvalidOperationException($"Delivery with ID {command.Id} already exists.");
+            }
+
+            var aggregate = new DeliveryAggregate(command.Id, command.RouteId, command.DriverId, command.VehicleId);
             await _eventSourcingHandler.SaveAsync(aggregate);
         }
     }

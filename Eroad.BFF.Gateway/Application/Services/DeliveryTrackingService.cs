@@ -128,7 +128,7 @@ public class DeliveryTrackingService : IDeliveryTrackingService
         _logger.LogInformation("Creating delivery for route: {RouteId}", routeId);
 
         // Validate route exists in RouteManagement
-        var routeLookupRequest = new GetRouteByIdRequest { Id = routeId };
+        var routeLookupRequest = new GetRouteByIdRequest { Id = routeId  };
         var routeLookupResponse = await _routeClient.GetRouteByIdAsync(routeLookupRequest);
         
         if (routeLookupResponse.Routes == null || !routeLookupResponse.Routes.Any())

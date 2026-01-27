@@ -113,6 +113,7 @@ services:
       - KafkaConfig__Topic=delivery-tracking-events
     depends_on:
       - kafka
+      - init-kafka
       - mongo
     restart: on-failure
 
@@ -136,6 +137,7 @@ services:
       - ConsumerConfig__AllowAutoCreateTopics=true
     depends_on:
       - kafka
+      - init-kafka
       - sql
     restart: on-failure
 
@@ -159,6 +161,7 @@ services:
       - KafkaConfig__Topic=fleet-management-events
     depends_on:
       - kafka
+      - init-kafka
       - mongo
     restart: on-failure
 
@@ -182,6 +185,7 @@ services:
       - ConsumerConfig__AllowAutoCreateTopics=true
     depends_on:
       - kafka
+      - init-kafka
       - sql
     restart: on-failure
 
@@ -205,6 +209,7 @@ services:
       - KafkaConfig__Topic=route-management-events
     depends_on:
       - kafka
+      - init-kafka
       - mongo
     restart: on-failure
 
@@ -228,6 +233,7 @@ services:
       - ConsumerConfig__AllowAutoCreateTopics=true
     depends_on:
       - kafka
+      - init-kafka
       - sql
     restart: on-failure
 

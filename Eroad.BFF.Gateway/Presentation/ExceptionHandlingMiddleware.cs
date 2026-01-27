@@ -38,7 +38,7 @@ public class ExceptionHandlingMiddleware
         }
         catch (RpcException ex)
         {
-            _logger.LogError("gRPC error: {StatusCode} - {Detail}", ex.StatusCode, ex.Status.Detail);
+            _logger.LogError("gRPC error: {StatusCode} - {Detail} \n {ex}", ex.StatusCode, ex.Status.Detail, ex);
             await HandleExceptionAsync(context, HttpStatusCode.InternalServerError, "An error occurred while processing your request");
         }
         catch (Exception ex)

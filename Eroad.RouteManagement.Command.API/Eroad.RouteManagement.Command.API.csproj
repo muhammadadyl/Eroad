@@ -13,6 +13,8 @@
     <PackageReference Include="Grpc.AspNetCore.HealthChecks" Version="2.60.0" />
     <PackageReference Include="MediatR" Version="12.4.1" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+    <PackageReference Include="MongoDB.Bson" Version="3.6.0" />
+    <PackageReference Include="MongoDB.Driver" Version="3.6.0" />
   </ItemGroup>
 
   <ItemGroup>

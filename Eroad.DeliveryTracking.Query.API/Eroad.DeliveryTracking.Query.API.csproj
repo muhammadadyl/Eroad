@@ -20,11 +20,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Eroad.CQRS.Core\Eroad.CQRS.Core.csproj" />
-    <ProjectReference Include="..\Eroad.DeliveryTracking.Common\Eroad.DeliveryTracking.Common.csproj" />
     <ProjectReference Include="..\Eroad.DeliveryTracking.Contracts\Eroad.DeliveryTracking.Contracts.csproj" />
     <ProjectReference Include="..\Eroad.DeliveryTracking.Query.Domain\Eroad.DeliveryTracking.Query.Domain.csproj" />
     <ProjectReference Include="..\Eroad.DeliveryTracking.Query.Infrastructure\Eroad.DeliveryTracking.Query.Infrastructure.csproj" />
-    <ProjectReference Include="..\Eroad.FleetManagement.Query.API\Eroad.FleetManagement.Query.API.csproj" />
   </ItemGroup>
 
 </Project>

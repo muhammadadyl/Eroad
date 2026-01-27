@@ -40,9 +40,9 @@ public class RouteManagementController : ControllerBase
     #region Command Operations
 
     [HttpPost]
-    public async Task<IActionResult> CreateRoute([FromBody] CreateRouteRequest request)
+    public async Task<IActionResult> CreateRoute([FromBody] CreateRouteModel request)
     {
-        var result = await _aggregator.CreateRouteAsync(request.Id, request.Origin, request.Destination, request.ScheduledStartTime.ToDateTime());
+        var result = await _aggregator.CreateRouteAsync(request.Id, request.Origin, request.Destination, request.ScheduledStartTime);
         return Ok(result);
     }
 

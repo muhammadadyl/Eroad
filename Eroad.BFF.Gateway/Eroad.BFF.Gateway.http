@@ -400,7 +400,7 @@ Content-Type: application/json
 {
   "sequence": 1,
   "location": "Highway Entrance",
-  "expectedTime": "2026-01-25T08:00:00Z"
+  "expectedTime": "2026-01-27T08:00:00Z"
 }
 
 ### STEP 4b: Add Checkpoint 2
@@ -410,7 +410,7 @@ Content-Type: application/json
 {
   "sequence": 2,
   "location": "City Center",
-  "expectedTime": "2026-01-25T09:30:00Z"
+  "expectedTime": "2026-01-27T09:30:00Z"
 }
 
 ### STEP 5: Create Delivery

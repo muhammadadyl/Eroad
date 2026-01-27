@@ -132,7 +132,9 @@ namespace Eroad.RouteManagement.Query.API.Services.Grpc
                 Origin = route.Origin,
                 Destination = route.Destination,
                 Status = route.Status,
-                CreatedDate = Timestamp.FromDateTime(DateTime.SpecifyKind(route.CreatedDate, DateTimeKind.Utc))
+                CreatedDate = Timestamp.FromDateTime(DateTime.SpecifyKind(route.CreatedDate, DateTimeKind.Utc)),
+                ScheduledStartTime = Timestamp.FromDateTime(route.ScheduledStartTime),
+                ScheduledEndTime = Timestamp.FromDateTime(route.ScheduledEndTime)
             };
 
             if (route.UpdatedDate.HasValue)

@@ -9,6 +9,8 @@ namespace Eroad.DeliveryTracking.Query.Infrastructure.Consumers
     {
         private readonly ILogger<ConsumerHostedService> _logger;
         private readonly IServiceProvider _serviceProvider;
+        private Task _consumerTask;
+        private CancellationTokenSource _cancellationTokenSource;
 
         public ConsumerHostedService(ILogger<ConsumerHostedService> logger, IServiceProvider serviceProvider)
         {
@@ -16,26 +18,43 @@ namespace Eroad.DeliveryTracking.Query.Infrastructure.Consumers
             _serviceProvider = serviceProvider;
         }
 
-        public Task StartAsync(CancellationToken cancellationToken)
+        public async Task StartAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Event consumer service running.");
+            _logger.LogInformation("Event consumer service starting.");
+            _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
-            using (IServiceScope scope = _serviceProvider.CreateScope())
+            _consumerTask = Task.Run(async () =>
             {
-                var eventConsumer = scope.ServiceProvider.GetRequiredService<IEventConsumer>();
-                var topic = Environment.GetEnvironmentVariable("KAFKA_TOPIC") ?? "delivery-tracking-events";
+                using (IServiceScope scope = _serviceProvider.CreateScope())
+                {
+                    var eventConsumer = scope.ServiceProvider.GetRequiredService<IEventConsumer>();
+                    var topic = Environment.GetEnvironmentVariable("KAFKA_TOPIC") ?? "delivery-tracking-events";
 
-                Task.Run(() => eventConsumer.Consume(topic), cancellationToken);
-            }
+                    try
+                    {
+                        await eventConsumer.ConsumeAsync(topic, _cancellationTokenSource.Token);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error in event consumer");
+                    }
+                }
+            }, _cancellationTokenSource.Token);
 
-            return Task.CompletedTask;
+            await Task.CompletedTask;
         }
 
-        public Task StopAsync(CancellationToken cancellationToken)
+        public async Task StopAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Event consumer service stopped.");
+            _logger.LogInformation("Event consumer service stopping.");
+            _cancellationTokenSource?.Cancel();
 
-            return Task.CompletedTask;
+            if (_consumerTask != null)
+            {
+                await _consumerTask;
+            }
+
+            _cancellationTokenSource?.Dispose();
         }
     }
 }

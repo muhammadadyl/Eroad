@@ -2,6 +2,6 @@ namespace Eroad.CQRS.Core.Consumers
 {
     public interface IEventConsumer
     {
-        void Consume(string topic);
+        Task ConsumeAsync(string topic, CancellationToken cancellationToken);
     }
 }
