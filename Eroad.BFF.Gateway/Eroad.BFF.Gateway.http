@@ -9,10 +9,6 @@
 # FLEET MANAGEMENT - QUERY APIs
 ###############################################################################
 
-### Get Fleet Overview
-GET {{baseUrl}}/api/fleet/overview
-Accept: application/json
-
 ### Get Vehicle Detail
 GET {{baseUrl}}/api/fleet/vehicles/{{vehicleId}}
 Accept: application/json
@@ -432,7 +428,7 @@ Content-Type: application/json
   "status": "Active"
 }
 
-### STEP 8: Update Delivery Status to InTransit
+### STEP 8: Update Delivery Status to PickedUp
 PATCH {{baseUrl}}/api/deliveries/550e8400-e29b-41d4-a716-446655440104/status
 Content-Type: application/json
 
@@ -440,7 +436,15 @@ Content-Type: application/json
   "status": "PickedUp"
 }
 
-### STEP 9: Update Delivery Current Checkpoint
+### STEP 9: Update Delivery Status to InTransit
+PATCH {{baseUrl}}/api/deliveries/550e8400-e29b-41d4-a716-446655440104/status
+Content-Type: application/json
+
+{
+  "status": "InTransit"
+}
+
+### STEP 10: Update Delivery Current Checkpoint
 PATCH {{baseUrl}}/api/deliveries/550e8400-e29b-41d4-a716-446655440104/checkpoint
 Content-Type: application/json
 
@@ -450,7 +454,17 @@ Content-Type: application/json
   "location": "Highway Entrance"
 }
 
-### STEP 10: Report Incident (Optional)
+### STEP 11: Update Delivery Current Checkpoint
+PATCH {{baseUrl}}/api/deliveries/550e8400-e29b-41d4-a716-446655440104/checkpoint
+Content-Type: application/json
+
+{
+  "routeId": "550e8400-e29b-41d4-a716-446655440103",
+  "sequence": 2,
+  "location": "City Center"
+}
+
+### STEP 12: Report Incident (Optional)
 POST {{baseUrl}}/api/deliveries/550e8400-e29b-41d4-a716-446655440104/incidents
 Content-Type: application/json
 
@@ -459,7 +473,7 @@ Content-Type: application/json
   "description": "Construction on main road"
 }
 
-### STEP 11: Update Delivery Status to OutForDelivery
+### STEP 13: Update Delivery Status to OutForDelivery
 PATCH {{baseUrl}}/api/deliveries/550e8400-e29b-41d4-a716-446655440104/status
 Content-Type: application/json
 
@@ -467,7 +481,7 @@ Content-Type: application/json
   "status": "OutForDelivery"
 }
 
-### STEP 12: Capture Proof of Delivery
+### STEP 14: Capture Proof of Delivery
 POST {{baseUrl}}/api/deliveries/550e8400-e29b-41d4-a716-446655440104/proof-of-delivery
 Content-Type: application/json
 
@@ -476,7 +490,7 @@ Content-Type: application/json
   "receiverName": "Customer Representative"
 }
 
-### STEP 13: Complete Delivery
+### STEP 15: Complete Delivery (optional if not auto-completed via POD)
 PATCH {{baseUrl}}/api/deliveries/550e8400-e29b-41d4-a716-446655440104/status
 Content-Type: application/json
 
@@ -484,14 +498,14 @@ Content-Type: application/json
   "status": "Delivered"
 }
 
-### STEP 14: Complete Route
+### STEP 16: Complete Route
 PATCH {{baseUrl}}/api/routes/550e8400-e29b-41d4-a716-446655440103/status
 Content-Type: application/json
 
 {
-  "status": "Completed"
+  "status": "Deactivated"
 }
 
-### STEP 15: Verify Fleet Overview
+### STEP 17: Verify Fleet Overview
 GET {{baseUrl}}/api/fleet/overview
 Accept: application/json

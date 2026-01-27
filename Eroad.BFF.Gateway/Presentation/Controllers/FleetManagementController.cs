@@ -22,13 +22,6 @@ public class FleetManagementController : ControllerBase
 
     #region Query Operations
 
-    [HttpGet("overview")]
-    public async Task<IActionResult> GetFleetOverview()
-    {
-        var result = await _aggregator.GetFleetOverviewAsync();
-        return Ok(result);
-    }
-
     [HttpGet("vehicles/{id}")]
     public async Task<IActionResult> GetVehicleDetail(Guid id)
     {

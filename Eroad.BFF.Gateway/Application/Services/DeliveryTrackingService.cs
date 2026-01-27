@@ -75,7 +75,6 @@ public class DeliveryTrackingService : IDeliveryTrackingService
             {
                 DeliveryId = Guid.Parse(delivery.Id),
                 Status = delivery.Status,
-                CurrentCheckpoint = delivery.CurrentCheckpoint,
                 RouteOrigin = route?.Origin ?? string.Empty,
                 RouteDestination = route?.Destination ?? string.Empty,
                 CreatedAt = delivery.CreatedAt.ToDateTime()
@@ -251,6 +250,25 @@ public class DeliveryTrackingService : IDeliveryTrackingService
         
         var response = await _deliveryCommandClient.CreateDeliveryAsync(request);
         _logger.LogInformation("Delivery created successfully with ID: {DeliveryId}", response.Id);
+
+        if (driverId != null) {
+            await _driverClient.UpdateDriverStatusAsync(new UpdateDriverStatusRequest
+            {
+                Id = driverId,
+                Status = "Assigned"
+            });
+            _logger.LogInformation("Driver {DriverId} status updated to Assigned", driverId);
+        }
+
+        if (vehicleId != null) {
+            await _vehicleClient.UpdateVehicleStatusAsync(new UpdateVehicleStatusRequest
+            {
+                Id = vehicleId,
+                Status = "Assigned"
+            });
+            _logger.LogInformation("Vehicle {VehicleId} status updated to Assigned", vehicleId);
+        }
+
         return new { Message = response.Message, Id = response.Id };
     }
 
@@ -337,7 +355,29 @@ public class DeliveryTrackingService : IDeliveryTrackingService
             SignatureUrl = signatureUrl,
             ReceiverName = receiverName
         };
+        
         var response = await _deliveryCommandClient.CaptureProofOfDeliveryAsync(request);
+
+        _logger.LogInformation("Updating driver and vehicle status to Available for delivery: {DeliveryId}", id);
+
+        if (response?.DriverId != null)  {
+            await _driverClient.UpdateDriverStatusAsync(new UpdateDriverStatusRequest
+            {
+                Id = response.DriverId,
+                Status = "Available"
+            });
+            _logger.LogInformation("Driver {DriverId} status updated to Available", response.DriverId);
+        }
+
+        if (response?.VehicleId != null)  {
+            await _vehicleClient.UpdateVehicleStatusAsync(new UpdateVehicleStatusRequest
+            {
+                Id = response.VehicleId,
+                Status = "Available"
+            });
+            _logger.LogInformation("Vehicle {VehicleId} status updated to Available", response.VehicleId);
+        }
+
         return new { Message = response.Message };
     }
 
@@ -423,6 +463,16 @@ public class DeliveryTrackingService : IDeliveryTrackingService
             };
             var response = await _deliveryCommandClient.AssignDriverAsync(assignRequest);
             _logger.LogInformation("Driver {DriverId} successfully assigned to delivery {DeliveryId}", driverId, id);
+
+            if (response.DriverId != null)  {
+                await _driverClient.UpdateDriverStatusAsync(new UpdateDriverStatusRequest
+                {
+                    Id = response.DriverId,
+                    Status = "Assigned"
+                });
+                _logger.LogInformation("Driver {DriverId} status updated to Assigned", response.DriverId);
+            }
+
             return new { Message = response.Message };
         }
         finally
@@ -511,8 +561,19 @@ public class DeliveryTrackingService : IDeliveryTrackingService
                 Id = id,
                 VehicleId = vehicleId
             };
+            
             var response = await _deliveryCommandClient.AssignVehicleAsync(assignRequest);
             _logger.LogInformation("Vehicle {VehicleId} successfully assigned to delivery {DeliveryId}", vehicleId, id);
+
+            if (response.VehicleId != null)  {
+                await _vehicleClient.UpdateVehicleStatusAsync(new UpdateVehicleStatusRequest
+                {
+                    Id = response.VehicleId,
+                    Status = "Assigned"
+                });
+                _logger.LogInformation("Vehicle {VehicleId} status updated to Assigned", response.VehicleId);
+            }
+
             return new { Message = response.Message };
         }
         finally

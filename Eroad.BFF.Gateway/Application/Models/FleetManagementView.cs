@@ -25,7 +25,6 @@ public class VehicleSummary
     public string Registration { get; set; } = string.Empty;
     public string VehicleType { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
-    public RouteAssignment? CurrentRoute { get; set; }
 }
 
 public class DriverSummary
@@ -34,7 +33,6 @@ public class DriverSummary
     public string Name { get; set; } = string.Empty;
     public string DriverLicense { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
-    public RouteAssignment? CurrentRoute { get; set; }
 }
 
 public class RouteAssignment
@@ -51,7 +49,6 @@ public class VehicleDetailView
     public string Registration { get; set; } = string.Empty;
     public string VehicleType { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
-    public List<RouteHistoryItem> RouteHistory { get; set; } = new();
 }
 
 public class DriverDetailView
@@ -60,15 +57,4 @@ public class DriverDetailView
     public string Name { get; set; } = string.Empty;
     public string DriverLicense { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
-    public List<RouteHistoryItem> RouteHistory { get; set; } = new();
-}
-
-public class RouteHistoryItem
-{
-    public Guid RouteId { get; set; }
-    public string Origin { get; set; } = string.Empty;
-    public string Destination { get; set; } = string.Empty;
-    public string Status { get; set; } = string.Empty;
-    public DateTime? StartedAt { get; set; }
-    public DateTime? CompletedAt { get; set; }
 }

@@ -1,3 +1,4 @@
+using Eroad.CQRS.Core.Exceptions;
 using Eroad.CQRS.Core.Handlers;
 using Eroad.FleetManagement.Command.Domain.Aggregates;
 using MediatR;
@@ -16,13 +17,19 @@ namespace Eroad.FleetManagement.Command.API.Commands.Driver.Handlers
 
         public async Task Handle(AddDriverCommand command, CancellationToken cancellationToken)
         {
-            var existAggregate = _eventSourcingHandler.GetByIdAsync(command.Id);
-            if (existAggregate != null)
+            try
             {
-                throw new InvalidOperationException($"Driver with ID {command.Id} already exists.");
+                var existAggregate = await _eventSourcingHandler.GetByIdAsync(command.Id);
+                if (existAggregate != null)
+                {
+                    throw new InvalidOperationException($"Delivery with ID {command.Id} already exists.");
+                }
             }
-            var aggregate = new DriverAggregate(command.Id, command.Name, command.DriverLicense, command.DriverStatus);
-            await _eventSourcingHandler.SaveAsync(aggregate);
+            catch (AggregateNotFoundException) 
+            {
+                var aggregate = new DriverAggregate(command.Id, command.Name, command.DriverLicense, command.DriverStatus);
+                await _eventSourcingHandler.SaveAsync(aggregate);
+            }
         }
     }
 }

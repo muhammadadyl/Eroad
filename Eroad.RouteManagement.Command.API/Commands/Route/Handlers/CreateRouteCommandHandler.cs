@@ -16,14 +16,19 @@ namespace Eroad.RouteManagement.Command.API.Commands.Route.Handlers
 
         public async Task Handle(CreateRouteCommand command, CancellationToken cancellationToken)
         {
-            var existingAggregate = await _eventSourcingHandler.GetByIdAsync(command.Id);
-            if (existingAggregate != null)
+            try
             {
-                throw new InvalidOperationException($"Route with ID {command.Id} already exists.");
+                var existAggregate = await _eventSourcingHandler.GetByIdAsync(command.Id);
+                if (existAggregate != null)
+                {
+                    throw new InvalidOperationException($"Delivery with ID {command.Id} already exists.");
+                }
             }
-
-            var aggregate = new RouteAggregate(command.Id, command.Origin, command.Destination, command.ScheduledStartTime);
-            await _eventSourcingHandler.SaveAsync(aggregate);
+            catch (AggregateNotFoundException) 
+            {
+                var aggregate = new RouteAggregate(command.Id, command.Origin, command.Destination, command.ScheduledStartTime);
+                await _eventSourcingHandler.SaveAsync(aggregate);
+            }
         }
     }
 }

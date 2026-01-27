@@ -76,8 +76,7 @@ message DeliveryEntity {
   google.protobuf.Timestamp delivered_at = 7;
   google.protobuf.StringValue signature_url = 8;
   google.protobuf.StringValue receiver_name = 9;
-  google.protobuf.StringValue current_checkpoint = 10;
-  repeated IncidentEntity incidents = 11;
+  repeated IncidentEntity incidents = 10;
 }
 
 message IncidentEntity {

@@ -82,7 +82,6 @@ public class RouteManagementService : IRouteManagementService
         {
             DeliveryId = Guid.Parse(d.Id),
             Status = d.Status,
-            CurrentCheckpoint = d.CurrentCheckpoint,
             CreatedAt = d.CreatedAt.ToDateTime(),
             DeliveredAt = d.DeliveredAt?.ToDateTime()
         }).ToList();

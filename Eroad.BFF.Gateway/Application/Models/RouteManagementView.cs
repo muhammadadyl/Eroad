@@ -38,21 +38,6 @@ public class DeliverySummary
 {
     public Guid DeliveryId { get; set; }
     public string Status { get; set; } = string.Empty;
-    public string? CurrentCheckpoint { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? DeliveredAt { get; set; }
-}
-
-public class RoutePerformanceView
-{
-    public Guid RouteId { get; set; }
-    public string Origin { get; set; } = string.Empty;
-    public string Destination { get; set; } = string.Empty;
-    public int TotalCheckpoints { get; set; }
-    public int CompletedCheckpoints { get; set; }
-    public int TotalDeliveries { get; set; }
-    public int CompletedDeliveries { get; set; }
-    public double CompletionPercentage { get; set; }
-    public TimeSpan? EstimatedDuration { get; set; }
-    public TimeSpan? ActualDuration { get; set; }
 }

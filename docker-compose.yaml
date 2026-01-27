@@ -8,8 +8,8 @@ services:
       - "9092:9092"
       - "9093:9093"
     restart: always
-    #volumes:
-    #  - kafka_data:/var/lib/kafka/data
+    volumes:
+     - kafka_data:/var/lib/kafka/data
     environment:
       KAFKA_KRAFT_MODE: "true"
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
@@ -56,8 +56,8 @@ services:
     ports:
       - 27017:27017
     restart: always
-    #volumes:
-    #  - mongodb_data:/data/db
+    volumes:
+     - mongodb_data:/data/db
 
   sql:
     image: mcr.microsoft.com/mssql/server:2017-latest-ubuntu
@@ -70,8 +70,8 @@ services:
       ACCEPT_EULA: Y
       SA_PASSWORD: $$tr0ngS@P@ssw0rd02
       MSSQL_PID: Express
-    #volumes:
-    #  - sqlserver_data:/var/opt/mssql
+    volumes:
+     - sqlserver_data:/var/opt/mssql
 
   redis:
     image: redis:latest
@@ -81,8 +81,8 @@ services:
       - 6379:6379
     restart: always
     command: redis-server --appendonly yes
-    #volumes:
-    #  - redis_data:/data
+    volumes:
+     - redis_data:/data
 
   kafka-ui:
     container_name: kafka-ui

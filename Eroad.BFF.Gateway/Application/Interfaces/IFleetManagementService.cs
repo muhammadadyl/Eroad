@@ -5,7 +5,6 @@ namespace Eroad.BFF.Gateway.Application.Interfaces;
 public interface IFleetManagementService
 {
     // Query Operations
-    Task<FleetOverviewView> GetFleetOverviewAsync();
     Task<VehicleDetailView> GetVehicleDetailAsync(Guid vehicleId);
     Task<DriverDetailView> GetDriverDetailAsync(Guid driverId);
 

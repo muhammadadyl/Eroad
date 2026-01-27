@@ -182,9 +182,6 @@ public class DeliveryLookupGrpcService : DeliveryLookup.DeliveryLookupBase
         
         if (!string.IsNullOrEmpty(entity.ReceiverName))
             proto.ReceiverName = entity.ReceiverName;
-        
-        if (!string.IsNullOrEmpty(entity.CurrentCheckpoint))
-            proto.CurrentCheckpoint = entity.CurrentCheckpoint;
 
         if (entity.Incidents != null)
         {

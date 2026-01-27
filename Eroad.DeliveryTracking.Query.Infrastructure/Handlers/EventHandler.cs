@@ -1,6 +1,7 @@
 using Eroad.DeliveryTracking.Common;
 using Eroad.DeliveryTracking.Query.Domain.Entities;
 using Eroad.DeliveryTracking.Query.Domain.Repositories;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using System.Text.Json;
 
 namespace Eroad.DeliveryTracking.Query.Infrastructure.Handlers
@@ -24,20 +25,6 @@ namespace Eroad.DeliveryTracking.Query.Infrastructure.Handlers
             _eventLogRepository = eventLogRepository;
         }
 
-        private async Task LogEventAsync(Guid deliveryId, string eventCategory, string eventType, object eventData, DateTime occurredAt)
-        {
-            var eventLog = new DeliveryEventLogEntity
-            {
-                Id = Guid.NewGuid(),
-                DeliveryId = deliveryId,
-                EventCategory = eventCategory,
-                EventType = eventType,
-                EventData = JsonSerializer.Serialize(eventData),
-                OccurredAt = occurredAt
-            };
-            await _eventLogRepository.CreateAsync(eventLog);
-        }
-
         public async Task On(DeliveryCreatedEvent @event)
         {
             var delivery = new DeliveryEntity
@@ -57,7 +44,7 @@ namespace Eroad.DeliveryTracking.Query.Infrastructure.Handlers
                 @event.Id,
                 "DeliveryStatus",
                 nameof(DeliveryCreatedEvent),
-                @event,
+                $"Delivery: Created and {DeliveryStatus.PickedUp}",
                 DateTime.UtcNow
             );
         }
@@ -82,7 +69,7 @@ namespace Eroad.DeliveryTracking.Query.Infrastructure.Handlers
                 @event.DeliveryId,
                 "DeliveryStatus",
                 nameof(DeliveryStatusChangedEvent),
-                @event,
+                $"Delivery: {@event.NewStatus}",
                 @event.ChangedAt
             );
         }
@@ -114,8 +101,6 @@ namespace Eroad.DeliveryTracking.Query.Infrastructure.Handlers
 
             if (delivery == null) return;
 
-            delivery.CurrentCheckpoint = $"{@event.Sequence}: {@event.Location}";
-
             await _deliveryRepository.UpdateAsync(delivery);
 
             // Log event
@@ -123,7 +108,7 @@ namespace Eroad.DeliveryTracking.Query.Infrastructure.Handlers
                 @event.DeliveryId,
                 "Checkpoint",
                 nameof(CheckpointReachedEvent),
-                @event,
+                $"Reached: {@event.Location}",
                 @event.ReachedAt
             );
         }
@@ -148,7 +133,7 @@ namespace Eroad.DeliveryTracking.Query.Infrastructure.Handlers
                 @event.Id,
                 "Incident",
                 nameof(IncidentReportedEvent),
-                @event,
+                $"Incident {incident.Type}: Opened",
                 @event.Incident.ReportedTimestamp
             );
         }
@@ -169,7 +154,7 @@ namespace Eroad.DeliveryTracking.Query.Infrastructure.Handlers
                 incident.DeliveryId,
                 "Incident",
                 nameof(IncidentResolvedEvent),
-                @event,
+                $"Incident {incident.Type}: Resolved",
                 @event.ResolvedTimestamp
             );
         }
@@ -192,7 +177,7 @@ namespace Eroad.DeliveryTracking.Query.Infrastructure.Handlers
                 @event.DeliveryId,
                 "DeliveryStatus",
                 nameof(ProofOfDeliveryCapturedEvent),
-                @event,
+                $"Delivery: {DeliveryStatus.Delivered} and Signed",
                 @event.DeliveredAt
             );
         }
@@ -211,7 +196,7 @@ namespace Eroad.DeliveryTracking.Query.Infrastructure.Handlers
                 @event.Id,
                 "DeliveryStatus",
                 nameof(DriverAssignedEvent),
-                @event,
+                "Driver Assigned",
                 @event.AssignedAt
             );
         }
@@ -230,9 +215,22 @@ namespace Eroad.DeliveryTracking.Query.Infrastructure.Handlers
                 @event.Id,
                 "DeliveryStatus",
                 nameof(VehicleAssignedEvent),
-                @event,
+                "Vehicle Assigned",
                 @event.AssignedAt
             );
+        }
+        private async Task LogEventAsync(Guid deliveryId, string eventCategory, string eventType, string eventData, DateTime occurredAt)
+        {            
+            var eventLog = new DeliveryEventLogEntity
+            {
+                Id = Guid.NewGuid(),
+                DeliveryId = deliveryId,
+                EventCategory = eventCategory,
+                EventType = eventType,
+                EventData = eventData,
+                OccurredAt = occurredAt
+            };
+            await _eventLogRepository.CreateAsync(eventLog);
         }
     }
 }
