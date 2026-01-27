@@ -15,7 +15,7 @@ namespace Eroad.RouteManagement.Command.API.Commands.Route.Handlers
 
         public async Task Handle(CreateRouteCommand command, CancellationToken cancellationToken)
         {
-            var aggregate = new RouteAggregate(command.Id, command.Origin, command.Destination);
+            var aggregate = new RouteAggregate(command.Id, command.Origin, command.Destination, command.ScheduledStartTime);
             await _eventSourcingHandler.SaveAsync(aggregate);
         }
     }

@@ -149,7 +149,8 @@ Content-Type: application/json
 {
   "id": "{{routeId}}",
   "origin": "Main Warehouse",
-  "destination": "City Distribution Center"
+  "destination": "City Distribution Center",
+  "scheduledStartTime": "2026-01-27T08:00:00Z"
 }
 
 ### Update Route
@@ -158,7 +159,8 @@ Content-Type: application/json
 
 {
   "origin": "Main Warehouse Updated",
-  "destination": "City Distribution Center South"
+  "destination": "City Distribution Center South",
+  "scheduledStartTime": "2026-01-27T09:00:00Z"
 }
 
 ### Change Route Status to Planned
@@ -387,7 +389,8 @@ Content-Type: application/json
 {
   "id": "550e8400-e29b-41d4-a716-446655440103",
   "origin": "Warehouse North",
-  "destination": "Customer Location Downtown"
+  "destination": "Customer Location Downtown",
+  "scheduledStartTime": "2026-01-27T07:00:00Z"
 }
 
 ### STEP 4a: Add Checkpoint 1

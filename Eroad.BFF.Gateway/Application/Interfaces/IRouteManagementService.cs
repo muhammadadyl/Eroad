@@ -9,8 +9,8 @@ public interface IRouteManagementService
     Task<RouteDetailView> GetRouteDetailAsync(Guid routeId);
 
     // Command Operations
-    Task<object> CreateRouteAsync(string id, string origin, string destination);
-    Task<object> UpdateRouteAsync(string id, string origin, string destination);
+    Task<object> CreateRouteAsync(string id, string origin, string destination, DateTime scheduledStartTime);
+    Task<object> UpdateRouteAsync(string id, string origin, string destination, DateTime scheduledStartTime);
     Task<object> ChangeRouteStatusAsync(string id, string status);
     Task<object> AddCheckpointAsync(string id, int sequence, string location, DateTime expectedTime);
     Task<object> UpdateCheckpointAsync(string id, int sequence, string location, DateTime expectedTime);

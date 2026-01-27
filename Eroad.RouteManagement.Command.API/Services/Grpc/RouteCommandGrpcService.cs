@@ -37,7 +37,8 @@ namespace Eroad.RouteManagement.Command.API.Services.Grpc
                 {
                     Id = routeId,
                     Origin = request.Origin,
-                    Destination = request.Destination
+                    Destination = request.Destination,
+                    ScheduledStartTime = request.ScheduledStartTime.ToDateTime()
                 };
 
                 await _mediator.Send(command, context.CancellationToken);
@@ -76,7 +77,8 @@ namespace Eroad.RouteManagement.Command.API.Services.Grpc
                 {
                     Id = routeId,
                     Origin = request.Origin,
-                    Destination = request.Destination
+                    Destination = request.Destination,
+                    ScheduledStartTime = request.ScheduledStartTime.ToDateTime()
                 };
 
                 await _mediator.Send(command, context.CancellationToken);
@@ -257,3 +259,4 @@ namespace Eroad.RouteManagement.Command.API.Services.Grpc
         }
     }
 }
+

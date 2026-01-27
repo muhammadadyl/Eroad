@@ -42,14 +42,14 @@ public class RouteManagementController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateRoute([FromBody] CreateRouteRequest request)
     {
-        var result = await _aggregator.CreateRouteAsync(request.Id, request.Origin, request.Destination);
+        var result = await _aggregator.CreateRouteAsync(request.Id, request.Origin, request.Destination, request.ScheduledStartTime.ToDateTime());
         return Ok(result);
     }
 
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateRoute(string id, [FromBody] UpdateRouteModel dto)
     {
-        var result = await _aggregator.UpdateRouteAsync(id, dto.Origin, dto.Destination);
+        var result = await _aggregator.UpdateRouteAsync(id, dto.Origin, dto.Destination, dto.ScheduledStartTime);
         return Ok(result);
     }
 

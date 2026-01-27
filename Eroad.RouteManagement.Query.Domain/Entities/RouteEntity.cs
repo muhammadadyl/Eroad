@@ -20,6 +20,10 @@ namespace Eroad.RouteManagement.Query.Domain.Entities
         
         public DateTime? UpdatedDate { get; set; }
         
+        public DateTime ScheduledStartTime { get; set; }
+        
+        public DateTime ScheduledEndTime { get; set; }
+        
         [JsonIgnore]
         public virtual ICollection<CheckpointEntity> Checkpoints { get; set; }
     }

@@ -22,7 +22,7 @@ namespace Eroad.RouteManagement.Command.API.Commands.Route.Handlers
                 throw new AggregateNotFoundException($"Route aggregate with ID {command.Id} not found.");
             }
 
-            aggregate.UpdateRouteInfo(command.Origin, command.Destination);
+            aggregate.UpdateRouteInfo(command.Origin, command.Destination, command.ScheduledStartTime);
             await _eventSourcingHandler.SaveAsync(aggregate);
         }
     }

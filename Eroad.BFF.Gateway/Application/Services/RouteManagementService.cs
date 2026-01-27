@@ -98,27 +98,29 @@ public class RouteManagementService : IRouteManagementService
         };
     }
 
-    public async Task<object> CreateRouteAsync(string id, string origin, string destination)
+    public async Task<object> CreateRouteAsync(string id, string origin, string destination, DateTime scheduledStartTime)
     {
         _logger.LogInformation("Creating new route from {Origin} to {Destination}", origin, destination);
         var request = new CreateRouteRequest
         {
             Id = id,
             Origin = origin,
-            Destination = destination
+            Destination = destination,
+            ScheduledStartTime = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(scheduledStartTime.ToUniversalTime())
         };
         var response = await _routeCommandClient.CreateRouteAsync(request);
         return new { Message = response.Message };
     }
 
-    public async Task<object> UpdateRouteAsync(string id, string origin, string destination)
+    public async Task<object> UpdateRouteAsync(string id, string origin, string destination, DateTime scheduledStartTime)
     {
         _logger.LogInformation("Updating route: {RouteId}", id);
         var request = new UpdateRouteRequest
         {
             Id = id,
             Origin = origin,
-            Destination = destination
+            Destination = destination,
+            ScheduledStartTime = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(scheduledStartTime.ToUniversalTime())
         };
         var response = await _routeCommandClient.UpdateRouteAsync(request);
         return new { Message = response.Message };
@@ -164,3 +166,4 @@ public class RouteManagementService : IRouteManagementService
         return new { Message = response.Message };
     }
 }
+

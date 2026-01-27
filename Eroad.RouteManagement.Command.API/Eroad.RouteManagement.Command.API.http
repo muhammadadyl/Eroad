@@ -11,8 +11,7 @@ Content-Type: application/json
   "id": "{{routeId}}",
   "origin": "New York Distribution Center",
   "destination": "Boston Warehouse",
-  "assignedDriverId": "{{driverId}}",
-  "assignedVehicleId": "{{vehicleId}}"
+  "scheduledStartTime": "2026-01-27T08:00:00Z"
 }
 
 ### Update Route
@@ -21,7 +20,8 @@ Content-Type: application/json
 
 {
   "origin": "Philadelphia Distribution Center",
-  "destination": "Boston Warehouse"
+  "destination": "Boston Warehouse",
+  "scheduledStartTime": "2026-01-27T09:00:00Z"
 }
 
 ### Change Route Status
@@ -30,23 +30,7 @@ Content-Type: application/json
 
 {
   "oldStatus": 0,
-  "newStatus": 1
-}
-
-### Assign Driver To Route
-PUT {{Eroad_RouteManagement_Command_API_HostAddress}}/api/v1/AssignDriverToRoute/{{routeId}}
-Content-Type: application/json
-
-{
-  "driverId": "{{driverId}}"
-}
-
-### Assign Vehicle To Route
-PUT {{Eroad_RouteManagement_Command_API_HostAddress}}/api/v1/AssignVehicleToRoute/{{routeId}}
-Content-Type: application/json
-
-{
-  "vehicleId": "{{vehicleId}}"
+  "newStatus": 3
 }
 
 ### Add Checkpoint
@@ -57,7 +41,31 @@ Content-Type: application/json
   "checkpoint": {
     "sequence": 1,
     "location": "Highway Rest Stop",
-    "estimatedTime": "2026-01-24T14:00:00Z"
+    "expectedTime": "2026-01-27T10:00:00Z"
+  }
+}
+
+### Add Checkpoint 2
+POST {{Eroad_RouteManagement_Command_API_HostAddress}}/api/v1/AddCheckpoint/{{routeId}}
+Content-Type: application/json
+
+{
+  "checkpoint": {
+    "sequence": 2,
+    "location": "Gas Station",
+    "expectedTime": "2026-01-27T12:00:00Z"
+  }
+}
+
+### Add Checkpoint 3
+POST {{Eroad_RouteManagement_Command_API_HostAddress}}/api/v1/AddCheckpoint/{{routeId}}
+Content-Type: application/json
+
+{
+  "checkpoint": {
+    "sequence": 3,
+    "location": "Final Destination",
+    "expectedTime": "2026-01-27T14:00:00Z"
   }
 }
 
@@ -66,8 +74,11 @@ PUT {{Eroad_RouteManagement_Command_API_HostAddress}}/api/v1/UpdateCheckpoint/{{
 Content-Type: application/json
 
 {
-  "sequence": 1,
-  "actualTime": "2026-01-24T14:15:00Z"
+  "checkpoint": {
+    "sequence": 2,
+    "location": "Gas Station (Updated)",
+    "expectedTime": "2026-01-27T11:30:00Z"
+  }
 }
 
 ###

@@ -23,6 +23,8 @@ namespace Eroad.RouteManagement.Query.Infrastructure.Handlers
                 Origin = @event.Origin,
                 Destination = @event.Destination,
                 Status = @event.RouteStatus.ToString(),
+                ScheduledStartTime = @event.ScheduledStartTime,
+                ScheduledEndTime = @event.ScheduledStartTime,
                 CreatedDate = DateTime.UtcNow
             };
 
@@ -37,6 +39,7 @@ namespace Eroad.RouteManagement.Query.Infrastructure.Handlers
 
             route.Origin = @event.Origin;
             route.Destination = @event.Destination;
+            route.ScheduledStartTime = @event.ScheduledStartTime;
             route.UpdatedDate = DateTime.UtcNow;
 
             await _routeRepository.UpdateAsync(route);
@@ -77,6 +80,18 @@ namespace Eroad.RouteManagement.Query.Infrastructure.Handlers
             checkpoint.ExpectedTime = @event.Checkpoint.ExpectedTime;
 
             await _checkpointRepository.UpdateAsync(checkpoint);
+        }
+
+        public async Task On(RouteScheduledEndTimeUpdatedEvent @event)
+        {
+            var route = await _routeRepository.GetByIdAsync(@event.Id);
+
+            if (route == null) return;
+
+            route.ScheduledEndTime = @event.ScheduledEndTime;
+            route.UpdatedDate = DateTime.UtcNow;
+
+            await _routeRepository.UpdateAsync(route);
         }
     }
 }

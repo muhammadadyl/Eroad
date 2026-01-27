@@ -9,22 +9,26 @@ namespace Eroad.RouteManagement.Command.Domain.Aggregates
         private string _destination;
         private List<Checkpoint> _checkpoints = new();
         private RouteStatus _routeStatus;
+        private DateTime _scheduledStartTime;
+        private DateTime _scheduledEndTime;
 
         public string Origin => _origin;
         public string Destination => _destination;
         public IReadOnlyList<Checkpoint> Checkpoints => _checkpoints.AsReadOnly();
         public RouteStatus Status => _routeStatus;
+        public DateTime ScheduledStartTime => _scheduledStartTime;
+        public DateTime ScheduledEndTime => _scheduledEndTime;
 
         public RouteAggregate() { }
 
-        public RouteAggregate(Guid routeId, string origin, string destination)
+        public RouteAggregate(Guid routeId, string origin, string destination, DateTime scheduledStartTime)
         {
             if (string.IsNullOrWhiteSpace(origin))
                 throw new ArgumentException("Origin cannot be empty", nameof(origin));
             if (string.IsNullOrWhiteSpace(destination))
                 throw new ArgumentException("Destination cannot be empty", nameof(destination));
 
-            RaiseEvent(new RouteCreatedEvent(origin, destination)
+            RaiseEvent(new RouteCreatedEvent(origin, destination, scheduledStartTime)
             {
                 Id = routeId
             });
@@ -36,16 +40,18 @@ namespace Eroad.RouteManagement.Command.Domain.Aggregates
             _origin = @event.Origin;
             _destination = @event.Destination;
             _routeStatus = @event.RouteStatus;
+            _scheduledStartTime = @event.ScheduledStartTime;
+            _scheduledEndTime = @event.ScheduledStartTime;
         }
 
-        public void UpdateRouteInfo(string origin, string destination)
+        public void UpdateRouteInfo(string origin, string destination, DateTime scheduledStartTime)
         {
             if (string.IsNullOrWhiteSpace(origin))
                 throw new ArgumentException("Origin cannot be empty", nameof(origin));
             if (string.IsNullOrWhiteSpace(destination))
                 throw new ArgumentException("Destination cannot be empty", nameof(destination));
 
-            RaiseEvent(new RouteUpdatedEvent(origin, destination) { Id = _id });
+            RaiseEvent(new RouteUpdatedEvent(origin, destination, scheduledStartTime) { Id = _id });
         }
 
         public void Apply(RouteUpdatedEvent @event)
@@ -53,6 +59,7 @@ namespace Eroad.RouteManagement.Command.Domain.Aggregates
             _id = @event.Id;
             _origin = @event.Origin;
             _destination = @event.Destination;
+            _scheduledStartTime = @event.ScheduledStartTime;
         }
 
         public void ChangeRouteStatus(RouteStatus oldStatus, RouteStatus newStatus)
@@ -82,7 +89,29 @@ namespace Eroad.RouteManagement.Command.Domain.Aggregates
             if (_routeStatus != RouteStatus.Planning)
                 throw new InvalidOperationException("Checkpoints can only be added when the route is in Planning status");
 
+            // Validate sequence: must be greater than all existing sequences
+            if (_checkpoints.Any())
+            {
+                var maxSequence = _checkpoints.Max(c => c.Sequence);
+                if (checkpoint.Sequence <= maxSequence)
+                    throw new InvalidOperationException($"New checkpoint sequence {checkpoint.Sequence} must be greater than the highest existing sequence {maxSequence}");
+            }
+
+            // Validate expected time: must be greater than all existing checkpoint times
+            if (_checkpoints.Any())
+            {
+                var maxExpectedTime = _checkpoints.Max(c => c.ExpectedTime);
+                if (checkpoint.ExpectedTime <= maxExpectedTime)
+                    throw new InvalidOperationException($"New checkpoint expected time must be after the latest checkpoint time {maxExpectedTime:yyyy-MM-dd HH:mm:ss}");
+            }
+
+            // Validate expected time: must be after scheduled start time
+            if (checkpoint.ExpectedTime <= _scheduledStartTime)
+                throw new InvalidOperationException($"Checkpoint expected time must be after route scheduled start time {_scheduledStartTime:yyyy-MM-dd HH:mm:ss}");
+
             RaiseEvent(new CheckpointAddedEvent(checkpoint) { Id = _id });
+            
+            UpdateScheduledEndTimeIfNeeded();
         }
 
         public void Apply(CheckpointAddedEvent @event)
@@ -105,7 +134,37 @@ namespace Eroad.RouteManagement.Command.Domain.Aggregates
             if (_routeStatus != RouteStatus.Planning)
                 throw new InvalidOperationException("Checkpoints can only be updated when the route is in Planning status");
 
+            // Validate expected time with immediate adjacent checkpoints
+            var orderedCheckpoints = _checkpoints.OrderBy(c => c.Sequence).ToList();
+            var currentIndex = orderedCheckpoints.FindIndex(c => c.Sequence == checkpoint.Sequence);
+
+            // Check previous checkpoint (if exists)
+            if (currentIndex > 0)
+            {
+                var previousCheckpoint = orderedCheckpoints[currentIndex - 1];
+                if (checkpoint.ExpectedTime <= previousCheckpoint.ExpectedTime)
+                    throw new InvalidOperationException(
+                        $"Checkpoint expected time {checkpoint.ExpectedTime:yyyy-MM-dd HH:mm:ss} must be after the previous checkpoint (sequence {previousCheckpoint.Sequence}) time {previousCheckpoint.ExpectedTime:yyyy-MM-dd HH:mm:ss}");
+            }
+            else
+            {
+                // First checkpoint must be after scheduled start time
+                if (checkpoint.ExpectedTime <= _scheduledStartTime)
+                    throw new InvalidOperationException($"Checkpoint expected time must be after route scheduled start time {_scheduledStartTime:yyyy-MM-dd HH:mm:ss}");
+            }
+
+            // Check next checkpoint (if exists)
+            if (currentIndex < orderedCheckpoints.Count - 1)
+            {
+                var nextCheckpoint = orderedCheckpoints[currentIndex + 1];
+                if (checkpoint.ExpectedTime >= nextCheckpoint.ExpectedTime)
+                    throw new InvalidOperationException(
+                        $"Checkpoint expected time {checkpoint.ExpectedTime:yyyy-MM-dd HH:mm:ss} must be before the next checkpoint (sequence {nextCheckpoint.Sequence}) time {nextCheckpoint.ExpectedTime:yyyy-MM-dd HH:mm:ss}");
+            }
+
             RaiseEvent(new CheckpointUpdatedEvent(checkpoint) { Id = _id });
+            
+            UpdateScheduledEndTimeIfNeeded();
         }
 
         public void Apply(CheckpointUpdatedEvent @event)
@@ -117,6 +176,26 @@ namespace Eroad.RouteManagement.Command.Domain.Aggregates
                 _checkpoints.Remove(existingCheckpoint);
                 _checkpoints.Add(@event.Checkpoint);
             }
+        }
+
+        private void UpdateScheduledEndTimeIfNeeded()
+        {
+            if (!_checkpoints.Any())
+                return;
+
+            // Find checkpoint with the highest sequence number (last checkpoint in the route)
+            var lastCheckpoint = _checkpoints.OrderByDescending(c => c.Sequence).FirstOrDefault();
+            
+            if (lastCheckpoint != null && lastCheckpoint.ExpectedTime != _scheduledEndTime)
+            {
+                RaiseEvent(new RouteScheduledEndTimeUpdatedEvent(lastCheckpoint.ExpectedTime) { Id = _id });
+            }
+        }
+
+        public void Apply(RouteScheduledEndTimeUpdatedEvent @event)
+        {
+            _id = @event.Id;
+            _scheduledEndTime = @event.ScheduledEndTime;
         }
     }
 }
