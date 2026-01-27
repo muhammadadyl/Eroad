@@ -420,8 +420,8 @@ Content-Type: application/json
 {
   "id": "550e8400-e29b-41d4-a716-446655440104",
   "routeId": "550e8400-e29b-41d4-a716-446655440103",
-  "driverId": "550e8400-e29b-41d4-a716-446655440101",
-  "vehicleId": "550e8400-e29b-41d4-a716-446655440100"
+  "driverId": "550e8400-e29b-41d4-a716-446655440102",
+  "vehicleId": "550e8400-e29b-41d4-a716-446655440101"
 }
 
 ### STEP 7: Start Route
@@ -429,7 +429,7 @@ PATCH {{baseUrl}}/api/routes/550e8400-e29b-41d4-a716-446655440103/status
 Content-Type: application/json
 
 {
-  "status": "InProgress"
+  "status": "Active"
 }
 
 ### STEP 8: Update Delivery Status to InTransit
@@ -437,7 +437,7 @@ PATCH {{baseUrl}}/api/deliveries/550e8400-e29b-41d4-a716-446655440104/status
 Content-Type: application/json
 
 {
-  "status": "InTransit"
+  "status": "PickedUp"
 }
 
 ### STEP 9: Update Delivery Current Checkpoint
