@@ -1,11 +1,13 @@
 using Eroad.BFF.Gateway.Application.Interfaces;
 using Eroad.BFF.Gateway.Application.Services;
+using Eroad.BFF.Gateway.Application.Validators;
 using Eroad.BFF.Gateway.Presentation.Middleware;
 using Eroad.DeliveryTracking.Contracts;
 using Eroad.FleetManagement.Contracts;
 using Eroad.RouteManagement.Contracts;
 using Grpc.Net.ClientFactory;
 using Polly;
+using StackExchange.Redis;
 
 // Enable insecure HTTP/2 for gRPC (required for non-TLS connections)
 AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
@@ -138,6 +140,18 @@ builder.Services
         options.MaxRetryAttempts = 3;
         options.MaxReceiveMessageSize = 5 * 1024 * 1024; // 5 MB
     });
+
+// Register Redis for distributed locking
+var redisConnectionString = builder.Configuration.GetConnectionString("Redis") 
+    ?? throw new InvalidOperationException("Redis connection string not configured");
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp => 
+    ConnectionMultiplexer.Connect(redisConnectionString));
+
+// Register distributed lock manager
+builder.Services.AddSingleton<IDistributedLockManager, RedisLockManager>();
+
+// Register assignment validator
+builder.Services.AddScoped<DeliveryAssignmentValidator>();
 
 // Register application services with interfaces for dependency injection
 builder.Services.AddScoped<IDeliveryTrackingService, DeliveryTrackingService>();

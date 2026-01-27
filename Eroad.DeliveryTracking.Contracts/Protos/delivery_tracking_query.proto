@@ -12,6 +12,8 @@ service DeliveryLookup {
   rpc GetDeliveryById(GetDeliveryByIdRequest) returns (DeliveryLookupResponse);
   rpc GetAllDeliveries(GetAllDeliveriesRequest) returns (DeliveryLookupResponse);
   rpc GetDeliveryEventLogs(GetDeliveryEventLogsRequest) returns (DeliveryEventLogsResponse);
+  rpc GetActiveDeliveriesByDriver(GetActiveDeliveriesByDriverRequest) returns (DeliveryLookupResponse);
+  rpc GetActiveDeliveriesByVehicle(GetActiveDeliveriesByVehicleRequest) returns (DeliveryLookupResponse);
 }
 
 // Service for incident lookups
@@ -37,6 +39,14 @@ message GetUnresolvedIncidentsRequest {
 
 message GetDeliveryEventLogsRequest {
   string delivery_id = 1;
+}
+
+message GetActiveDeliveriesByDriverRequest {
+  string driver_id = 1;
+}
+
+message GetActiveDeliveriesByVehicleRequest {
+  string vehicle_id = 1;
 }
 
 // Response messages

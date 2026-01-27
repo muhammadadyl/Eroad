@@ -1,5 +1,6 @@
 using Eroad.BFF.Gateway.Application.Models;
 using Eroad.BFF.Gateway.Application.Interfaces;
+using Eroad.BFF.Gateway.Application.Validators;
 using Eroad.DeliveryTracking.Contracts;
 using Eroad.FleetManagement.Contracts;
 using Eroad.RouteManagement.Contracts;
@@ -13,6 +14,8 @@ public class DeliveryTrackingService : IDeliveryTrackingService
     private readonly RouteLookup.RouteLookupClient _routeClient;
     private readonly DriverLookup.DriverLookupClient _driverClient;
     private readonly VehicleLookup.VehicleLookupClient _vehicleClient;
+    private readonly IDistributedLockManager _lockManager;
+    private readonly DeliveryAssignmentValidator _assignmentValidator;
     private readonly ILogger<DeliveryTrackingService> _logger;
 
     public DeliveryTrackingService(
@@ -21,6 +24,8 @@ public class DeliveryTrackingService : IDeliveryTrackingService
         RouteLookup.RouteLookupClient routeClient,
         DriverLookup.DriverLookupClient driverClient,
         VehicleLookup.VehicleLookupClient vehicleClient,
+        IDistributedLockManager lockManager,
+        DeliveryAssignmentValidator assignmentValidator,
         ILogger<DeliveryTrackingService> logger)
     {
         _deliveryCommandClient = deliveryCommandClient;
@@ -28,6 +33,8 @@ public class DeliveryTrackingService : IDeliveryTrackingService
         _routeClient = routeClient;
         _driverClient = driverClient;
         _vehicleClient = vehicleClient;
+        _lockManager = lockManager;
+        _assignmentValidator = assignmentValidator;
         _logger = logger;
     }
 
@@ -133,7 +140,17 @@ public class DeliveryTrackingService : IDeliveryTrackingService
         var route = routeLookupResponse.Routes.First();
         _logger.LogInformation("Route validated: {Origin} to {Destination} with status {Status}", route.Origin, route.Destination, route.Status);
 
-        // Validate driver exists in FleetManagement if provided
+        // Validate route has scheduled times
+        if (route.ScheduledStartTime == null || route.ScheduledEndTime == null)
+        {
+            _logger.LogWarning("Route {RouteId} missing scheduled times", routeId);
+            throw new InvalidOperationException($"Route with ID {routeId} must have scheduled start and end times");
+        }
+
+        var scheduledStart = route.ScheduledStartTime.ToDateTime();
+        var scheduledEnd = route.ScheduledEndTime.ToDateTime();
+
+        // Validate driver exists and check availability with distributed lock
         if (!string.IsNullOrEmpty(driverId))
         {
             var driverLookupRequest = new GetDriverByIdRequest { Id = driverId };
@@ -147,9 +164,38 @@ public class DeliveryTrackingService : IDeliveryTrackingService
 
             var driver = driverLookupResponse.Drivers.First();
             _logger.LogInformation("Driver validated: {DriverName} with status {Status}", driver.Name, driver.Status);
+
+            // Acquire distributed lock for driver assignment validation
+            var lockKey = $"driver-assignment:{driverId}";
+            var lockOwner = Guid.NewGuid().ToString();
+            var lockTimeout = TimeSpan.FromSeconds(10);
+
+            var lockAcquired = await _lockManager.TryAcquireLockAsync(lockKey, lockOwner, lockTimeout);
+            if (!lockAcquired)
+            {
+                _logger.LogWarning("Failed to acquire lock for driver {DriverId}", driverId);
+                throw new InvalidOperationException($"Unable to validate driver {driverId} assignment. Please try again.");
+            }
+
+            try
+            {
+                // Validate driver availability within lock
+                var (isValid, errorMessage, conflictingId, conflictStart, conflictEnd) = 
+                    await _assignmentValidator.ValidateDriverAvailabilityAsync(Guid.Parse(driverId), scheduledStart, scheduledEnd);
+                
+                if (!isValid)
+                {
+                    _logger.LogWarning("Driver assignment validation failed: {Error}", errorMessage);
+                    throw new InvalidOperationException(errorMessage);
+                }
+            }
+            finally
+            {
+                await _lockManager.ReleaseLockAsync(lockKey, lockOwner);
+            }
         }
 
-        // Validate vehicle exists in FleetManagement if provided
+        // Validate vehicle exists and check availability with distributed lock
         if (!string.IsNullOrEmpty(vehicleId))
         {
             var vehicleLookupRequest = new GetVehicleByIdRequest { Id = vehicleId };
@@ -163,6 +209,35 @@ public class DeliveryTrackingService : IDeliveryTrackingService
 
             var vehicle = vehicleLookupResponse.Vehicles.First();
             _logger.LogInformation("Vehicle validated: {Registration} with status {Status}", vehicle.Registration, vehicle.Status);
+
+            // Acquire distributed lock for vehicle assignment validation
+            var lockKey = $"vehicle-assignment:{vehicleId}";
+            var lockOwner = Guid.NewGuid().ToString();
+            var lockTimeout = TimeSpan.FromSeconds(10);
+
+            var lockAcquired = await _lockManager.TryAcquireLockAsync(lockKey, lockOwner, lockTimeout);
+            if (!lockAcquired)
+            {
+                _logger.LogWarning("Failed to acquire lock for vehicle {VehicleId}", vehicleId);
+                throw new InvalidOperationException($"Unable to validate vehicle {vehicleId} assignment. Please try again.");
+            }
+
+            try
+            {
+                // Validate vehicle availability within lock
+                var (isValid, errorMessage, conflictingId, conflictStart, conflictEnd) = 
+                    await _assignmentValidator.ValidateVehicleAvailabilityAsync(Guid.Parse(vehicleId), scheduledStart, scheduledEnd);
+                
+                if (!isValid)
+                {
+                    _logger.LogWarning("Vehicle assignment validation failed: {Error}", errorMessage);
+                    throw new InvalidOperationException(errorMessage);
+                }
+            }
+            finally
+            {
+                await _lockManager.ReleaseLockAsync(lockKey, lockOwner);
+            }
         }
 
         // Create delivery after validation
@@ -283,15 +358,77 @@ public class DeliveryTrackingService : IDeliveryTrackingService
         var driver = driverLookupResponse.Drivers.First();
         _logger.LogInformation("Driver found: {DriverName} with status {Status}", driver.Name, driver.Status);
 
-        // Assign driver to delivery
-        var assignRequest = new AssignDriverRequest
+        // Get delivery to fetch route and validate scheduled times
+        var deliveryRequest = new GetDeliveryByIdRequest { Id = id };
+        var deliveryResponse = await _deliveryClient.GetDeliveryByIdAsync(deliveryRequest);
+        
+        if (deliveryResponse.Deliveries == null || !deliveryResponse.Deliveries.Any())
         {
-            Id = id,
-            DriverId = driverId
-        };
-        var response = await _deliveryCommandClient.AssignDriverAsync(assignRequest);
-        _logger.LogInformation("Driver {DriverId} successfully assigned to delivery {DeliveryId}", driverId, id);
-        return new { Message = response.Message };
+            _logger.LogWarning("Delivery {DeliveryId} not found", id);
+            throw new InvalidOperationException($"Delivery with ID {id} does not exist");
+        }
+
+        var delivery = deliveryResponse.Deliveries.First();
+
+        // Get route scheduled times
+        var routeRequest = new GetRouteByIdRequest { Id = delivery.RouteId };
+        var routeResponse = await _routeClient.GetRouteByIdAsync(routeRequest);
+        
+        if (routeResponse.Routes == null || !routeResponse.Routes.Any())
+        {
+            _logger.LogWarning("Route {RouteId} not found", delivery.RouteId);
+            throw new InvalidOperationException($"Route with ID {delivery.RouteId} does not exist");
+        }
+
+        var route = routeResponse.Routes.First();
+
+        if (route.ScheduledStartTime == null || route.ScheduledEndTime == null)
+        {
+            _logger.LogWarning("Route {RouteId} missing scheduled times", route.Id);
+            throw new InvalidOperationException($"Route with ID {route.Id} must have scheduled start and end times");
+        }
+
+        var scheduledStart = route.ScheduledStartTime.ToDateTime();
+        var scheduledEnd = route.ScheduledEndTime.ToDateTime();
+
+        // Acquire distributed lock for driver assignment validation
+        var lockKey = $"driver-assignment:{driverId}";
+        var lockOwner = Guid.NewGuid().ToString();
+        var lockTimeout = TimeSpan.FromSeconds(10);
+
+        var lockAcquired = await _lockManager.TryAcquireLockAsync(lockKey, lockOwner, lockTimeout);
+        if (!lockAcquired)
+        {
+            _logger.LogWarning("Failed to acquire lock for driver {DriverId}", driverId);
+            throw new InvalidOperationException($"Unable to validate driver {driverId} assignment. Please try again.");
+        }
+
+        try
+        {
+            // Validate driver availability within lock
+            var (isValid, errorMessage, conflictingId, conflictStart, conflictEnd) = 
+                await _assignmentValidator.ValidateDriverAvailabilityAsync(Guid.Parse(driverId), scheduledStart, scheduledEnd);
+            
+            if (!isValid)
+            {
+                _logger.LogWarning("Driver assignment validation failed: {Error}", errorMessage);
+                throw new InvalidOperationException(errorMessage);
+            }
+
+            // Assign driver to delivery
+            var assignRequest = new AssignDriverRequest
+            {
+                Id = id,
+                DriverId = driverId
+            };
+            var response = await _deliveryCommandClient.AssignDriverAsync(assignRequest);
+            _logger.LogInformation("Driver {DriverId} successfully assigned to delivery {DeliveryId}", driverId, id);
+            return new { Message = response.Message };
+        }
+        finally
+        {
+            await _lockManager.ReleaseLockAsync(lockKey, lockOwner);
+        }
     }
 
     public async Task<object> AssignVehicleAsync(string id, string vehicleId)
@@ -311,14 +448,76 @@ public class DeliveryTrackingService : IDeliveryTrackingService
         var vehicle = vehicleLookupResponse.Vehicles.First();
         _logger.LogInformation("Vehicle found: {Registration} with status {Status}", vehicle.Registration, vehicle.Status);
 
-        // Assign vehicle to delivery
-        var assignRequest = new AssignVehicleRequest
+        // Get delivery to fetch route and validate scheduled times
+        var deliveryRequest = new GetDeliveryByIdRequest { Id = id };
+        var deliveryResponse = await _deliveryClient.GetDeliveryByIdAsync(deliveryRequest);
+        
+        if (deliveryResponse.Deliveries == null || !deliveryResponse.Deliveries.Any())
         {
-            Id = id,
-            VehicleId = vehicleId
-        };
-        var response = await _deliveryCommandClient.AssignVehicleAsync(assignRequest);
-        _logger.LogInformation("Vehicle {VehicleId} successfully assigned to delivery {DeliveryId}", vehicleId, id);
-        return new { Message = response.Message };
+            _logger.LogWarning("Delivery {DeliveryId} not found", id);
+            throw new InvalidOperationException($"Delivery with ID {id} does not exist");
+        }
+
+        var delivery = deliveryResponse.Deliveries.First();
+
+        // Get route scheduled times
+        var routeRequest = new GetRouteByIdRequest { Id = delivery.RouteId };
+        var routeResponse = await _routeClient.GetRouteByIdAsync(routeRequest);
+        
+        if (routeResponse.Routes == null || !routeResponse.Routes.Any())
+        {
+            _logger.LogWarning("Route {RouteId} not found", delivery.RouteId);
+            throw new InvalidOperationException($"Route with ID {delivery.RouteId} does not exist");
+        }
+
+        var route = routeResponse.Routes.First();
+
+        if (route.ScheduledStartTime == null || route.ScheduledEndTime == null)
+        {
+            _logger.LogWarning("Route {RouteId} missing scheduled times", route.Id);
+            throw new InvalidOperationException($"Route with ID {route.Id} must have scheduled start and end times");
+        }
+
+        var scheduledStart = route.ScheduledStartTime.ToDateTime();
+        var scheduledEnd = route.ScheduledEndTime.ToDateTime();
+
+        // Acquire distributed lock for vehicle assignment validation
+        var lockKey = $"vehicle-assignment:{vehicleId}";
+        var lockOwner = Guid.NewGuid().ToString();
+        var lockTimeout = TimeSpan.FromSeconds(10);
+
+        var lockAcquired = await _lockManager.TryAcquireLockAsync(lockKey, lockOwner, lockTimeout);
+        if (!lockAcquired)
+        {
+            _logger.LogWarning("Failed to acquire lock for vehicle {VehicleId}", vehicleId);
+            throw new InvalidOperationException($"Unable to validate vehicle {vehicleId} assignment. Please try again.");
+        }
+
+        try
+        {
+            // Validate vehicle availability within lock
+            var (isValid, errorMessage, conflictingId, conflictStart, conflictEnd) = 
+                await _assignmentValidator.ValidateVehicleAvailabilityAsync(Guid.Parse(vehicleId), scheduledStart, scheduledEnd);
+            
+            if (!isValid)
+            {
+                _logger.LogWarning("Vehicle assignment validation failed: {Error}", errorMessage);
+                throw new InvalidOperationException(errorMessage);
+            }
+
+            // Assign vehicle to delivery
+            var assignRequest = new AssignVehicleRequest
+            {
+                Id = id,
+                VehicleId = vehicleId
+            };
+            var response = await _deliveryCommandClient.AssignVehicleAsync(assignRequest);
+            _logger.LogInformation("Vehicle {VehicleId} successfully assigned to delivery {DeliveryId}", vehicleId, id);
+            return new { Message = response.Message };
+        }
+        finally
+        {
+            await _lockManager.ReleaseLockAsync(lockKey, lockOwner);
+        }
     }
 }

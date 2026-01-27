@@ -11,5 +11,7 @@ namespace Eroad.DeliveryTracking.Query.Domain.Repositories
         Task<List<DeliveryEntity>> GetAllAsync();
         Task<List<DeliveryEntity>> GetByStatusAsync(string status);
         Task<List<DeliveryEntity>> GetByRouteIdAsync(Guid routeId);
+        Task<List<DeliveryEntity>> GetActiveDeliveriesByDriverAsync(Guid driverId);
+        Task<List<DeliveryEntity>> GetActiveDeliveriesByVehicleAsync(Guid vehicleId);
     }
 }

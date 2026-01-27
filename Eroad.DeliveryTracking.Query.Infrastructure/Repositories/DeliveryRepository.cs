@@ -1,3 +1,4 @@
+using Eroad.DeliveryTracking.Common;
 using Eroad.DeliveryTracking.Query.Domain.Entities;
 using Eroad.DeliveryTracking.Query.Domain.Repositories;
 using Eroad.DeliveryTracking.Query.Infrastructure.DataAccess;
@@ -73,6 +74,40 @@ namespace Eroad.DeliveryTracking.Query.Infrastructure.Repositories
                 .Include(d => d.Incidents)
                 .AsNoTracking()
                 .Where(d => d.RouteId == routeId)
+                .ToListAsync();
+        }
+
+        public async Task<List<DeliveryEntity>> GetActiveDeliveriesByDriverAsync(Guid driverId)
+        {
+            using DatabaseContext context = _contextFactory.CreateDbContext();
+            var activeStatuses = new[] 
+            { 
+                DeliveryStatus.PickedUp.ToString(), 
+                DeliveryStatus.InTransit.ToString(), 
+                DeliveryStatus.OutForDelivery.ToString() 
+            };
+            
+            return await context.Deliveries
+                .Include(d => d.Incidents)
+                .AsNoTracking()
+                .Where(d => d.DriverId == driverId && activeStatuses.Contains(d.Status))
+                .ToListAsync();
+        }
+
+        public async Task<List<DeliveryEntity>> GetActiveDeliveriesByVehicleAsync(Guid vehicleId)
+        {
+            using DatabaseContext context = _contextFactory.CreateDbContext();
+            var activeStatuses = new[] 
+            { 
+                DeliveryStatus.PickedUp.ToString(), 
+                DeliveryStatus.InTransit.ToString(), 
+                DeliveryStatus.OutForDelivery.ToString() 
+            };
+            
+            return await context.Deliveries
+                .Include(d => d.Incidents)
+                .AsNoTracking()
+                .Where(d => d.VehicleId == vehicleId && activeStatuses.Contains(d.Status))
                 .ToListAsync();
         }
     }

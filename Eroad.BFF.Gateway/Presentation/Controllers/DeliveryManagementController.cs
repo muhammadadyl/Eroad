@@ -56,6 +56,12 @@ public class DeliveryManagementController : ControllerBase
         }
         catch (InvalidOperationException ex)
         {
+            // Check if error message indicates assignment conflict (time overlap)
+            if (ex.Message.Contains("already assigned") || ex.Message.Contains("during"))
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
+            // Otherwise treat as not found (route/driver/vehicle doesn't exist)
             return NotFound(new { Message = ex.Message });
         }
     }
@@ -112,6 +118,12 @@ public class DeliveryManagementController : ControllerBase
         }
         catch (InvalidOperationException ex)
         {
+            // Check if error message indicates assignment conflict (time overlap)
+            if (ex.Message.Contains("already assigned") || ex.Message.Contains("during"))
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
+            // Otherwise treat as not found (driver/delivery/route doesn't exist)
             return NotFound(new { Message = ex.Message });
         }
     }
@@ -126,6 +138,12 @@ public class DeliveryManagementController : ControllerBase
         }
         catch (InvalidOperationException ex)
         {
+            // Check if error message indicates assignment conflict (time overlap)
+            if (ex.Message.Contains("already assigned") || ex.Message.Contains("during"))
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
+            // Otherwise treat as not found (vehicle/delivery/route doesn't exist)
             return NotFound(new { Message = ex.Message });
         }
     }

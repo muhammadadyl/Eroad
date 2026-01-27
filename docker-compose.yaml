@@ -73,6 +73,17 @@ services:
     #volumes:
     #  - sqlserver_data:/var/opt/mssql
 
+  redis:
+    image: redis:latest
+    container_name: redis-container
+    profiles: ["dev-services", "init-services"]
+    ports:
+      - 6379:6379
+    restart: always
+    command: redis-server --appendonly yes
+    #volumes:
+    #  - redis_data:/data
+
   kafka-ui:
     container_name: kafka-ui
     image: provectuslabs/kafka-ui:latest
@@ -231,6 +242,8 @@ services:
       - "5000:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__Redis=redis:6379
+      - ConnectionStrings__DeliveryTrackingDb=Server=sql;Database=DeliveryTrackingQuery;User Id=sa;Password=$$tr0ngS@P@ssw0rd02;TrustServerCertificate=true;
       - ServiceEndpoints__DeliveryTrackingBaseUrl=http://delivery-tracking-query-api:8080
       - ServiceEndpoints__DeliveryTrackingCommandBaseUrl=http://delivery-tracking-command-api:8080
       - ServiceEndpoints__FleetManagementBaseUrl=http://fleet-management-query-api:8080
@@ -238,6 +251,8 @@ services:
       - ServiceEndpoints__RouteManagementBaseUrl=http://route-management-query-api:8080
       - ServiceEndpoints__RouteManagementCommandBaseUrl=http://route-management-command-api:8080
     depends_on:
+      - redis
+      - sql
       - delivery-tracking-command-api
       - delivery-tracking-query-api
       - fleet-management-command-api
@@ -254,3 +269,4 @@ volumes:
   mongodb_data: {}
   kafka_data: {}
   sqlserver_data: {}
+  redis_data: {}

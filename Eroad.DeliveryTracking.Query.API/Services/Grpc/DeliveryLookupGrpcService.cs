@@ -110,6 +110,60 @@ public class DeliveryLookupGrpcService : DeliveryLookup.DeliveryLookupBase
         }
     }
 
+    public override async Task<DeliveryLookupResponse> GetActiveDeliveriesByDriver(GetActiveDeliveriesByDriverRequest request, ServerCallContext context)
+    {
+        try
+        {
+            if (!Guid.TryParse(request.DriverId, out var driverId))
+            {
+                throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid driver ID format"));
+            }
+
+            var deliveries = await _mediator.Send(new FindActiveDeliveriesByDriverQuery { DriverId = driverId }, context.CancellationToken);
+            return new DeliveryLookupResponse
+            {
+                Message = $"Found {deliveries.Count} active delivery(ies) for driver",
+                Deliveries = { deliveries.Select(MapToProto) }
+            };
+        }
+        catch (RpcException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting active deliveries for driver {DriverId}", request.DriverId);
+            throw new RpcException(new Status(StatusCode.Internal, "An error occurred while retrieving deliveries"));
+        }
+    }
+
+    public override async Task<DeliveryLookupResponse> GetActiveDeliveriesByVehicle(GetActiveDeliveriesByVehicleRequest request, ServerCallContext context)
+    {
+        try
+        {
+            if (!Guid.TryParse(request.VehicleId, out var vehicleId))
+            {
+                throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid vehicle ID format"));
+            }
+
+            var deliveries = await _mediator.Send(new FindActiveDeliveriesByVehicleQuery { VehicleId = vehicleId }, context.CancellationToken);
+            return new DeliveryLookupResponse
+            {
+                Message = $"Found {deliveries.Count} active delivery(ies) for vehicle",
+                Deliveries = { deliveries.Select(MapToProto) }
+            };
+        }
+        catch (RpcException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting active deliveries for vehicle {VehicleId}", request.VehicleId);
+            throw new RpcException(new Status(StatusCode.Internal, "An error occurred while retrieving deliveries"));
+        }
+    }
+
     private static DeliveryEntity MapToProto(Query.Domain.Entities.DeliveryEntity entity)
     {
         var proto = new DeliveryEntity
