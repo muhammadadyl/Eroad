@@ -14,9 +14,6 @@ AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure logging - AddConsole and AddDebug are already included by default
-// Configuration from appsettings.json will be automatically applied
-
 // Add services to the container
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -44,14 +41,6 @@ using var loggerFactory = LoggerFactory.Create(loggingBuilder =>
     loggingBuilder.SetMinimumLevel(LogLevel.Information);
 });
 var logger = loggerFactory.CreateLogger<Program>();
-
-logger.LogInformation("Service Endpoints Configured:");
-logger.LogInformation("  DeliveryTracking Query: {Url}", deliveryTrackingBaseUrl);
-logger.LogInformation("  DeliveryTracking Command: {Url}", deliveryTrackingCommandBaseUrl);
-logger.LogInformation("  FleetManagement Query: {Url}", fleetManagementBaseUrl);
-logger.LogInformation("  FleetManagement Command: {Url}", fleetManagementCommandBaseUrl);
-logger.LogInformation("  RouteManagement Query: {Url}", routeManagementBaseUrl);
-logger.LogInformation("  RouteManagement Command: {Url}", routeManagementCommandBaseUrl);
 
 // Define Polly retry policy for gRPC
 var retryPolicy = Policy
@@ -179,13 +168,6 @@ builder.Services.AddScoped<IRouteManagementService, RouteManagementService>();
 
 var app = builder.Build();
 
-// Log application startup
-var startupLogger = app.Services.GetRequiredService<ILogger<Program>>();
-startupLogger.LogInformation("========================================");
-startupLogger.LogInformation("BFF Gateway Starting...");
-startupLogger.LogInformation("Environment: {Environment}", app.Environment.EnvironmentName);
-startupLogger.LogInformation("========================================");
-
 // Configure the HTTP request pipeline
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
@@ -193,13 +175,10 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-    startupLogger.LogInformation("Swagger UI enabled at /swagger");
 }
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
-
-startupLogger.LogInformation("BFF Gateway is ready to accept requests");
 
 app.Run();
