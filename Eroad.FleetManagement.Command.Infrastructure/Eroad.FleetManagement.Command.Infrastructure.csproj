@@ -7,12 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Confluent.Kafka" Version="2.3.0" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.0" />
-    <PackageReference Include="MongoDB.Driver" Version="3.6.0" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Eroad.CQRS.Core\Eroad.CQRS.Core.csproj" />
     <ProjectReference Include="..\Eroad.FleetManagement.Command.Domain\Eroad.FleetManagement.Command.Domain.csproj" />
   </ItemGroup>
