@@ -72,7 +72,7 @@ Content-Type: application/json
   "status": "Available"
 }
 
-### Change Vehicle Status to InUse
+### Change Vehicle Status to InTransit
 PATCH {{baseUrl}}/api/fleet/vehicles/{{vehicleId}}/status
 Content-Type: application/json
 
@@ -126,7 +126,7 @@ Content-Type: application/json
   "status": "Assigned"
 }
 
-### Change Driver Status to OffDuty
+### Change Driver Status to Unavailable
 PATCH {{baseUrl}}/api/fleet/drivers/{{driverId}}/status
 Content-Type: application/json
 
@@ -159,36 +159,28 @@ Content-Type: application/json
   "scheduledStartTime": "2026-01-27T09:00:00Z"
 }
 
-### Change Route Status to Planned
+### Change Route Status to Planning
 PATCH {{baseUrl}}/api/routes/{{routeId}}/status
 Content-Type: application/json
 
 {
-  "status": "Planned"
+  "status": "Planning"
 }
 
-### Change Route Status to InProgress
+### Change Route Status to Active
 PATCH {{baseUrl}}/api/routes/{{routeId}}/status
 Content-Type: application/json
 
 {
-  "status": "InProgress"
+  "status": "Active"
 }
 
-### Change Route Status to Completed
+### Change Route Status to Dectivated
 PATCH {{baseUrl}}/api/routes/{{routeId}}/status
 Content-Type: application/json
 
 {
-  "status": "Completed"
-}
-
-### Change Route Status to Cancelled
-PATCH {{baseUrl}}/api/routes/{{routeId}}/status
-Content-Type: application/json
-
-{
-  "status": "Cancelled"
+  "status": "Deactivated"
 }
 
 ### Add Checkpoint 1
@@ -198,7 +190,7 @@ Content-Type: application/json
 {
   "sequence": 1,
   "location": "Highway Junction A",
-  "expectedTime": "2026-01-25T09:00:00Z"
+  "expectedTime": "2026-01-27T09:00:00Z"
 }
 
 ### Add Checkpoint 2
@@ -208,7 +200,7 @@ Content-Type: application/json
 {
   "sequence": 2,
   "location": "Rest Stop B",
-  "expectedTime": "2026-01-25T11:00:00Z"
+  "expectedTime": "2026-01-27T11:00:00Z"
 }
 
 ### Add Checkpoint 3
@@ -218,7 +210,7 @@ Content-Type: application/json
 {
   "sequence": 3,
   "location": "Distribution Center Gate",
-  "expectedTime": "2026-01-25T13:00:00Z"
+  "expectedTime": "2026-01-27T13:00:00Z"
 }
 
 ###############################################################################
@@ -286,9 +278,25 @@ Content-Type: application/json
   "location": "Highway Junction A"
 }
 
-### Get Delivery Event Logs
-GET {{baseUrl}}/api/deliveries/{{deliveryId}}/event-logs
-Accept: application/json
+### Update Current Checkpoint to Next
+PATCH {{baseUrl}}/api/deliveries/{{deliveryId}}/checkpoint
+Content-Type: application/json
+
+{
+  "routeId": "{{routeId}}",
+  "sequence": 2,
+  "location": "Rest Stop B"
+}
+
+### Update Current Checkpoint to Final
+PATCH {{baseUrl}}/api/deliveries/{{deliveryId}}/checkpoint
+Content-Type: application/json
+
+{
+  "routeId": "{{routeId}}",
+  "sequence": 3,
+  "location": "Distribution Center Gate"
+}
 
 ### Report Delay Incident
 POST {{baseUrl}}/api/deliveries/{{deliveryId}}/incidents
@@ -508,4 +516,13 @@ Content-Type: application/json
 
 ### STEP 17: Verify Completed Delivery Summary
 GET {{baseUrl}}/api/deliveries/550e8400-e29b-41d4-a716-446655440104/completed-summary
+Accept: application/json
+
+
+### STEP 18: Verify Vehicle Status is Available
+GET {{baseUrl}}/api/fleet/vehicles/550e8400-e29b-41d4-a716-446655440101
+Accept: application/json
+
+### STEP 19: Verify Driver Status is Available
+GET {{baseUrl}}/api/fleet/drivers/550e8400-e29b-41d4-a716-446655440102
 Accept: application/json

@@ -42,6 +42,7 @@ namespace Eroad.RouteManagement.Query.Infrastructure.Repositories
         {
             using DatabaseContext context = _contextFactory.CreateDbContext();
             return await context.Routes
+                .Include(d => d.Checkpoints)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Id == routeId);
         }
@@ -50,6 +51,7 @@ namespace Eroad.RouteManagement.Query.Infrastructure.Repositories
         {
             using DatabaseContext context = _contextFactory.CreateDbContext();
             return await context.Routes
+                .Include(d => d.Checkpoints)
                 .AsNoTracking()
                 .ToListAsync();
         }
@@ -58,6 +60,7 @@ namespace Eroad.RouteManagement.Query.Infrastructure.Repositories
         {
             using DatabaseContext context = _contextFactory.CreateDbContext();
             return await context.Routes
+                .Include(d => d.Checkpoints)
                 .AsNoTracking()
                 .Where(r => r.Status == status)
                 .ToListAsync();

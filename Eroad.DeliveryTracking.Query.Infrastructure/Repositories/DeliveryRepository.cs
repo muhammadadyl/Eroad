@@ -44,6 +44,7 @@ namespace Eroad.DeliveryTracking.Query.Infrastructure.Repositories
             using DatabaseContext context = _contextFactory.CreateDbContext();
             return await context.Deliveries
                 .Include(d => d.Incidents)
+                .Include(d => d.Checkpoints)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Id == deliveryId);
         }
@@ -53,6 +54,7 @@ namespace Eroad.DeliveryTracking.Query.Infrastructure.Repositories
             using DatabaseContext context = _contextFactory.CreateDbContext();
             return await context.Deliveries
                 .Include(d => d.Incidents)
+                .Include(d => d.Checkpoints)
                 .AsNoTracking()
                 .ToListAsync();
         }
@@ -62,6 +64,7 @@ namespace Eroad.DeliveryTracking.Query.Infrastructure.Repositories
             using DatabaseContext context = _contextFactory.CreateDbContext();
             return await context.Deliveries
                 .Include(d => d.Incidents)
+                .Include(d => d.Checkpoints)
                 .AsNoTracking()
                 .Where(d => d.Status == status)
                 .ToListAsync();
@@ -72,6 +75,7 @@ namespace Eroad.DeliveryTracking.Query.Infrastructure.Repositories
             using DatabaseContext context = _contextFactory.CreateDbContext();
             return await context.Deliveries
                 .Include(d => d.Incidents)
+                .Include(d => d.Checkpoints)
                 .AsNoTracking()
                 .Where(d => d.RouteId == routeId)
                 .ToListAsync();
@@ -89,6 +93,7 @@ namespace Eroad.DeliveryTracking.Query.Infrastructure.Repositories
             
             return await context.Deliveries
                 .Include(d => d.Incidents)
+                .Include(d => d.Checkpoints)
                 .AsNoTracking()
                 .Where(d => d.DriverId == driverId && activeStatuses.Contains(d.Status))
                 .ToListAsync();
@@ -106,6 +111,7 @@ namespace Eroad.DeliveryTracking.Query.Infrastructure.Repositories
             
             return await context.Deliveries
                 .Include(d => d.Incidents)
+                .Include(d => d.Checkpoints)
                 .AsNoTracking()
                 .Where(d => d.VehicleId == vehicleId && activeStatuses.Contains(d.Status))
                 .ToListAsync();

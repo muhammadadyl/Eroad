@@ -201,6 +201,17 @@ public class DeliveryLookupGrpcService : DeliveryLookup.DeliveryLookupBase
             }));
         }
 
+        if (entity.Checkpoints != null) 
+        {
+            proto.Checkpoints.AddRange(entity.Checkpoints.Select(i => new CheckpointEntity
+            {
+                Location = i.Location,
+                ReachedAt = Timestamp.FromDateTime(DateTime.SpecifyKind(i.ReachedAt, DateTimeKind.Utc)),
+                Sequence = i.Sequence
+            }));
+        }
+
+
         return proto;
     }
 }

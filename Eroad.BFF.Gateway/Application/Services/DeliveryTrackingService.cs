@@ -73,19 +73,30 @@ public class DeliveryTrackingService : IDeliveryTrackingService
             .ToDictionary(r => r.Id, r => r);
 
         // Map to view model
-        var activeDeliveries = allDeliveries.Select(delivery =>
+        var activeDeliveries = new List<ActiveDeliveryItem>();
+        foreach (var delivery in allDeliveries)
         {
             routes.TryGetValue(delivery.RouteId, out var route);
+            var driverResponse = await _driverQueryClient.GetDriverByIdAsync(
+                new GetDriverByIdRequest { Id = delivery.DriverId }
+                );
 
-            return new ActiveDeliveryItem
+            var vehicleResponse = await _vehicleQueryClient.GetVehicleByIdAsync(
+                new GetVehicleByIdRequest { Id = delivery.VehicleId }
+                );
+
+            activeDeliveries.Add(new ActiveDeliveryItem
             {
                 DeliveryId = Guid.Parse(delivery.Id),
                 Status = delivery.Status,
                 RouteOrigin = route?.Origin ?? string.Empty,
                 RouteDestination = route?.Destination ?? string.Empty,
+                LastLocation = delivery.Checkpoints.MaxBy(a => a.Sequence)?.Location ?? string.Empty,
+                DriverName = driverResponse?.Drivers.FirstOrDefault()?.Name ?? string.Empty,
+                VehicleNo = vehicleResponse?.Vehicles.FirstOrDefault()?.Registration ?? string.Empty,
                 CreatedAt = delivery.CreatedAt.ToDateTime()
-            };
-        }).ToList();
+            });
+        }
 
         return new LiveTrackingViewModel { ActiveDeliveries = activeDeliveries };
     }

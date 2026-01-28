@@ -1,3 +1,4 @@
+using Eroad.RouteManagement.Common;
 using Eroad.RouteManagement.Contracts;
 using Eroad.RouteManagement.Query.API.Queries;
 using Google.Protobuf.WellKnownTypes;
@@ -136,6 +137,14 @@ namespace Eroad.RouteManagement.Query.API.Services.Grpc
                 ScheduledStartTime = Timestamp.FromDateTime(DateTime.SpecifyKind(route.ScheduledStartTime, DateTimeKind.Utc)),
                 ScheduledEndTime = Timestamp.FromDateTime(DateTime.SpecifyKind(route.ScheduledEndTime, DateTimeKind.Utc))
             };
+
+            entity.Checkpoints.AddRange(route.Checkpoints.Select(i => new CheckpointEntity
+            {
+                RouteId = i.RouteId.ToString(),
+                Location = i.Location,
+                ExpectedTime = Timestamp.FromDateTime(DateTime.SpecifyKind(i.ExpectedTime, DateTimeKind.Utc)),
+                Sequence = i.Sequence
+            }));
 
             if (route.UpdatedDate.HasValue)
             {
