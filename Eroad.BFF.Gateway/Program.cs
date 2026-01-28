@@ -14,6 +14,9 @@ AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configure logging - AddConsole and AddDebug are already included by default
+// Configuration from appsettings.json will be automatically applied
+
 // Add services to the container
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -34,6 +37,22 @@ var routeManagementBaseUrl = serviceEndpoints["RouteManagementBaseUrl"]
 var routeManagementCommandBaseUrl = serviceEndpoints["RouteManagementCommandBaseUrl"]
     ?? throw new InvalidOperationException("RouteManagementCommandBaseUrl not configured");
 
+// Create a logger factory for startup logging
+using var loggerFactory = LoggerFactory.Create(loggingBuilder =>
+{
+    loggingBuilder.AddConsole();
+    loggingBuilder.SetMinimumLevel(LogLevel.Information);
+});
+var logger = loggerFactory.CreateLogger<Program>();
+
+logger.LogInformation("Service Endpoints Configured:");
+logger.LogInformation("  DeliveryTracking Query: {Url}", deliveryTrackingBaseUrl);
+logger.LogInformation("  DeliveryTracking Command: {Url}", deliveryTrackingCommandBaseUrl);
+logger.LogInformation("  FleetManagement Query: {Url}", fleetManagementBaseUrl);
+logger.LogInformation("  FleetManagement Command: {Url}", fleetManagementCommandBaseUrl);
+logger.LogInformation("  RouteManagement Query: {Url}", routeManagementBaseUrl);
+logger.LogInformation("  RouteManagement Command: {Url}", routeManagementCommandBaseUrl);
+
 // Define Polly retry policy for gRPC
 var retryPolicy = Policy
     .Handle<Grpc.Core.RpcException>(ex => 
@@ -44,7 +63,7 @@ var retryPolicy = Policy
         sleepDurationProvider: retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
         onRetry: (exception, timeSpan, retryCount, context) =>
         {
-            Console.WriteLine($"Retry {retryCount} after {timeSpan.TotalSeconds}s due to {exception.Message}");
+            logger.LogWarning("gRPC Retry {RetryCount} after {Seconds}s due to {Message}", retryCount, timeSpan.TotalSeconds, exception.Message);
         });
 
 // Register Delivery Tracking gRPC clients (Query)
@@ -160,6 +179,13 @@ builder.Services.AddScoped<IRouteManagementService, RouteManagementService>();
 
 var app = builder.Build();
 
+// Log application startup
+var startupLogger = app.Services.GetRequiredService<ILogger<Program>>();
+startupLogger.LogInformation("========================================");
+startupLogger.LogInformation("BFF Gateway Starting...");
+startupLogger.LogInformation("Environment: {Environment}", app.Environment.EnvironmentName);
+startupLogger.LogInformation("========================================");
+
 // Configure the HTTP request pipeline
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
@@ -167,10 +193,13 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    startupLogger.LogInformation("Swagger UI enabled at /swagger");
 }
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
+
+startupLogger.LogInformation("BFF Gateway is ready to accept requests");
 
 app.Run();

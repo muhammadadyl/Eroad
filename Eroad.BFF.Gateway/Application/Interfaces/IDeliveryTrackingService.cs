@@ -7,7 +7,6 @@ public interface IDeliveryTrackingService
     // Query Operations
     Task<LiveTrackingViewModel> GetLiveTrackingAsync();
     Task<object> GetCompletedSummaryAsync(Guid deliveryId);
-    Task<object> GetDeliveryEventLogsAsync(string deliveryId);
 
     // Command Operations
     Task<object> CreateDeliveryAsync(string? id, string routeId, string? driverId, string? vehicleId);

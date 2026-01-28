@@ -22,19 +22,23 @@ public class DeliveryTrackingService : IDeliveryTrackingService
 
     public DeliveryTrackingService(
         DeliveryCommand.DeliveryCommandClient deliveryCommandClient,
-        DeliveryLookup.DeliveryLookupClient deliveryClient,
-        RouteLookup.RouteLookupClient routeClient,
-        DriverLookup.DriverLookupClient driverClient,
-        VehicleLookup.VehicleLookupClient vehicleClient,
+        DeliveryLookup.DeliveryLookupClient deliveryQueryClient,
+        RouteLookup.RouteLookupClient routeQueryClient,
+        DriverLookup.DriverLookupClient driverQueryClient,
+        DriverCommand.DriverCommandClient driverCommandClient,
+        VehicleCommand.VehicleCommandClient vehicleCommandClient,
+        VehicleLookup.VehicleLookupClient vehicleQueryClient,
         IDistributedLockManager lockManager,
         DeliveryAssignmentValidator assignmentValidator,
         ILogger<DeliveryTrackingService> logger)
     {
         _deliveryCommandClient = deliveryCommandClient;
-        _deliveryQueryClient = deliveryClient;
-        _routeQueryClient = routeClient;
-        _driverQueryClient = driverClient;
-        _vehicleQueryClient = vehicleClient;
+        _deliveryQueryClient = deliveryQueryClient;
+        _routeQueryClient = routeQueryClient;
+        _driverQueryClient = driverQueryClient;
+        _driverCommandClient = driverCommandClient;
+        _vehicleCommandClient = vehicleCommandClient;
+        _vehicleQueryClient = vehicleQueryClient;
         _lockManager = lockManager;
         _assignmentValidator = assignmentValidator;
         _logger = logger;
@@ -88,8 +92,12 @@ public class DeliveryTrackingService : IDeliveryTrackingService
 
     public async Task<object> GetCompletedSummaryAsync(Guid deliveryId)
     {
+        _logger.LogInformation("Fetching delivery details for delivery: {DeliveryId}", deliveryId);
+        var deliveryDetailsRequest = new GetDeliveryByIdRequest { Id = deliveryId.ToString() };
+        var deliveryDetailsResponse = await _deliveryQueryClient.GetDeliveryByIdAsync(deliveryDetailsRequest);
+        var delivery = deliveryDetailsResponse.Deliveries.FirstOrDefault();
+
         _logger.LogInformation("Getting timeline for delivery: {DeliveryId}", deliveryId);
-        
         var request = new GetDeliveryEventLogsRequest { DeliveryId = deliveryId.ToString() };
         var response = await _deliveryQueryClient.GetDeliveryEventLogsAsync(request);
 
@@ -101,27 +109,30 @@ public class DeliveryTrackingService : IDeliveryTrackingService
             OccurredAt = e.OccurredAt.ToDateTime()
         }).OrderBy(e => e.OccurredAt).ToList();
 
-        return new { deliveryId, timeline };
-    }
+        string driverName = string.Empty;
+        string vehicleName = string.Empty;
 
-    public async Task<object> GetDeliveryEventLogsAsync(string deliveryId)
-    {
-        _logger.LogInformation("Getting event logs for delivery: {DeliveryId}", deliveryId);
-        
-        var request = new GetDeliveryEventLogsRequest { DeliveryId = deliveryId };
-        var response = await _deliveryQueryClient.GetDeliveryEventLogsAsync(request);
+        if (delivery?.DriverId != null)  {
+            _logger.LogInformation("Fetching driver details for driver: {DriverId}", delivery.DriverId);
+            var driverDetails = await _driverQueryClient.GetDriverByIdAsync(new GetDriverByIdRequest
+            {
+                Id = delivery.DriverId
+            });
 
-        var eventLogs = response.EventLogs.Select(e => new DeliveryEventLogViewModel
-        {
-            Id = Guid.Parse(e.Id),
-            DeliveryId = Guid.Parse(e.DeliveryId),
-            EventCategory = e.EventCategory,
-            EventType = e.EventType,
-            EventData = e.EventData,
-            OccurredAt = e.OccurredAt.ToDateTime()
-        }).ToList();
+            driverName = driverDetails.Drivers.FirstOrDefault()?.Name ?? string.Empty;
+        }
 
-        return new { message = response.Message, eventLogs };
+        if (delivery?.VehicleId != null)  {
+            _logger.LogInformation("Fetching vehicle details for vehicle: {VehicleId}", delivery.VehicleId);
+            var vehicleDetails = await _vehicleQueryClient.GetVehicleByIdAsync(new GetVehicleByIdRequest
+            {
+                Id = delivery.VehicleId
+            });
+
+            vehicleName = vehicleDetails.Vehicles.FirstOrDefault()?.Registration ?? string.Empty;
+        }
+
+        return new { deliveryId, timeline, driver = driverName, vehicle = vehicleName };;
     }
 
     public async Task<object> CreateDeliveryAsync(string? id, string routeId, string? driverId, string? vehicleId)

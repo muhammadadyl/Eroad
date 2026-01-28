@@ -35,13 +35,6 @@ public class DeliveryManagementController : ControllerBase
         return Ok(result);
     }
 
-    [HttpGet("{id}/event-logs")]
-    public async Task<IActionResult> GetDeliveryEventLogs(string id)
-    {
-        var result = await _deliveryAggregator.GetDeliveryEventLogsAsync(id);
-        return Ok(result);
-    }
-
     #endregion
 
     #region Command Operations

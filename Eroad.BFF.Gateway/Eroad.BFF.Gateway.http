@@ -506,6 +506,6 @@ Content-Type: application/json
   "status": "Deactivated"
 }
 
-### STEP 17: Verify Fleet Overview
-GET {{baseUrl}}/api/fleet/overview
+### STEP 17: Verify Completed Delivery Summary
+GET {{baseUrl}}/api/deliveries/550e8400-e29b-41d4-a716-446655440104/completed-summary
 Accept: application/json

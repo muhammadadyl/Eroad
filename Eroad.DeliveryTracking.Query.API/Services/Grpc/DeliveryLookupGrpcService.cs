@@ -171,6 +171,8 @@ public class DeliveryLookupGrpcService : DeliveryLookup.DeliveryLookupBase
             Id = entity.Id.ToString(),
             RouteId = entity.RouteId.ToString(),
             Status = entity.Status ?? string.Empty,
+            DriverId = entity.DriverId?.ToString() ?? string.Empty,
+            VehicleId = entity.VehicleId?.ToString() ?? string.Empty,
             CreatedAt = Timestamp.FromDateTime(DateTime.SpecifyKind(entity.CreatedAt, DateTimeKind.Utc))
         };
 
