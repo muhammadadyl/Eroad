@@ -4,7 +4,6 @@
     {
         Available,
         Assigned,
-        InTransit,
         Maintenance,
         OutOfService
     }

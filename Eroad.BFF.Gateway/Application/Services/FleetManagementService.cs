@@ -96,6 +96,13 @@ public class FleetManagementService : IFleetManagementService
     public async Task<object> ChangeVehicleStatusAsync(string id, string status)
     {
         _logger.LogInformation("Changing vehicle status: {VehicleId} to {Status}", id, status);
+        var vehicleResponse = await _vehicleClient.GetVehicleByIdAsync(new GetVehicleByIdRequest { Id = id });
+        var vehicle = vehicleResponse.Vehicles.FirstOrDefault();
+        if (vehicle?.Status == "Assigned")
+        {
+            throw new InvalidOperationException("Vehicle is assigned to job and cannot change status");
+        }
+
         var request = new ChangeVehicleStatusRequest
         {
             Id = id,
@@ -134,6 +141,13 @@ public class FleetManagementService : IFleetManagementService
     public async Task<object> ChangeDriverStatusAsync(string id, string status)
     {
         _logger.LogInformation("Changing driver status: {DriverId} to {Status}", id, status);
+        var driverResponse = await _driverClient.GetDriverByIdAsync(new GetDriverByIdRequest { Id = id });
+        var driver = driverResponse.Drivers.FirstOrDefault();
+        if (driver?.Status == "Assigned")
+        {
+            throw new InvalidOperationException("Driver is assigned to job and cannot change status");
+        }
+
         var request = new ChangeDriverStatusRequest
         {
             Id = id,

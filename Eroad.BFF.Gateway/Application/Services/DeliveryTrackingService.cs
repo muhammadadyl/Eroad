@@ -204,6 +204,17 @@ public class DeliveryTrackingService : IDeliveryTrackingService
             await UpdateAssignmentStatusesAsync(delivery.DriverId, delivery.VehicleId, "Available");
         }
 
+        if (status == "Cancelled")
+        {
+            _logger.LogInformation("Fetching delivery details for Cancelled status update: {DeliveryId}", id);
+            var deliveryDetailsRequest = new GetDeliveryByIdRequest { Id = id };
+            var deliveryDetailsResponse = await _deliveryQueryClient.GetDeliveryByIdAsync(deliveryDetailsRequest);
+            var delivery = ValidateEntity(deliveryDetailsResponse.Deliveries, "Delivery", id);
+
+            _logger.LogInformation("Updating driver and vehicle status to Available for delivery: {DeliveryId}", id);
+            await UpdateAssignmentStatusesAsync(delivery.DriverId, delivery.VehicleId, "Available");
+        }
+
         var request = new UpdateDeliveryStatusRequest
         {
             Id = id,
