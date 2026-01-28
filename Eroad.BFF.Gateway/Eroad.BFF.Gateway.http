@@ -366,12 +366,17 @@ Content-Type: application/json
 # COMPLETE WORKFLOW - END TO END
 ###############################################################################
 
+@E2E_VehicleId = c2fd0e3a-13ae-4336-a3ae-52b28a3decbd
+@E2E_DriverId = e9597775-30b9-495b-8aad-8b94c2d7fe39
+@E2E_RouteId = 4e9a05c5-25de-4ac0-8628-6daa18b0a959
+@E2E_DeliveryId = 7aa6ec5e-572d-4aca-951c-4f2f9fed14c1
+
 ### STEP 1: Add Vehicle
 POST {{baseUrl}}/api/fleet/vehicles
 Content-Type: application/json
 
 {
-  "id": "550e8400-e29b-41d4-a716-446655440101",
+  "id": "{{E2E_VehicleId}}",
   "registration": "WRK-001",
   "vehicleType": "Delivery Van"
 }
@@ -381,7 +386,7 @@ POST {{baseUrl}}/api/fleet/drivers
 Content-Type: application/json
 
 {
-  "id": "550e8400-e29b-41d4-a716-446655440102",
+  "id": "{{E2E_DriverId}}",
   "name": "Alice Johnson",
   "driverLicense": "DL123456"
 }
@@ -391,14 +396,14 @@ POST {{baseUrl}}/api/routes
 Content-Type: application/json
 
 {
-  "id": "550e8400-e29b-41d4-a716-446655440103",
+  "id": "{{E2E_RouteId}}",
   "origin": "Warehouse North",
   "destination": "Customer Location Downtown",
   "scheduledStartTime": "2026-01-27T07:00:00Z"
 }
 
 ### STEP 4a: Add Checkpoint 1
-POST {{baseUrl}}/api/routes/550e8400-e29b-41d4-a716-446655440103/checkpoints
+POST {{baseUrl}}/api/routes/{{E2E_RouteId}}/checkpoints
 Content-Type: application/json
 
 {
@@ -408,7 +413,7 @@ Content-Type: application/json
 }
 
 ### STEP 4b: Add Checkpoint 2
-POST {{baseUrl}}/api/routes/550e8400-e29b-41d4-a716-446655440103/checkpoints
+POST {{baseUrl}}/api/routes/{{E2E_RouteId}}/checkpoints
 Content-Type: application/json
 
 {
@@ -422,14 +427,14 @@ POST {{baseUrl}}/api/deliveries
 Content-Type: application/json
 
 {
-  "id": "550e8400-e29b-41d4-a716-446655440104",
-  "routeId": "550e8400-e29b-41d4-a716-446655440103",
-  "driverId": "550e8400-e29b-41d4-a716-446655440102",
-  "vehicleId": "550e8400-e29b-41d4-a716-446655440101"
+  "id": "{{E2E_DeliveryId}}",
+  "routeId": "{{E2E_RouteId}}",
+  "driverId": "{{E2E_DriverId}}",
+  "vehicleId": "{{E2E_VehicleId}}"
 }
 
 ### STEP 7: Start Route
-PATCH {{baseUrl}}/api/routes/550e8400-e29b-41d4-a716-446655440103/status
+PATCH {{baseUrl}}/api/routes/{{E2E_RouteId}}/status
 Content-Type: application/json
 
 {
@@ -437,7 +442,7 @@ Content-Type: application/json
 }
 
 ### STEP 8: Update Delivery Status to PickedUp
-PATCH {{baseUrl}}/api/deliveries/550e8400-e29b-41d4-a716-446655440104/status
+PATCH {{baseUrl}}/api/deliveries/{{E2E_DeliveryId}}/status
 Content-Type: application/json
 
 {
@@ -445,7 +450,7 @@ Content-Type: application/json
 }
 
 ### STEP 9: Update Delivery Status to InTransit
-PATCH {{baseUrl}}/api/deliveries/550e8400-e29b-41d4-a716-446655440104/status
+PATCH {{baseUrl}}/api/deliveries/{{E2E_DeliveryId}}/status
 Content-Type: application/json
 
 {
@@ -453,27 +458,27 @@ Content-Type: application/json
 }
 
 ### STEP 10: Update Delivery Current Checkpoint
-PATCH {{baseUrl}}/api/deliveries/550e8400-e29b-41d4-a716-446655440104/checkpoint
+PATCH {{baseUrl}}/api/deliveries/{{E2E_DeliveryId}}/checkpoint
 Content-Type: application/json
 
 {
-  "routeId": "550e8400-e29b-41d4-a716-446655440103",
+  "routeId": "{{E2E_RouteId}}",
   "sequence": 1,
   "location": "Highway Entrance"
 }
 
 ### STEP 11: Update Delivery Current Checkpoint
-PATCH {{baseUrl}}/api/deliveries/550e8400-e29b-41d4-a716-446655440104/checkpoint
+PATCH {{baseUrl}}/api/deliveries/{{E2E_DeliveryId}}/checkpoint
 Content-Type: application/json
 
 {
-  "routeId": "550e8400-e29b-41d4-a716-446655440103",
+  "routeId": "{{E2E_RouteId}}",
   "sequence": 2,
   "location": "City Center"
 }
 
 ### STEP 12: Report Incident (Optional)
-POST {{baseUrl}}/api/deliveries/550e8400-e29b-41d4-a716-446655440104/incidents
+POST {{baseUrl}}/api/deliveries/{{E2E_DeliveryId}}/incidents
 Content-Type: application/json
 
 {
@@ -482,7 +487,7 @@ Content-Type: application/json
 }
 
 ### STEP 13: Update Delivery Status to OutForDelivery
-PATCH {{baseUrl}}/api/deliveries/550e8400-e29b-41d4-a716-446655440104/status
+PATCH {{baseUrl}}/api/deliveries/{{E2E_DeliveryId}}/status
 Content-Type: application/json
 
 {
@@ -490,7 +495,7 @@ Content-Type: application/json
 }
 
 ### STEP 14: Capture Proof of Delivery
-POST {{baseUrl}}/api/deliveries/550e8400-e29b-41d4-a716-446655440104/proof-of-delivery
+POST {{baseUrl}}/api/deliveries/{{E2E_DeliveryId}}/proof-of-delivery
 Content-Type: application/json
 
 {
@@ -499,7 +504,7 @@ Content-Type: application/json
 }
 
 ### STEP 15: Complete Delivery (optional if not auto-completed via POD)
-PATCH {{baseUrl}}/api/deliveries/550e8400-e29b-41d4-a716-446655440104/status
+PATCH {{baseUrl}}/api/deliveries/{{E2E_DeliveryId}}/status
 Content-Type: application/json
 
 {
@@ -507,7 +512,7 @@ Content-Type: application/json
 }
 
 ### STEP 16: Complete Route
-PATCH {{baseUrl}}/api/routes/550e8400-e29b-41d4-a716-446655440103/status
+PATCH {{baseUrl}}/api/routes/{{E2E_RouteId}}/status
 Content-Type: application/json
 
 {
@@ -515,14 +520,14 @@ Content-Type: application/json
 }
 
 ### STEP 17: Verify Completed Delivery Summary
-GET {{baseUrl}}/api/deliveries/550e8400-e29b-41d4-a716-446655440104/completed-summary
+GET {{baseUrl}}/api/deliveries/{{E2E_DeliveryId}}/completed-summary
 Accept: application/json
 
 
 ### STEP 18: Verify Vehicle Status is Available
-GET {{baseUrl}}/api/fleet/vehicles/550e8400-e29b-41d4-a716-446655440101
+GET {{baseUrl}}/api/fleet/vehicles/{{E2E_VehicleId}}
 Accept: application/json
 
 ### STEP 19: Verify Driver Status is Available
-GET {{baseUrl}}/api/fleet/drivers/550e8400-e29b-41d4-a716-446655440102
+GET {{baseUrl}}/api/fleet/drivers/{{E2E_DriverId}}
 Accept: application/json
