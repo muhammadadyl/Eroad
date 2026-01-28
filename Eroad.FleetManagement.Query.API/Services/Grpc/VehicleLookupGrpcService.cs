@@ -17,7 +17,7 @@ namespace Eroad.FleetManagement.Query.API.Services.Grpc
             _logger = logger;
         }
 
-        public override async Task<VehicleLookupResponse> GetVehicleById(GetVehicleByIdRequest request, ServerCallContext context)
+        public override async Task<VehicleResponse> GetVehicleById(GetVehicleByIdRequest request, ServerCallContext context)
         {
             try
             {
@@ -32,10 +32,10 @@ namespace Eroad.FleetManagement.Query.API.Services.Grpc
                     throw new RpcException(new Status(StatusCode.NotFound, $"Vehicle with ID {request.Id} not found"));
                 }
 
-                return new VehicleLookupResponse
+                return new VehicleResponse
                 {
                     Message = "Successfully returned vehicle",
-                    Vehicles = { MapToProto(vehicles[0]) }
+                    Vehicle = MapToProto(vehicles.FirstOrDefault())
                 };
             }
             catch (RpcException)

@@ -4,6 +4,7 @@ using Eroad.DeliveryTracking.Query.Domain.Repositories;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using MediatR;
+using System.Linq;
 
 namespace Eroad.DeliveryTracking.Query.API.Services.Grpc;
 
@@ -18,7 +19,7 @@ public class DeliveryLookupGrpcService : DeliveryLookup.DeliveryLookupBase
         _logger = logger;
     }
 
-    public override async Task<DeliveryLookupResponse> GetDeliveryById(GetDeliveryByIdRequest request, ServerCallContext context)
+    public override async Task<DeliveryResponse> GetDeliveryById(GetDeliveryByIdRequest request, ServerCallContext context)
     {
         try
         {
@@ -33,10 +34,10 @@ public class DeliveryLookupGrpcService : DeliveryLookup.DeliveryLookupBase
                 throw new RpcException(new Status(StatusCode.NotFound, $"Delivery {request.Id} not found"));
             }
 
-            return new DeliveryLookupResponse
+            return new DeliveryResponse
             {
                 Message = "Delivery retrieved successfully",
-                Deliveries = { deliveries.Select(MapToProto) }
+                Delivery = deliveries.Select(MapToProto).FirstOrDefault()
             };
         }
         catch (RpcException)

@@ -79,6 +79,7 @@ message UpdateCurrentCheckpointResponse {
 
 message ReportIncidentResponse {
   string message = 1;
+  string id = 2;
 }
 
 message ResolveIncidentResponse {

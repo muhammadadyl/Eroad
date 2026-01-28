@@ -69,7 +69,7 @@ public class DeliveryTrackingService : IDeliveryTrackingService
                 _routeQueryClient.GetRouteByIdAsync(new GetRouteByIdRequest { Id = routeId }).ResponseAsync));
 
         var routes = routeResponses
-            .SelectMany(r => r.Routes)
+            .Select(r => r.Route)
             .ToDictionary(r => r.Id, r => r);
 
         // Fetch all driver and vehicle data in parallel
@@ -98,8 +98,8 @@ public class DeliveryTrackingService : IDeliveryTrackingService
                 RouteOrigin = route?.Origin ?? string.Empty,
                 RouteDestination = route?.Destination ?? string.Empty,
                 LastLocation = delivery.Checkpoints.MaxBy(a => a.Sequence)?.Location ?? string.Empty,
-                DriverName = driverResponse?.Drivers.FirstOrDefault()?.Name ?? string.Empty,
-                VehicleNo = vehicleResponse?.Vehicles.FirstOrDefault()?.Registration ?? string.Empty,
+                DriverName = driverResponse?.Driver.Name ?? string.Empty,
+                VehicleNo = vehicleResponse?.Vehicle.Registration ?? string.Empty,
                 CreatedAt = delivery.CreatedAt.ToDateTime()
             });
         }
@@ -121,7 +121,7 @@ public class DeliveryTrackingService : IDeliveryTrackingService
         var deliveryDetailsResponse = await deliveryDetailsTask;
         var response = await timelineTask;
         
-        var delivery = deliveryDetailsResponse.Deliveries.FirstOrDefault();
+        var delivery = deliveryDetailsResponse.Delivery;
 
         var timeline = response.EventLogs.Select(e => new
         {
@@ -143,7 +143,7 @@ public class DeliveryTrackingService : IDeliveryTrackingService
         // Validate route exists in RouteManagement
         var routeLookupRequest = new GetRouteByIdRequest { Id = routeId  };
         var routeLookupResponse = await _routeQueryClient.GetRouteByIdAsync(routeLookupRequest);
-        var route = ValidateEntity(routeLookupResponse.Routes, "Route", routeId);
+        var route = ValidateEntity(routeLookupResponse.Route, "Route", routeId);
 
         _logger.LogInformation("Route validated: {Origin} to {Destination} with status {Status}", route.Origin, route.Destination, route.Status);
 
@@ -187,12 +187,12 @@ public class DeliveryTrackingService : IDeliveryTrackingService
             _logger.LogInformation("Fetching delivery details for Delivered status update: {DeliveryId}", id);
             var deliveryDetailsRequest = new GetDeliveryByIdRequest { Id = id };
             var deliveryDetailsResponse = await _deliveryQueryClient.GetDeliveryByIdAsync(deliveryDetailsRequest);
-            var delivery = ValidateEntity(deliveryDetailsResponse.Deliveries, "Delivery", id);
+            var delivery = ValidateEntity(deliveryDetailsResponse.Delivery, "Delivery", id);
 
             _logger.LogInformation("Fetching route details for delivery: {DeliveryId}", id);
             var routeRequest = new GetRouteByIdRequest { Id = delivery.RouteId };
             var routeResponse = await _routeQueryClient.GetRouteByIdAsync(routeRequest);
-            var route = ValidateEntity(routeResponse.Routes, "Route", delivery.RouteId);
+            var route = ValidateEntity(routeResponse.Route, "Route", delivery.RouteId);
 
             if (delivery.Checkpoints.Count < route.Checkpoints.Count)
             {
@@ -209,7 +209,7 @@ public class DeliveryTrackingService : IDeliveryTrackingService
             _logger.LogInformation("Fetching delivery details for Cancelled status update: {DeliveryId}", id);
             var deliveryDetailsRequest = new GetDeliveryByIdRequest { Id = id };
             var deliveryDetailsResponse = await _deliveryQueryClient.GetDeliveryByIdAsync(deliveryDetailsRequest);
-            var delivery = ValidateEntity(deliveryDetailsResponse.Deliveries, "Delivery", id);
+            var delivery = ValidateEntity(deliveryDetailsResponse.Delivery, "Delivery", id);
 
             _logger.LogInformation("Updating driver and vehicle status to Available for delivery: {DeliveryId}", id);
             await UpdateAssignmentStatusesAsync(delivery.DriverId, delivery.VehicleId, "Available");
@@ -231,7 +231,7 @@ public class DeliveryTrackingService : IDeliveryTrackingService
         // Validate delivery exists in DeliveryTracking
         var deliveryRequest = new GetDeliveryByIdRequest { Id = id };
         var deliveryResponse = await _deliveryQueryClient.GetDeliveryByIdAsync(deliveryRequest);
-        var delivery = ValidateEntity(deliveryResponse.Deliveries, "Delivery", id);
+        var delivery = ValidateEntity(deliveryResponse.Delivery, "Delivery", id);
 
         if (delivery.RouteId != routeId)
         {
@@ -320,7 +320,7 @@ public class DeliveryTrackingService : IDeliveryTrackingService
 
         var deliveryDetailsRequest = new GetDeliveryByIdRequest { Id = id };
         var deliveryDetailsResponse = await _deliveryQueryClient.GetDeliveryByIdAsync(deliveryDetailsRequest);
-        var delivery = deliveryDetailsResponse.Deliveries.FirstOrDefault();
+        var delivery = deliveryDetailsResponse.Delivery;
 
         await UpdateAssignmentStatusesAsync(delivery?.DriverId, delivery?.VehicleId, "Available");
 
@@ -341,10 +341,10 @@ public class DeliveryTrackingService : IDeliveryTrackingService
         var driverLookupResponse = await driverTask;
         var deliveryResponse = await deliveryTask;
         
-        var driver = ValidateEntity(driverLookupResponse.Drivers, "Driver", driverId);
+        var driver = ValidateEntity(driverLookupResponse.Driver, "Driver", driverId);
         _logger.LogInformation("Driver found: {DriverName} with status {Status}", driver.Name, driver.Status);
 
-        var delivery = ValidateEntity(deliveryResponse.Deliveries, "Delivery", id);
+        var delivery = ValidateEntity(deliveryResponse.Delivery, "Delivery", id);
 
         var (scheduledStart, scheduledEnd) = await GetRouteScheduledTimesAsync(delivery.RouteId);
 
@@ -392,10 +392,10 @@ public class DeliveryTrackingService : IDeliveryTrackingService
         var vehicleLookupResponse = await vehicleTask;
         var deliveryResponse = await deliveryTask;
         
-        var vehicle = ValidateEntity(vehicleLookupResponse.Vehicles, "Vehicle", vehicleId);
+        var vehicle = ValidateEntity(vehicleLookupResponse.Vehicle, "Vehicle", vehicleId);
         _logger.LogInformation("Vehicle found: {Registration} with status {Status}", vehicle.Registration, vehicle.Status);
 
-        var delivery = ValidateEntity(deliveryResponse.Deliveries, "Delivery", id);
+        var delivery = ValidateEntity(deliveryResponse.Delivery, "Delivery", id);
 
         var (scheduledStart, scheduledEnd) = await GetRouteScheduledTimesAsync(delivery.RouteId);
 
@@ -453,7 +453,7 @@ public class DeliveryTrackingService : IDeliveryTrackingService
         var driverLookupRequest = new GetDriverByIdRequest { Id = driverId };
         var driverLookupResponse = await _driverQueryClient.GetDriverByIdAsync(driverLookupRequest);
         
-        var driver = ValidateEntity(driverLookupResponse.Drivers, "Driver", driverId);
+        var driver = ValidateEntity(driverLookupResponse.Driver, "Driver", driverId);
         _logger.LogInformation("Driver validated: {DriverName} with status {Status}", driver.Name, driver.Status);
 
         await ExecuteWithLockAsync($"driver-assignment:{driverId}", async (lockOwner) =>
@@ -472,7 +472,7 @@ public class DeliveryTrackingService : IDeliveryTrackingService
         var vehicleLookupRequest = new GetVehicleByIdRequest { Id = vehicleId };
         var vehicleLookupResponse = await _vehicleQueryClient.GetVehicleByIdAsync(vehicleLookupRequest);
         
-        var vehicle = ValidateEntity(vehicleLookupResponse.Vehicles, "Vehicle", vehicleId);
+        var vehicle = ValidateEntity(vehicleLookupResponse.Vehicle, "Vehicle", vehicleId);
         _logger.LogInformation("Vehicle validated: {Registration} with status {Status}", vehicle.Registration, vehicle.Status);
 
         await ExecuteWithLockAsync($"vehicle-assignment:{vehicleId}", async (lockOwner) =>
@@ -512,15 +512,15 @@ public class DeliveryTrackingService : IDeliveryTrackingService
     /// <summary>
     /// Validates that an entity exists and returns it, or throws an exception if not found.
     /// </summary>
-    private T ValidateEntity<T>(IEnumerable<T>? items, string entityType, string entityId) where T : class
+    private T ValidateEntity<T>(T? item, string entityType, string entityId) where T : class
     {
-        if (items == null || !items.Any())
+        if (item == null)
         {
             _logger.LogWarning("{EntityType} {EntityId} not found", entityType, entityId);
             throw new InvalidOperationException($"{entityType} with ID {entityId} does not exist");
         }
 
-        return items.First();
+        return item;
     }
 
     /// <summary>
@@ -551,13 +551,13 @@ public class DeliveryTrackingService : IDeliveryTrackingService
         if (driverTask != null)
         {
             var driverDetails = await driverTask;
-            driverName = driverDetails.Drivers.FirstOrDefault()?.Name ?? string.Empty;
+            driverName = driverDetails.Driver.Name ?? string.Empty;
         }
 
         if (vehicleTask != null)
         {
             var vehicleDetails = await vehicleTask;
-            vehicleName = vehicleDetails.Vehicles.FirstOrDefault()?.Registration ?? string.Empty;
+            vehicleName = vehicleDetails.Vehicle.Registration ?? string.Empty;
         }
 
         return (driverName, vehicleName);
@@ -604,7 +604,7 @@ public class DeliveryTrackingService : IDeliveryTrackingService
         var routeRequest = new GetRouteByIdRequest { Id = routeId };
         var routeResponse = await _routeQueryClient.GetRouteByIdAsync(routeRequest);
 
-        var route = ValidateEntity(routeResponse.Routes, "Route", routeId);
+        var route = ValidateEntity(routeResponse.Route, "Route", routeId);
 
         if (route.ScheduledStartTime == null || route.ScheduledEndTime == null)
         {

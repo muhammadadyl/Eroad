@@ -40,13 +40,13 @@ public class DeliveryAssignmentValidator
             var routeRequest = new GetRouteByIdRequest { Id = delivery.RouteId };
             var routeResponse = await _routeClient.GetRouteByIdAsync(routeRequest);
             
-            if (routeResponse.Routes == null || !routeResponse.Routes.Any())
+            if (routeResponse.Route == null)
             {
                 _logger.LogWarning("Route {RouteId} not found for delivery {DeliveryId}", delivery.RouteId, delivery.Id);
                 continue;
             }
 
-            var route = routeResponse.Routes.First();
+            var route = routeResponse.Route;
             
             // Skip if route doesn't have scheduled times
             if (route.ScheduledStartTime == null || route.ScheduledEndTime == null)
@@ -92,13 +92,13 @@ public class DeliveryAssignmentValidator
             var routeRequest = new GetRouteByIdRequest { Id = delivery.RouteId };
             var routeResponse = await _routeClient.GetRouteByIdAsync(routeRequest);
             
-            if (routeResponse.Routes == null || !routeResponse.Routes.Any())
+            if (routeResponse.Route == null)
             {
                 _logger.LogWarning("Route {RouteId} not found for delivery {DeliveryId}", delivery.RouteId, delivery.Id);
                 continue;
             }
 
-            var route = routeResponse.Routes.First();
+            var route = routeResponse.Route;
             
             // Skip if route doesn't have scheduled times
             if (route.ScheduledStartTime == null || route.ScheduledEndTime == null)

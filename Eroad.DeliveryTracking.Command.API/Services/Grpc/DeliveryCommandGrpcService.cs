@@ -216,7 +216,8 @@ namespace Eroad.DeliveryTracking.Command.API.Services.Grpc
 
                 return new ReportIncidentResponse
                 {
-                    Message = "Incident reported successfully"
+                    Message = "Incident reported successfully",
+                    Id = command.Incident.Id.ToString()
                 };
             }
             catch (RpcException)

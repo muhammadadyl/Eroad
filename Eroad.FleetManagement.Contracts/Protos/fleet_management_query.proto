@@ -8,14 +8,14 @@ package fleetmanagement.query;
 
 // Query service for driver lookups
 service DriverLookup {
-  rpc GetDriverById(GetDriverByIdRequest) returns (DriverLookupResponse);
+  rpc GetDriverById(GetDriverByIdRequest) returns (DriverResponse);
   rpc GetDriversByStatus(GetDriversByStatusRequest) returns (DriverLookupResponse);
   rpc GetAllDrivers(GetAllDriversRequest) returns (DriverLookupResponse);
 }
 
 // Query service for vehicle lookups
 service VehicleLookup {
-  rpc GetVehicleById(GetVehicleByIdRequest) returns (VehicleLookupResponse);
+  rpc GetVehicleById(GetVehicleByIdRequest) returns (VehicleResponse);
   rpc GetVehiclesByStatus(GetVehiclesByStatusRequest) returns (VehicleLookupResponse);
   rpc GetAllVehicles(GetAllVehiclesRequest) returns (VehicleLookupResponse);
 }
@@ -45,6 +45,16 @@ message GetAllVehiclesRequest {
 }
 
 // Response messages
+message DriverResponse {
+  string message = 1;
+  DriverEntity driver = 2;
+}
+
+message VehicleResponse {
+  string message = 1;
+  VehicleEntity vehicle = 2;
+}
+
 message DriverLookupResponse {
   string message = 1;
   repeated DriverEntity drivers = 2;

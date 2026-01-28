@@ -62,7 +62,7 @@ public class RouteManagementService : IRouteManagementService
         _logger.LogInformation("Fetching route detail for ID: {RouteId}", routeId);
 
         var routeResponse = await _routeClient.GetRouteByIdAsync(new GetRouteByIdRequest { Id = routeId.ToString() });
-        var route = routeResponse.Routes.FirstOrDefault();
+        var route = routeResponse.Route;
 
         if (route == null)
         {

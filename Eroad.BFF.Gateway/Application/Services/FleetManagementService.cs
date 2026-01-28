@@ -1,4 +1,5 @@
 using Eroad.BFF.Gateway.Application.Interfaces;
+using Eroad.DeliveryTracking.Contracts;
 using Eroad.FleetManagement.Contracts;
 
 namespace Eroad.BFF.Gateway.Application.Services;
@@ -7,6 +8,7 @@ public class FleetManagementService : IFleetManagementService
 {
     private readonly DriverLookup.DriverLookupClient _driverClient;
     private readonly VehicleLookup.VehicleLookupClient _vehicleClient;
+    private readonly DeliveryLookup.DeliveryLookupClient _deliveryClient;
     private readonly VehicleCommand.VehicleCommandClient _vehicleCommandClient;
     private readonly DriverCommand.DriverCommandClient _driverCommandClient;
     private readonly ILogger<FleetManagementService> _logger;
@@ -14,12 +16,14 @@ public class FleetManagementService : IFleetManagementService
     public FleetManagementService(
         DriverLookup.DriverLookupClient driverClient,
         VehicleLookup.VehicleLookupClient vehicleClient,
+        DeliveryLookup.DeliveryLookupClient deliveryClient,
         VehicleCommand.VehicleCommandClient vehicleCommandClient,
         DriverCommand.DriverCommandClient driverCommandClient,
         ILogger<FleetManagementService> logger)
     {
         _driverClient = driverClient;
         _vehicleClient = vehicleClient;
+        _deliveryClient = deliveryClient;
         _vehicleCommandClient = vehicleCommandClient;
         _driverCommandClient = driverCommandClient;
         _logger = logger;
@@ -30,7 +34,7 @@ public class FleetManagementService : IFleetManagementService
         _logger.LogInformation("Fetching vehicle detail for ID: {VehicleId}", vehicleId);
 
         var vehicleResponse = await _vehicleClient.GetVehicleByIdAsync(new GetVehicleByIdRequest { Id = vehicleId.ToString() });
-        var vehicle = vehicleResponse.Vehicles.FirstOrDefault();
+        var vehicle = vehicleResponse.Vehicle;
 
         if (vehicle == null)
         {
@@ -51,7 +55,7 @@ public class FleetManagementService : IFleetManagementService
         _logger.LogInformation("Fetching driver detail for ID: {DriverId}", driverId);
 
         var driverResponse = await _driverClient.GetDriverByIdAsync(new GetDriverByIdRequest { Id = driverId.ToString() });
-        var driver = driverResponse.Drivers.FirstOrDefault();
+        var driver = driverResponse.Driver;
 
         if (driver == null)
         {
@@ -96,11 +100,13 @@ public class FleetManagementService : IFleetManagementService
     public async Task<object> ChangeVehicleStatusAsync(string id, string status)
     {
         _logger.LogInformation("Changing vehicle status: {VehicleId} to {Status}", id, status);
-        var vehicleResponse = await _vehicleClient.GetVehicleByIdAsync(new GetVehicleByIdRequest { Id = id });
-        var vehicle = vehicleResponse.Vehicles.FirstOrDefault();
-        if (vehicle?.Status == "Assigned")
+        var vehicle = await _deliveryClient.GetActiveDeliveriesByVehicleAsync(
+            new GetActiveDeliveriesByVehicleRequest { VehicleId = id }
+            );
+
+        if (vehicle?.Deliveries.Count > 0)
         {
-            throw new InvalidOperationException("Vehicle is assigned to job and cannot change status");
+            throw new InvalidOperationException($"Vehicle is assigned to job {vehicle.Deliveries.FirstOrDefault().Id} and cannot change status");
         }
 
         var request = new ChangeVehicleStatusRequest
@@ -141,11 +147,13 @@ public class FleetManagementService : IFleetManagementService
     public async Task<object> ChangeDriverStatusAsync(string id, string status)
     {
         _logger.LogInformation("Changing driver status: {DriverId} to {Status}", id, status);
-        var driverResponse = await _driverClient.GetDriverByIdAsync(new GetDriverByIdRequest { Id = id });
-        var driver = driverResponse.Drivers.FirstOrDefault();
-        if (driver?.Status == "Assigned")
+        var driver = await _deliveryClient.GetActiveDeliveriesByDriverAsync(
+            new GetActiveDeliveriesByDriverRequest { DriverId = id }
+            );
+
+        if (driver?.Deliveries.Count > 0)
         {
-            throw new InvalidOperationException("Driver is assigned to job and cannot change status");
+            throw new InvalidOperationException($"Driver is assigned to job {driver.Deliveries.First().Id} and cannot change status");
         }
 
         var request = new ChangeDriverStatusRequest

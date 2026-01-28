@@ -9,7 +9,7 @@ package deliverytracking.query;
 
 // Query service for delivery lookups
 service DeliveryLookup {
-  rpc GetDeliveryById(GetDeliveryByIdRequest) returns (DeliveryLookupResponse);
+  rpc GetDeliveryById(GetDeliveryByIdRequest) returns (DeliveryResponse);
   rpc GetAllDeliveries(GetAllDeliveriesRequest) returns (DeliveryLookupResponse);
   rpc GetDeliveryEventLogs(GetDeliveryEventLogsRequest) returns (DeliveryEventLogsResponse);
   rpc GetActiveDeliveriesByDriver(GetActiveDeliveriesByDriverRequest) returns (DeliveryLookupResponse);
@@ -50,6 +50,11 @@ message GetActiveDeliveriesByVehicleRequest {
 }
 
 // Response messages
+message DeliveryResponse {
+  string message = 1;
+  DeliveryEntity delivery = 2;
+}
+
 message DeliveryLookupResponse {
   string message = 1;
   repeated DeliveryEntity deliveries = 2;

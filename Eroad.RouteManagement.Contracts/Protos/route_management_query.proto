@@ -8,7 +8,7 @@ package routemanagement.query;
 
 // Query service for route lookups
 service RouteLookup {
-  rpc GetRouteById(GetRouteByIdRequest) returns (RouteLookupResponse);
+  rpc GetRouteById(GetRouteByIdRequest) returns (RouteResponse);
   rpc GetRoutesByStatus(GetRoutesByStatusRequest) returns (RouteLookupResponse);
   rpc GetAllRoutes(GetAllRoutesRequest) returns (RouteLookupResponse);
   rpc GetCheckpointsByRoute(GetCheckpointsByRouteRequest) returns (CheckpointLookupResponse);
@@ -31,6 +31,11 @@ message GetCheckpointsByRouteRequest {
 }
 
 // Response messages
+message RouteResponse {
+  string message = 1;
+  RouteEntity route = 2;
+}
+
 message RouteLookupResponse {
   string message = 1;
   repeated RouteEntity routes = 2;

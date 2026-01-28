@@ -17,7 +17,7 @@ namespace Eroad.FleetManagement.Query.API.Services.Grpc
             _logger = logger;
         }
 
-        public override async Task<DriverLookupResponse> GetDriverById(GetDriverByIdRequest request, ServerCallContext context)
+        public override async Task<DriverResponse> GetDriverById(GetDriverByIdRequest request, ServerCallContext context)
         {
             try
             {
@@ -32,10 +32,10 @@ namespace Eroad.FleetManagement.Query.API.Services.Grpc
                     throw new RpcException(new Status(StatusCode.NotFound, $"Driver with ID {request.Id} not found"));
                 }
 
-                return new DriverLookupResponse
+                return new DriverResponse
                 {
                     Message = "Successfully returned driver",
-                    Drivers = { MapToProto(drivers[0]) }
+                    Driver = MapToProto(drivers.FirstOrDefault())
                 };
             }
             catch (RpcException)

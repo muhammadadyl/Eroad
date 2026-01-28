@@ -20,7 +20,7 @@ namespace Eroad.RouteManagement.Query.API.Services.Grpc
             _logger = logger;
         }
 
-        public override async Task<RouteLookupResponse> GetRouteById(GetRouteByIdRequest request, ServerCallContext context)
+        public override async Task<RouteResponse> GetRouteById(GetRouteByIdRequest request, ServerCallContext context)
         {
             try
             {
@@ -36,10 +36,10 @@ namespace Eroad.RouteManagement.Query.API.Services.Grpc
                     throw new RpcException(new Status(StatusCode.NotFound, $"Route with ID {request.Id} not found"));
                 }
 
-                return new RouteLookupResponse
+                return new RouteResponse
                 {
                     Message = "Successfully returned route",
-                    Routes = { MapToProto(route) }
+                    Route = MapToProto(route)
                 };
             }
             catch (RpcException)
@@ -61,9 +61,9 @@ namespace Eroad.RouteManagement.Query.API.Services.Grpc
                 
                 var response = new RouteLookupResponse
                 {
-                    Message = $"Successfully returned {routes.Count} route(s)"
+                    Message = $"Successfully returned {routes.Count} route(s)",
+                    Routes = { routes.Select(MapToProto) }
                 };
-                response.Routes.AddRange(routes.Select(MapToProto));
                 
                 return response;
             }
@@ -82,9 +82,9 @@ namespace Eroad.RouteManagement.Query.API.Services.Grpc
                 
                 var response = new RouteLookupResponse
                 {
-                    Message = $"Successfully returned {routes.Count} route(s) with status '{request.Status}'"
+                    Message = $"Successfully returned {routes.Count} route(s) with status '{request.Status}'",
+                    Routes = { routes.Select(MapToProto) }
                 };
-                response.Routes.AddRange(routes.Select(MapToProto));
                 
                 return response;
             }
@@ -108,9 +108,9 @@ namespace Eroad.RouteManagement.Query.API.Services.Grpc
                 
                 var response = new CheckpointLookupResponse
                 {
-                    Message = $"Successfully returned {checkpoints.Count} checkpoint(s)"
+                    Message = $"Successfully returned {checkpoints.Count} checkpoint(s)",
+                    Checkpoints = { checkpoints.Select(MapCheckpointToProto) }
                 };
-                response.Checkpoints.AddRange(checkpoints.Select(MapCheckpointToProto));
                 
                 return response;
             }
