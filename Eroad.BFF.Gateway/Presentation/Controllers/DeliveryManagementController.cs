@@ -42,42 +42,22 @@ public class DeliveryManagementController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateDelivery([FromBody] CreateDeliveryModel dto)
     {
-        try
-        {
-            var result = await _deliveryAggregator.CreateDeliveryAsync(dto.Id, dto.RouteId, dto.DriverId, dto.VehicleId);
-            return Ok(result);
-        }
-        catch (InvalidOperationException ex)
-        {
-            // Check if error message indicates assignment conflict (time overlap)
-            if (ex.Message.Contains("already assigned") || ex.Message.Contains("during"))
-            {
-                return BadRequest(new { Message = ex.Message });
-            }
-            // Otherwise treat as not found (route/driver/vehicle doesn't exist)
-            return NotFound(new { Message = ex.Message });
-        }
+        var result = await _deliveryAggregator.CreateDeliveryAsync(dto.Id, dto.RouteId, dto.DriverId, dto.VehicleId);
+        return Ok(new { id = dto.Id, result });
     }
 
     [HttpPatch("{id}/status")]
-    public async Task<IActionResult> UpdateDeliveryStatus(string id, [FromBody] UpdateStatusModel dto)
+    public async Task<IActionResult> UpdateDeliveryStatus(string id, [FromBody] ChangeStatusModel dto)
     {
         var result = await _deliveryAggregator.UpdateDeliveryStatusAsync(id, dto.Status);
-        return Ok(result);
+        return Ok(new { id, result, status = dto.Status });
     }
 
     [HttpPatch("{id}/checkpoint")]
     public async Task<IActionResult> UpdateCurrentCheckpoint(string id, [FromBody] UpdateDeliveryCheckpointModel dto)
     {
-        try
-        {
-            var result = await _deliveryAggregator.UpdateCurrentCheckpointAsync(id, dto.RouteId, dto.Sequence, dto.Location);
-            return Ok(result);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { Message = ex.Message });
-        }
+        var result = await _deliveryAggregator.UpdateCurrentCheckpointAsync(id, dto.RouteId, dto.Sequence, dto.Location);
+        return Ok(new { id, result });
     }
 
     [HttpPost("{id}/incidents")]
@@ -98,47 +78,21 @@ public class DeliveryManagementController : ControllerBase
     public async Task<IActionResult> CaptureProofOfDelivery(string id, [FromBody] ProofOfDeliveryModel dto)
     {
         var result = await _deliveryAggregator.CaptureProofOfDeliveryAsync(id, dto.SignatureUrl, dto.ReceiverName);
-        return Ok(result);
+        return Ok(new { id, result });
     }
 
     [HttpPatch("{id}/assign-driver")]
     public async Task<IActionResult> AssignDriver(string id, [FromBody] AssignDriverModel dto)
     {
-        try
-        {
-            var result = await _deliveryAggregator.AssignDriverAsync(id, dto.DriverId);
-            return Ok(result);
-        }
-        catch (InvalidOperationException ex)
-        {
-            // Check if error message indicates assignment conflict (time overlap)
-            if (ex.Message.Contains("already assigned") || ex.Message.Contains("during"))
-            {
-                return BadRequest(new { Message = ex.Message });
-            }
-            // Otherwise treat as not found (driver/delivery/route doesn't exist)
-            return NotFound(new { Message = ex.Message });
-        }
+        var result = await _deliveryAggregator.AssignDriverAsync(id, dto.DriverId);
+        return Ok(new { id, result });
     }
 
     [HttpPatch("{id}/assign-vehicle")]
     public async Task<IActionResult> AssignVehicle(string id, [FromBody] AssignVehicleModel dto)
     {
-        try
-        {
-            var result = await _deliveryAggregator.AssignVehicleAsync(id, dto.VehicleId);
-            return Ok(result);
-        }
-        catch (InvalidOperationException ex)
-        {
-            // Check if error message indicates assignment conflict (time overlap)
-            if (ex.Message.Contains("already assigned") || ex.Message.Contains("during"))
-            {
-                return BadRequest(new { Message = ex.Message });
-            }
-            // Otherwise treat as not found (vehicle/delivery/route doesn't exist)
-            return NotFound(new { Message = ex.Message });
-        }
+        var result = await _deliveryAggregator.AssignVehicleAsync(id, dto.VehicleId);
+        return Ok(new { id, result });
     }
 
     #endregion

@@ -69,7 +69,7 @@ public class RouteManagementService : IRouteManagementService
             throw new InvalidOperationException($"Route with ID {routeId} not found");
         }
 
-        var checkpoints = route.Checkpoints.Select(c => new CheckpointInfo
+        var checkpoints = route.Checkpoints.Select(c => new CheckpointModel
         {
             Sequence = c.Sequence,
             Location = c.Location,

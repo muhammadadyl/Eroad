@@ -1,4 +1,3 @@
-using Eroad.BFF.Gateway.Application.Models;
 using Eroad.BFF.Gateway.Application.Interfaces;
 using Eroad.FleetManagement.Contracts;
 
@@ -26,7 +25,7 @@ public class FleetManagementService : IFleetManagementService
         _logger = logger;
     }
 
-    public async Task<VehicleDetailView> GetVehicleDetailAsync(Guid vehicleId)
+    public async Task<VehicleDetailViewModel> GetVehicleDetailAsync(Guid vehicleId)
     {
         _logger.LogInformation("Fetching vehicle detail for ID: {VehicleId}", vehicleId);
 
@@ -38,7 +37,7 @@ public class FleetManagementService : IFleetManagementService
             throw new InvalidOperationException($"Vehicle with ID {vehicleId} not found");
         }
 
-        return new VehicleDetailView
+        return new VehicleDetailViewModel
         {
             VehicleId = Guid.Parse(vehicle.Id),
             Registration = vehicle.Registration,
@@ -47,7 +46,7 @@ public class FleetManagementService : IFleetManagementService
         };
     }
 
-    public async Task<DriverDetailView> GetDriverDetailAsync(Guid driverId)
+    public async Task<DriverDetailViewModel> GetDriverDetailAsync(Guid driverId)
     {
         _logger.LogInformation("Fetching driver detail for ID: {DriverId}", driverId);
 
@@ -59,7 +58,7 @@ public class FleetManagementService : IFleetManagementService
             throw new InvalidOperationException($"Driver with ID {driverId} not found");
         }
 
-        return new DriverDetailView
+        return new DriverDetailViewModel
         {
             DriverId = Guid.Parse(driver.Id),
             Name = driver.Name,

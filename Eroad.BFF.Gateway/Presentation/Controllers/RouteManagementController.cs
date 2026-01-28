@@ -43,25 +43,25 @@ public class RouteManagementController : ControllerBase
     public async Task<IActionResult> CreateRoute([FromBody] CreateRouteModel request)
     {
         var result = await _aggregator.CreateRouteAsync(request.Id, request.Origin, request.Destination, request.ScheduledStartTime);
-        return Ok(result);
+        return Ok(new { id = request.Id, result });
     }
 
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateRoute(string id, [FromBody] UpdateRouteModel dto)
     {
         var result = await _aggregator.UpdateRouteAsync(id, dto.Origin, dto.Destination, dto.ScheduledStartTime);
-        return Ok(result);
+        return Ok(new { id, result });
     }
 
     [HttpPatch("{id}/status")]
-    public async Task<IActionResult> ChangeRouteStatus(string id, [FromBody] ChangeRouteStatusModel dto)
+    public async Task<IActionResult> ChangeRouteStatus(string id, [FromBody] ChangeStatusModel dto)
     {
         var result = await _aggregator.ChangeRouteStatusAsync(id, dto.Status);
-        return Ok(result);
+        return Ok(new { id, result, status = dto.Status });
     }
 
     [HttpPost("{id}/checkpoints")]
-    public async Task<IActionResult> AddCheckpoint(string id, [FromBody] AddCheckpointModel dto)
+    public async Task<IActionResult> AddCheckpoint(string id, [FromBody] CheckpointModel dto)
     {
         var result = await _aggregator.AddCheckpointAsync(id, dto.Sequence, dto.Location, dto.ExpectedTime);
         return Ok(result);

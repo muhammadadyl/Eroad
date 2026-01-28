@@ -1,6 +1,6 @@
 namespace Eroad.BFF.Gateway.Application.Models;
 
-public class AddCheckpointModel
+public class CheckpointModel
 {
     public int Sequence { get; set; }
     public string Location { get; set; } = string.Empty;

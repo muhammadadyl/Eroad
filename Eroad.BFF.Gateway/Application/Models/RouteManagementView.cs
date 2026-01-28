@@ -30,7 +30,7 @@ public class RouteDetailView
     public string Destination { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
 
-    public List<CheckpointInfo> Checkpoints { get; set; } = new();
+    public List<CheckpointModel> Checkpoints { get; set; } = new();
     public List<DeliverySummary> Deliveries { get; set; } = new();
 }
 
