@@ -10,10 +10,12 @@ namespace Eroad.BFF.Gateway.Application.Services;
 public class DeliveryTrackingService : IDeliveryTrackingService
 {
     private readonly DeliveryCommand.DeliveryCommandClient _deliveryCommandClient;
-    private readonly DeliveryLookup.DeliveryLookupClient _deliveryClient;
-    private readonly RouteLookup.RouteLookupClient _routeClient;
-    private readonly DriverLookup.DriverLookupClient _driverClient;
-    private readonly VehicleLookup.VehicleLookupClient _vehicleClient;
+    private readonly DeliveryLookup.DeliveryLookupClient _deliveryQueryClient;
+    private readonly RouteLookup.RouteLookupClient _routeQueryClient;
+    private readonly DriverLookup.DriverLookupClient _driverQueryClient;
+    private readonly VehicleLookup.VehicleLookupClient _vehicleQueryClient;
+    private readonly DriverCommand.DriverCommandClient _driverCommandClient;
+    private readonly VehicleCommand.VehicleCommandClient _vehicleCommandClient;
     private readonly IDistributedLockManager _lockManager;
     private readonly DeliveryAssignmentValidator _assignmentValidator;
     private readonly ILogger<DeliveryTrackingService> _logger;
@@ -29,10 +31,10 @@ public class DeliveryTrackingService : IDeliveryTrackingService
         ILogger<DeliveryTrackingService> logger)
     {
         _deliveryCommandClient = deliveryCommandClient;
-        _deliveryClient = deliveryClient;
-        _routeClient = routeClient;
-        _driverClient = driverClient;
-        _vehicleClient = vehicleClient;
+        _deliveryQueryClient = deliveryClient;
+        _routeQueryClient = routeClient;
+        _driverQueryClient = driverClient;
+        _vehicleQueryClient = vehicleClient;
         _lockManager = lockManager;
         _assignmentValidator = assignmentValidator;
         _logger = logger;
@@ -43,7 +45,7 @@ public class DeliveryTrackingService : IDeliveryTrackingService
         _logger.LogInformation("Fetching live tracking data for active deliveries");
 
         // Fetch all deliveries and filter for active statuses
-        var allDeliveriesResponse = await _deliveryClient.GetAllDeliveriesAsync(new GetAllDeliveriesRequest());
+        var allDeliveriesResponse = await _deliveryQueryClient.GetAllDeliveriesAsync(new GetAllDeliveriesRequest());
         
         var allDeliveries = allDeliveriesResponse.Deliveries
             .Where(d => d.Status == "InTransit" || d.Status == "OutForDelivery")
@@ -60,7 +62,7 @@ public class DeliveryTrackingService : IDeliveryTrackingService
         // Fetch all routes in parallel
         var routeResponses = await Task.WhenAll(
             routeIds.Select(routeId => 
-                _routeClient.GetRouteByIdAsync(new GetRouteByIdRequest { Id = routeId }).ResponseAsync));
+                _routeQueryClient.GetRouteByIdAsync(new GetRouteByIdRequest { Id = routeId }).ResponseAsync));
 
         var routes = routeResponses
             .SelectMany(r => r.Routes)
@@ -89,7 +91,7 @@ public class DeliveryTrackingService : IDeliveryTrackingService
         _logger.LogInformation("Getting timeline for delivery: {DeliveryId}", deliveryId);
         
         var request = new GetDeliveryEventLogsRequest { DeliveryId = deliveryId.ToString() };
-        var response = await _deliveryClient.GetDeliveryEventLogsAsync(request);
+        var response = await _deliveryQueryClient.GetDeliveryEventLogsAsync(request);
 
         var timeline = response.EventLogs.Select(e => new
         {
@@ -107,7 +109,7 @@ public class DeliveryTrackingService : IDeliveryTrackingService
         _logger.LogInformation("Getting event logs for delivery: {DeliveryId}", deliveryId);
         
         var request = new GetDeliveryEventLogsRequest { DeliveryId = deliveryId };
-        var response = await _deliveryClient.GetDeliveryEventLogsAsync(request);
+        var response = await _deliveryQueryClient.GetDeliveryEventLogsAsync(request);
 
         var eventLogs = response.EventLogs.Select(e => new DeliveryEventLogViewModel
         {
@@ -128,7 +130,7 @@ public class DeliveryTrackingService : IDeliveryTrackingService
 
         // Validate route exists in RouteManagement
         var routeLookupRequest = new GetRouteByIdRequest { Id = routeId  };
-        var routeLookupResponse = await _routeClient.GetRouteByIdAsync(routeLookupRequest);
+        var routeLookupResponse = await _routeQueryClient.GetRouteByIdAsync(routeLookupRequest);
         
         if (routeLookupResponse.Routes == null || !routeLookupResponse.Routes.Any())
         {
@@ -153,7 +155,7 @@ public class DeliveryTrackingService : IDeliveryTrackingService
         if (!string.IsNullOrEmpty(driverId))
         {
             var driverLookupRequest = new GetDriverByIdRequest { Id = driverId };
-            var driverLookupResponse = await _driverClient.GetDriverByIdAsync(driverLookupRequest);
+            var driverLookupResponse = await _driverQueryClient.GetDriverByIdAsync(driverLookupRequest);
             
             if (driverLookupResponse.Drivers == null || !driverLookupResponse.Drivers.Any())
             {
@@ -198,7 +200,7 @@ public class DeliveryTrackingService : IDeliveryTrackingService
         if (!string.IsNullOrEmpty(vehicleId))
         {
             var vehicleLookupRequest = new GetVehicleByIdRequest { Id = vehicleId };
-            var vehicleLookupResponse = await _vehicleClient.GetVehicleByIdAsync(vehicleLookupRequest);
+            var vehicleLookupResponse = await _vehicleQueryClient.GetVehicleByIdAsync(vehicleLookupRequest);
             
             if (vehicleLookupResponse.Vehicles == null || !vehicleLookupResponse.Vehicles.Any())
             {
@@ -252,7 +254,7 @@ public class DeliveryTrackingService : IDeliveryTrackingService
         _logger.LogInformation("Delivery created successfully with ID: {DeliveryId}", response.Id);
 
         if (driverId != null) {
-            await _driverClient.UpdateDriverStatusAsync(new UpdateDriverStatusRequest
+            await _driverCommandClient.ChangeDriverStatusAsync(new ChangeDriverStatusRequest
             {
                 Id = driverId,
                 Status = "Assigned"
@@ -261,7 +263,7 @@ public class DeliveryTrackingService : IDeliveryTrackingService
         }
 
         if (vehicleId != null) {
-            await _vehicleClient.UpdateVehicleStatusAsync(new UpdateVehicleStatusRequest
+            await _vehicleCommandClient.ChangeVehicleStatusAsync(new ChangeVehicleStatusRequest
             {
                 Id = vehicleId,
                 Status = "Assigned"
@@ -290,7 +292,7 @@ public class DeliveryTrackingService : IDeliveryTrackingService
 
         // Validate checkpoint exists in RouteManagement
         var checkpointsRequest = new GetCheckpointsByRouteRequest { RouteId = routeId };
-        var checkpointsResponse = await _routeClient.GetCheckpointsByRouteAsync(checkpointsRequest);
+        var checkpointsResponse = await _routeQueryClient.GetCheckpointsByRouteAsync(checkpointsRequest);
         
         var checkpoint = checkpointsResponse.Checkpoints.FirstOrDefault(c => c.Sequence == sequence);
         if (checkpoint == null)
@@ -360,22 +362,26 @@ public class DeliveryTrackingService : IDeliveryTrackingService
 
         _logger.LogInformation("Updating driver and vehicle status to Available for delivery: {DeliveryId}", id);
 
-        if (response?.DriverId != null)  {
-            await _driverClient.UpdateDriverStatusAsync(new UpdateDriverStatusRequest
+        var deliveryDetailsRequest = new GetDeliveryByIdRequest { Id = id };
+        var deliveryDetailsResponse = await _deliveryQueryClient.GetDeliveryByIdAsync(deliveryDetailsRequest);
+        var delivery = deliveryDetailsResponse.Deliveries.FirstOrDefault();
+
+        if (delivery?.DriverId != null)  {
+            await _driverCommandClient.ChangeDriverStatusAsync(new ChangeDriverStatusRequest
             {
-                Id = response.DriverId,
+                Id = delivery.DriverId,
                 Status = "Available"
             });
-            _logger.LogInformation("Driver {DriverId} status updated to Available", response.DriverId);
+            _logger.LogInformation("Driver {DriverId} status updated to Available", delivery.DriverId);
         }
 
-        if (response?.VehicleId != null)  {
-            await _vehicleClient.UpdateVehicleStatusAsync(new UpdateVehicleStatusRequest
+        if (delivery?.VehicleId != null)  {
+            await _vehicleCommandClient.ChangeVehicleStatusAsync(new ChangeVehicleStatusRequest
             {
-                Id = response.VehicleId,
+                Id = delivery.VehicleId,
                 Status = "Available"
             });
-            _logger.LogInformation("Vehicle {VehicleId} status updated to Available", response.VehicleId);
+            _logger.LogInformation("Vehicle {VehicleId} status updated to Available", delivery.VehicleId);
         }
 
         return new { Message = response.Message };
@@ -387,7 +393,7 @@ public class DeliveryTrackingService : IDeliveryTrackingService
 
         // Validate driver exists in FleetManagement
         var driverLookupRequest = new GetDriverByIdRequest { Id = driverId };
-        var driverLookupResponse = await _driverClient.GetDriverByIdAsync(driverLookupRequest);
+        var driverLookupResponse = await _driverQueryClient.GetDriverByIdAsync(driverLookupRequest);
         
         if (driverLookupResponse.Drivers == null || !driverLookupResponse.Drivers.Any())
         {
@@ -400,7 +406,7 @@ public class DeliveryTrackingService : IDeliveryTrackingService
 
         // Get delivery to fetch route and validate scheduled times
         var deliveryRequest = new GetDeliveryByIdRequest { Id = id };
-        var deliveryResponse = await _deliveryClient.GetDeliveryByIdAsync(deliveryRequest);
+        var deliveryResponse = await _deliveryQueryClient.GetDeliveryByIdAsync(deliveryRequest);
         
         if (deliveryResponse.Deliveries == null || !deliveryResponse.Deliveries.Any())
         {
@@ -412,7 +418,7 @@ public class DeliveryTrackingService : IDeliveryTrackingService
 
         // Get route scheduled times
         var routeRequest = new GetRouteByIdRequest { Id = delivery.RouteId };
-        var routeResponse = await _routeClient.GetRouteByIdAsync(routeRequest);
+        var routeResponse = await _routeQueryClient.GetRouteByIdAsync(routeRequest);
         
         if (routeResponse.Routes == null || !routeResponse.Routes.Any())
         {
@@ -464,13 +470,13 @@ public class DeliveryTrackingService : IDeliveryTrackingService
             var response = await _deliveryCommandClient.AssignDriverAsync(assignRequest);
             _logger.LogInformation("Driver {DriverId} successfully assigned to delivery {DeliveryId}", driverId, id);
 
-            if (response.DriverId != null)  {
-                await _driverClient.UpdateDriverStatusAsync(new UpdateDriverStatusRequest
+            if (response != null)  {
+                await _driverCommandClient.ChangeDriverStatusAsync(new ChangeDriverStatusRequest
                 {
-                    Id = response.DriverId,
+                    Id = driverId,
                     Status = "Assigned"
                 });
-                _logger.LogInformation("Driver {DriverId} status updated to Assigned", response.DriverId);
+                _logger.LogInformation("Driver {DriverId} status updated to Assigned", driverId);
             }
 
             return new { Message = response.Message };
@@ -487,7 +493,7 @@ public class DeliveryTrackingService : IDeliveryTrackingService
 
         // Validate vehicle exists in FleetManagement
         var vehicleLookupRequest = new GetVehicleByIdRequest { Id = vehicleId };
-        var vehicleLookupResponse = await _vehicleClient.GetVehicleByIdAsync(vehicleLookupRequest);
+        var vehicleLookupResponse = await _vehicleQueryClient.GetVehicleByIdAsync(vehicleLookupRequest);
         
         if (vehicleLookupResponse.Vehicles == null || !vehicleLookupResponse.Vehicles.Any())
         {
@@ -500,7 +506,7 @@ public class DeliveryTrackingService : IDeliveryTrackingService
 
         // Get delivery to fetch route and validate scheduled times
         var deliveryRequest = new GetDeliveryByIdRequest { Id = id };
-        var deliveryResponse = await _deliveryClient.GetDeliveryByIdAsync(deliveryRequest);
+        var deliveryResponse = await _deliveryQueryClient.GetDeliveryByIdAsync(deliveryRequest);
         
         if (deliveryResponse.Deliveries == null || !deliveryResponse.Deliveries.Any())
         {
@@ -512,7 +518,7 @@ public class DeliveryTrackingService : IDeliveryTrackingService
 
         // Get route scheduled times
         var routeRequest = new GetRouteByIdRequest { Id = delivery.RouteId };
-        var routeResponse = await _routeClient.GetRouteByIdAsync(routeRequest);
+        var routeResponse = await _routeQueryClient.GetRouteByIdAsync(routeRequest);
         
         if (routeResponse.Routes == null || !routeResponse.Routes.Any())
         {
@@ -565,13 +571,13 @@ public class DeliveryTrackingService : IDeliveryTrackingService
             var response = await _deliveryCommandClient.AssignVehicleAsync(assignRequest);
             _logger.LogInformation("Vehicle {VehicleId} successfully assigned to delivery {DeliveryId}", vehicleId, id);
 
-            if (response.VehicleId != null)  {
-                await _vehicleClient.UpdateVehicleStatusAsync(new UpdateVehicleStatusRequest
+            if (response != null)  {
+                await _vehicleCommandClient.ChangeVehicleStatusAsync(new ChangeVehicleStatusRequest
                 {
-                    Id = response.VehicleId,
+                    Id = vehicleId,
                     Status = "Assigned"
                 });
-                _logger.LogInformation("Vehicle {VehicleId} status updated to Assigned", response.VehicleId);
+                _logger.LogInformation("Vehicle {VehicleId} status updated to Assigned", vehicleId);
             }
 
             return new { Message = response.Message };
