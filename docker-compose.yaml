@@ -28,6 +28,12 @@ services:
       KAFKA_MIN_INSYNC_REPLICAS: 2
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+    healthcheck:
+      test: kafka-topics --bootstrap-server kafka-kraft:9092 --list
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
 
   init-kafka:
     image: confluentinc/cp-kafka:latest
@@ -58,6 +64,12 @@ services:
     restart: always
     volumes:
      - mongodb_data:/data/db
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
 
   sql:
     image: mcr.microsoft.com/mssql/server:2017-latest-ubuntu
@@ -265,6 +277,26 @@ services:
       - route-management-command-api
       - route-management-query-api
     restart: on-failure
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/swagger/index.html" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  # Integration Tests
+  bff-integration-tests:
+    build:
+      context: .
+      dockerfile: Eroad.BFF.IntegrationTest/Dockerfile
+    container_name: bff-integration-tests
+    profiles: ["init-services"]
+    environment:
+      - BFF_BASE_URL=http://bff-gateway:8080
+    depends_on:
+      bff-gateway:
+        condition: service_healthy
+    restart: "no"
    
 networks:
   default:    

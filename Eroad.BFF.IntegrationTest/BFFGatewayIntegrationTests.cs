@@ -334,7 +334,7 @@ public class BFFGatewayIntegrationTests : IClassFixture<BFFTestFixture>
         });
 
         // Act
-        var response = await _client.PutAsJsonAsync($"/api/routes/{routeId}/checkpoints/1", new
+        var response = await _client.PutAsJsonAsync($"/api/routes/{routeId}/checkpoints", new
         {
             sequence = 1,
             location = "Checkpoint 1 Updated",
@@ -475,7 +475,7 @@ public class BFFGatewayIntegrationTests : IClassFixture<BFFTestFixture>
     }
 
     [Fact]
-    public async Task UpdateDeliveryStatus_ChangesDeliveryStatus()
+    public async Task UpdateDeliveryStatusWithNoVehicleDriver_ChangesDeliveryStatusToInTransit_Fails()
     {
         // Arrange - Create delivery
         var routeResponse = await _client.PostAsJsonAsync("/api/routes", new
@@ -501,13 +501,29 @@ public class BFFGatewayIntegrationTests : IClassFixture<BFFTestFixture>
         });
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]
     public async Task UpdateCurrentCheckpoint_UpdatesDeliveryCheckpoint()
     {
         // Arrange - Create route with checkpoint
+        var vehicleResponse = await _client.PostAsJsonAsync("/api/fleet/vehicles", new
+        {
+            registration = "DEL-VAN-001",
+            vehicleType = "Delivery Van"
+        });
+        var vehicleResult = await vehicleResponse.Content.ReadFromJsonAsync<ApiResponse>(_jsonOptions);
+        var vehicleId = vehicleResult?.Id;
+
+        var driverResponse = await _client.PostAsJsonAsync("/api/fleet/drivers", new
+        {
+            name = "Delivery Driver",
+            driverLicense = "DL-DEL-001"
+        });
+        var driverResult = await driverResponse.Content.ReadFromJsonAsync<ApiResponse>(_jsonOptions);
+        var driverId = driverResult?.Id;
+
         var routeResponse = await _client.PostAsJsonAsync("/api/routes", new
         {
             origin = "Origin",
@@ -526,7 +542,9 @@ public class BFFGatewayIntegrationTests : IClassFixture<BFFTestFixture>
 
         var deliveryResponse = await _client.PostAsJsonAsync("/api/deliveries", new
         {
-            routeId
+            routeId,
+            driverId,
+            vehicleId
         });
         var deliveryResult = await deliveryResponse.Content.ReadFromJsonAsync<ApiResponse>(_jsonOptions);
         var deliveryId = deliveryResult?.Id;

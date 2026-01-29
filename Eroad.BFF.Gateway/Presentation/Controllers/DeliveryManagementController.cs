@@ -20,6 +20,12 @@ public class DeliveryManagementController : ControllerBase
     }
 
     #region Query Operations
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetDeliveryById(string id)
+    {
+        var result = await _deliveryAggregator.GetDeliveryByIdAsync(id);
+        return Ok(result);
+    }
 
     [HttpGet("live-tracking")]
     public async Task<IActionResult> GetLiveTracking()

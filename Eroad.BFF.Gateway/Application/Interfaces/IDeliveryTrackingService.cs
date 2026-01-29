@@ -1,10 +1,12 @@
 using Eroad.BFF.Gateway.Application.Models;
+using Eroad.DeliveryTracking.Contracts;
 
 namespace Eroad.BFF.Gateway.Application.Interfaces;
 
 public interface IDeliveryTrackingService
 {
     // Query Operations
+    Task<DeliveryEntity> GetDeliveryByIdAsync(string deliveryId);
     Task<LiveTrackingViewModel> GetLiveTrackingAsync();
     Task<object> GetCompletedSummaryAsync(Guid deliveryId);
 

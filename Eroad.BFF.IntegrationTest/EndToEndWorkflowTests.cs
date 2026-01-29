@@ -253,6 +253,22 @@ public class EndToEndWorkflowTests : IClassFixture<BFFTestFixture>
     public async Task DeliveryWorkflow_WithIncidentResolution_Succeeds()
     {
         // Setup delivery
+        var vehicleResponse = await _client.PostAsJsonAsync("/api/fleet/vehicles", new
+        {
+            registration = "DEL-VAN-001",
+            vehicleType = "Delivery Van"
+        });
+        var vehicleResult = await vehicleResponse.Content.ReadFromJsonAsync<ApiResponse>(_jsonOptions);
+        var vehicleId = vehicleResult?.Id;
+
+        var driverResponse = await _client.PostAsJsonAsync("/api/fleet/drivers", new
+        {
+            name = "Delivery Driver",
+            driverLicense = "DL-DEL-001"
+        });
+        var driverResult = await driverResponse.Content.ReadFromJsonAsync<ApiResponse>(_jsonOptions);
+        var driverId = driverResult?.Id;
+
         var routeResponse = await _client.PostAsJsonAsync("/api/routes", new
         {
             origin = "Start",
@@ -264,7 +280,9 @@ public class EndToEndWorkflowTests : IClassFixture<BFFTestFixture>
 
         var deliveryResponse = await _client.PostAsJsonAsync("/api/deliveries", new
         {
-            routeId
+            routeId,
+            driverId,
+            vehicleId
         });
         var deliveryResult = await deliveryResponse.Content.ReadFromJsonAsync<ApiResponse>(_jsonOptions);
         var deliveryId = deliveryResult?.Id;
@@ -281,8 +299,11 @@ public class EndToEndWorkflowTests : IClassFixture<BFFTestFixture>
             description = "Traffic jam"
         });
         Assert.Equal(HttpStatusCode.OK, incident1Response.StatusCode);
-        var incident1Result = await incident1Response.Content.ReadFromJsonAsync<dynamic>(_jsonOptions);
-        var incidentId = incident1Result?.incidentId?.ToString();
+        
+        var deliveryDetailsResult = await _client.GetAsync($"/api/deliveries/{deliveryId}");
+        var deliveryDetails = await deliveryDetailsResult.Content.ReadFromJsonAsync<DeliveryEntity>(_jsonOptions);
+        
+        var incidentId = deliveryDetails.Incidents.FirstOrDefault().Id;
 
         var incident2Response = await _client.PostAsJsonAsync($"/api/deliveries/{deliveryId}/incidents", new
         {
@@ -361,7 +382,7 @@ public class EndToEndWorkflowTests : IClassFixture<BFFTestFixture>
 
         var cancelResponse = await _client.PatchAsJsonAsync($"/api/deliveries/{deliveryId}/status", new
         {
-            status = "Cancelled"
+            status = "Failed"
         });
         Assert.Equal(HttpStatusCode.OK, cancelResponse.StatusCode);
 

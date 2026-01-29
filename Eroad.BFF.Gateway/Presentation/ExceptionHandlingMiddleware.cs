@@ -23,8 +23,8 @@ public class ExceptionHandlingMiddleware
         }
         catch (InvalidOperationException ex) 
         {
-            _logger.LogWarning("BFF InvalidOperation error: {Details}", ex.Status.Detail);
-            await HandleExceptionAsync(context, HttpStatusCode.BadRequest, ex.Status.Detail);
+            _logger.LogWarning("BFF InvalidOperation error: {Details}", ex.Message);
+            await HandleExceptionAsync(context, HttpStatusCode.BadRequest, ex.Message);
         }
         catch (RpcException ex) when (ex.StatusCode == Grpc.Core.StatusCode.InvalidArgument)
         {

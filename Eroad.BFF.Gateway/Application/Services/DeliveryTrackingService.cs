@@ -44,6 +44,14 @@ public class DeliveryTrackingService : IDeliveryTrackingService
         _logger = logger;
     }
 
+    public async Task<DeliveryEntity> GetDeliveryByIdAsync(string deliveryId)
+    {
+        _logger.LogInformation("Fetching delivery by ID: {DeliveryId}", deliveryId);
+        var request = new GetDeliveryByIdRequest { Id = deliveryId };
+        var response = await _deliveryQueryClient.GetDeliveryByIdAsync(request);
+        return response.Delivery;
+    }
+
     public async Task<LiveTrackingViewModel> GetLiveTrackingAsync()
     {
         _logger.LogInformation("Fetching live tracking data for active deliveries");
