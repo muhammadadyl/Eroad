@@ -5,7 +5,6 @@ using Eroad.BFF.Gateway.Presentation.Middleware;
 using Eroad.DeliveryTracking.Contracts;
 using Eroad.FleetManagement.Contracts;
 using Eroad.RouteManagement.Contracts;
-using Grpc.Net.ClientFactory;
 using Polly;
 using StackExchange.Redis;
 
@@ -13,6 +12,16 @@ using StackExchange.Redis;
 AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddLogging(config =>
+{
+    config.ClearProviders();
+    config.AddConsole();
+    config.SetMinimumLevel(LogLevel.Information);
+});
+
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
 
 // Add services to the container
 builder.Services.AddControllers();

@@ -72,6 +72,9 @@ public class DeliveryTrackingService : IDeliveryTrackingService
             .Select(r => r.Route)
             .ToDictionary(r => r.Id, r => r);
 
+        _logger.LogInformation("Fetched {DeliveryCount} active deliveries {Deliveries} across {RouteCount} routes {routes}", 
+            allDeliveries.Count, allDeliveries, routes.Count, routes);
+
         // Fetch all driver and vehicle data in parallel
         var driverLookupTasks = allDeliveries
             .Select(d => _driverQueryClient.GetDriverByIdAsync(new GetDriverByIdRequest { Id = d.DriverId }).ResponseAsync);
@@ -213,6 +216,24 @@ public class DeliveryTrackingService : IDeliveryTrackingService
 
             _logger.LogInformation("Updating driver and vehicle status to Available for delivery: {DeliveryId}", id);
             await UpdateAssignmentStatusesAsync(delivery.DriverId, delivery.VehicleId, "Available");
+        }
+
+        if (status == "InTransit" || status == "OutForDelivery")
+        {
+            _logger.LogInformation("Fetching delivery details for status update: {DeliveryId}", id);
+            var deliveryDetailsRequest = new GetDeliveryByIdRequest { Id = id };
+            var deliveryDetailsResponse = await _deliveryQueryClient.GetDeliveryByIdAsync(deliveryDetailsRequest);
+            var delivery = ValidateEntity(deliveryDetailsResponse.Delivery, "Delivery", id);
+
+            if (!Guid.TryParse(delivery.DriverId, out _)) 
+            { 
+                throw new InvalidOperationException($"Cannot set status to {status} without an assigned driver for delivery {id}");
+            }
+
+            if (!Guid.TryParse(delivery.VehicleId, out _))
+            {
+                throw new InvalidOperationException($"Cannot set status to {status} without an assigned vehicle for delivery {id}");
+            }
         }
 
         var request = new UpdateDeliveryStatusRequest
