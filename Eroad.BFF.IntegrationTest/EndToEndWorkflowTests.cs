@@ -79,7 +79,15 @@ public class EndToEndWorkflowTests : IClassFixture<BFFTestFixture>
         });
         Assert.Equal(HttpStatusCode.OK, checkpoint2Response.StatusCode);
 
-        // STEP 5: Create Delivery
+        // STEP 5: Update route status to Active
+        var activateRouteResponse = await _client.PatchAsJsonAsync($"/api/routes/{routeId}/status", new
+        {
+            status = "Active"
+        });
+        Thread.Sleep(500); // Small delay to ensure route status is updated before proceeding
+        Assert.Equal(HttpStatusCode.OK, activateRouteResponse.StatusCode);
+
+        // STEP 6: Create Delivery
         var deliveryResponse = await _client.PostAsJsonAsync("/api/deliveries", new
         {
             routeId,
@@ -205,6 +213,13 @@ public class EndToEndWorkflowTests : IClassFixture<BFFTestFixture>
         var routeResult = await routeResponse.Content.ReadFromJsonAsync<ApiResponse>(_jsonOptions);
         var routeId = routeResult?.Id;
 
+        // Update route status to Active
+        var activateRouteResponse = await _client.PatchAsJsonAsync($"/api/routes/{routeId}/status", new
+        {
+            status = "Active"
+        });
+        Assert.Equal(HttpStatusCode.OK, activateRouteResponse.StatusCode);
+
         // Create delivery without driver/vehicle
         var deliveryResponse = await _client.PostAsJsonAsync("/api/deliveries", new
         {
@@ -278,6 +293,12 @@ public class EndToEndWorkflowTests : IClassFixture<BFFTestFixture>
         });
         var routeResult = await routeResponse.Content.ReadFromJsonAsync<ApiResponse>(_jsonOptions);
         var routeId = routeResult?.Id;
+
+        var activateRouteResponse = await _client.PatchAsJsonAsync($"/api/routes/{routeId}/status", new
+        {
+            status = "Active"
+        });
+        Assert.Equal(HttpStatusCode.OK, activateRouteResponse.StatusCode);
 
         var deliveryResponse = await _client.PostAsJsonAsync("/api/deliveries", new
         {
@@ -365,6 +386,12 @@ public class EndToEndWorkflowTests : IClassFixture<BFFTestFixture>
         });
         var routeResult = await routeResponse.Content.ReadFromJsonAsync<ApiResponse>(_jsonOptions);
         var routeId = routeResult?.Id;
+
+        var activateRouteResponse = await _client.PatchAsJsonAsync($"/api/routes/{routeId}/status", new
+        {
+            status = "Active"
+        });
+        Assert.Equal(HttpStatusCode.OK, activateRouteResponse.StatusCode);
 
         var deliveryResponse = await _client.PostAsJsonAsync("/api/deliveries", new
         {
