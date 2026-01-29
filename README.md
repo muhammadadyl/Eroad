@@ -1,6 +1,6 @@
 # Eroad Delivery Management System
 
-A microservices-based delivery management platform built with .NET 8, implementing Event Sourcing, CQRS, and Domain-Driven Design patterns.
+A production-ready microservices-based delivery management platform built with .NET 8, implementing Event Sourcing, CQRS, and Domain-Driven Design patterns. Features comprehensive resilience patterns, distributed locking, and clean architecture principles.
 
 ##  Architecture Overview
 
@@ -11,7 +11,8 @@ A microservices-based delivery management platform built with .NET 8, implementi
 - **gRPC** - Inter-service communication
 - **MediatR** - CQRS command/query handling
 - **Entity Framework Core** - ORM for query databases
-- **Polly** - Service resilience and rate limiting
+- **Polly v8** - Resilience pipeline (circuit breaker, retry, timeout)
+- **Clean Architecture** - BFF Gateway layer separation
 
 #### Data Storage
 - **MongoDB** - Event store for Command side (Event Sourcing)
@@ -47,7 +48,15 @@ A microservices-based delivery management platform built with .NET 8, implementi
 - Backend for Frontend
 - Aggregates data from multiple services
 - Implements business logic orchestration
-- Distributed locking for concurrent operations
+- **Resilience Features**:
+  - Circuit breaker pattern (Polly v8)
+  - Retry policy with exponential backoff
+  - Rate limiting (100 req/10s per IP)
+  - Timeout policies (30s)
+- **Security & Integration**:
+  - CORS configuration for frontend apps
+  - Distributed locking (Redis) for concurrent operations
+  - Health check endpoints for monitoring
 
 ##  Getting Started
 
@@ -195,7 +204,7 @@ service DeliveryLookup {
 
 ### 1. Delivery Assignment Validation
 
-Prevents double-booking of drivers and vehicles:
+Prevents double-booking of drivers and vehicles using distributed locking:
 
 ```csharp
 var (isValid, error, conflictId, start, end) = 
@@ -204,9 +213,16 @@ var (isValid, error, conflictId, start, end) =
 ```
 
 **Validation Rules:**
+- Uses Redis distributed locks to prevent race conditions
 - Checks active deliveries (PickedUp, InTransit, OutForDelivery)
 - Detects time overlaps using interval logic
-- Returns conflict details for resolution
+- Returns detailed conflict information for resolution
+- Ensures atomicity across multiple BFF Gateway instances
+
+**Implementation:**
+- `DeliveryAssignmentValidator` - Business validation logic
+- `RedisLockManager` - Distributed locking implementation
+- `IDistributedLockManager` - Abstraction for testability
 
 ### 2. Status Transition Validation
 
@@ -245,18 +261,63 @@ public Task Handle(DeliveryStatusChangedEvent @event)
 }
 ```
 
+### 5. Resilience Patterns (BFF Gateway)
+
+**Circuit Breaker (Polly v8):**
+- Prevents cascading failures to downstream services
+- 50% failure ratio triggers circuit open
+- 15-second break duration with half-open state
+- Logs circuit state transitions
+
+**Retry Policy:**
+- Exponential backoff with jitter
+- Maximum 3 retry attempts
+- Retries on transient gRPC failures (Unavailable, DeadlineExceeded, Internal)
+- 1-second initial delay
+
+**Timeout Policy:**
+- 30-second timeout per gRPC request
+- Prevents resource exhaustion
+
+**Rate Limiting:**
+- Sliding window: 100 requests per 10 seconds per IP
+- Queue limit: 10 requests
+- Returns 429 with retry-after metadata
+
 ##  Project Structure
 
 ```
 Eroad/
- Eroad.BFF.Gateway/                  # Backend for Frontend
+📁 Eroad.BFF.Gateway/                  # Backend for Frontend (Clean Architecture)
     Application/
-       Services/                   # Business logic orchestration
-       Validators/                 # Assignment validation
+       DTOs/                        # Data Transfer Objects
+       Interfaces/                  # Service abstractions
+          IDeliveryTrackingService.cs
+          IFleetManagementService.cs
+          IRouteManagementService.cs
+          IDistributedLockManager.cs
+       Services/                    # Business logic orchestration
+          DeliveryTrackingService.cs
+          FleetManagementService.cs
+          RouteManagementService.cs
+          RedisLockManager.cs
+       Validators/                  # Business rule validation
+          DeliveryAssignmentValidator.cs
     Presentation/
-        Controllers/                # REST API endpoints
+       Controllers/                 # REST API endpoints
+          DeliveryManagementController.cs
+          FleetManagementController.cs
+          RouteManagementController.cs
+       Middleware/
+          ExceptionHandlingMiddleware.cs
+    Program.cs                      # Startup configuration
+                                    # - gRPC client registration
+                                    # - Polly resilience pipeline
+                                    # - Rate limiting
+                                    # - CORS
+                                    # - Health checks
 
- Eroad.DeliveryTracking.Command.API/ # Delivery write operations
+📁 Eroad.DeliveryTracking.Command.API/ # Delivery write operations
     Commands/                       # CQRS commands
     Services/Grpc/                  # gRPC service implementations
 
@@ -306,8 +367,8 @@ Eroad/
 **SQL Server (Query Databases):**
 ```json
 {
-  \"ConnectionStrings\": {
-    \"SqlServer\": \"Server=localhost;Database=DeliveryTrackingQuery;User Id=sa;Password=\$\@P@ssw0rd02;TrustServerCertificate=true;\"
+  "ConnectionStrings": {
+    "SqlServer": "Server=localhost;Database=DeliveryTrackingQuery;User Id=sa;Password=$@P@ssw0rd02;TrustServerCertificate=true;"
   }
 }
 ```
@@ -315,10 +376,10 @@ Eroad/
 **MongoDB (Event Store):**
 ```json
 {
-  \"MongoDbConfig\": {
-    \"ConnectionString\": \"mongodb://localhost:27017\",
-    \"Database\": \"deliverytracking\",
-    \"Collection\": \"eventStore\"
+  "MongoDbConfig": {
+    "ConnectionString": "mongodb://localhost:27017",
+    "Database": "deliverytracking",
+    "Collection": "eventStore"
   }
 }
 ```
@@ -326,13 +387,13 @@ Eroad/
 **Kafka (Event Streaming):**
 ```json
 {
-  \"ProducerConfig\": {
-    \"BootstrapServers\": \"localhost:9092\"
+  "ProducerConfig": {
+    "BootstrapServers": "localhost:9092"
   },
-  \"ConsumerConfig\": {
-    \"BootstrapServers\": \"localhost:9092\",
-    \"GroupId\": \"delivery-query-consumer\",
-    \"AutoOffsetReset\": \"Earliest\"
+  "ConsumerConfig": {
+    "BootstrapServers": "localhost:9092",
+    "GroupId": "delivery-query-consumer",
+    "AutoOffsetReset": "Earliest"
   }
 }
 ```
@@ -340,23 +401,37 @@ Eroad/
 **Redis (Distributed Locking):**
 ```json
 {
-  \"ConnectionStrings\": {
-    \"Redis\": \"localhost:6379\"
+  "ConnectionStrings": {
+    "Redis": "localhost:6379"
   }
+}
+```
+**CORS (BFF Gateway):**
+```json
+{
+  "CorsOrigins": [
+    "http://localhost:3000",
+    "http://localhost:4200",
+    "http://localhost:5173"
+  ]
 }
 ```
 
 ### Service Endpoints
 
+**BFF Gateway Configuration:**
 ```json
 {
-  \"ServiceEndpoints\": {
-    \"DeliveryTrackingCommandBaseUrl\": \"http://localhost:5001\",
-    \"DeliveryTrackingBaseUrl\": \"http://localhost:5002\",
-    \"FleetManagementCommandBaseUrl\": \"http://localhost:5003\",
-    \"FleetManagementBaseUrl\": \"http://localhost:5004\",
-    \"RouteManagementCommandBaseUrl\": \"http://localhost:5005\",
-    \"RouteManagementBaseUrl\": \"http://localhost:5006\"
+  "ServiceEndpoints": {
+    "DeliveryTrackingBaseUrl": "http://localhost:5002",
+    "DeliveryTrackingCommandBaseUrl": "http://localhost:5001",
+    "FleetManagementBaseUrl": "http://localhost:5004",
+    "FleetManagementCommandBaseUrl": "http://localhost:5003",
+    "RouteManagementBaseUrl": "http://localhost:5006",
+    "RouteManagementCommandBaseUrl": "http://localhost:5005"
+  },
+  "ConnectionStrings": {
+    "Redis": "localhost:6379"
   }
 }
 ```
@@ -381,6 +456,23 @@ dotnet test Eroad.BFF.IntegrationTest
 
    Recommended pattern: poll the endpoint with a short retry interval (200-1000ms) and a reasonable timeout (10-30s) when asserting results from query APIs.
 
+### API Testing (BFF Gateway)
+
+Test the BFF Gateway REST API:
+
+```bash
+# Health check
+curl http://localhost:5000/health
+
+# Get live tracking
+curl http://localhost:5000/api/deliveries/live-tracking
+
+# Get fleet overview
+curl http://localhost:5000/api/fleet/overview
+
+# Get routes
+curl http://localhost:5000/api/routes/overview
+```
 
 ### Manual Testing with Kafka UI
 
@@ -424,6 +516,11 @@ KEYS *
 GET <key>
 ```
 
+### Health Check Endpoints
+- **BFF Gateway**: `http://localhost:5000/health`
+  - Returns service health status
+  - Used for monitoring and Kubernetes probes
+
 ##  Security Considerations
 
 - **gRPC Security**: Currently configured for development (HTTP/2 unencrypted)
@@ -433,36 +530,85 @@ GET <key>
 ##  Known Limitations & Future Enhancements
 
 ### Current Limitations
+
+#### Technical
 - No authentication/authorization implemented
-- Single-instance deployment (no high availability)
-- Basic error handling without retry policies
+- Single-instance deployment (no horizontal scaling configured)
 - Limited observability (no distributed tracing)
+- No distributed caching for read-heavy operations
+- Resilience patterns only in BFF Gateway (not in microservices)
+- Integration are flaky because of eventual consistency, and latency issue of sql express.
+
+#### Functional
+- **Incident Validation**: Incident properties lack strong typing and accept free-text input (except ID field)
+- **Live Tracking Display**: Shows current status for active deliveries (InTransit, OutForDelivery) without historical tracking data
+- **Delivery Summaries**: Provide basic information but include complete system event history
+- **Route Checkpoint Addition**: Checkpoints can only be added when route is in Planning state
+- **Delivery Creation Requirement**: Route must be in Active state before delivery can be created
+- **Status Transition Prerequisites**: Delivery cannot transition to InTransit until both driver and vehicle are assigned
+- **Concurrency Control Mechanism**: Redis distributed locks ensure driver and vehicle availability during concurrent assignment operations
+- **Resource Release Behavior**: Drivers and vehicles are automatically released when delivery reaches terminal state (Delivered, Failed)
+- **Assignment Time Validation**: Driver and vehicle assignments validate availability within the scheduled delivery time slot
+- **Route Timing Calculation**: Route end times dynamically recalculate with each checkpoint addition (initial routes specify start time only)
+- **Checkpoint Timing Data**: Delivery checkpoints track actual arrival times, whereas route checkpoints store expected arrival times
+- **Availability Time Buffer**: No time buffer allocated for route completion; driver/vehicle availability calculated using scheduled route end time
+- **Entity Duplication Policy**: Duplicate data allowed for all entity properties (names, license plates, phone numbers, addresses, etc.) except unique identifiers (IDs); no uniqueness constraints enforced beyond identity fields
+- **Incident Resolution Workflow**: Incidents can be reported and resolved independently; deliveries can be completed (marked as Delivered) without requiring all incidents to be resolved first
+- **Proof of Delivery Capture**: Can only be captured when delivery status is OutForDelivery; required before marking delivery as Delivered
+- **Incident Resolution Scope**: Incidents can only be resolved individually; no bulk resolution capability available
+- **Route Modification Restrictions**: Once route transitions to Active state, checkpoints cannot be reordered or removed
+- **Driver Reassignment Window**: Changing assigned driver requires delivery to be in PickedUp state; not allowed during active transit
+- **Vehicle Reassignment Window**: Changing assigned vehicle requires delivery to be in PickedUp state; not allowed during active transit
+- **Status Rollback Limitations**: Failed deliveries can only transition back to PickedUp status; no other rollback transitions supported
+- **Delivery Cancellation Workflow**: No explicit cancellation workflow; deliveries must progress through status transitions or fail
+- **Batch Operations Support**: No support for bulk status updates, assignments, or incident reporting across multiple deliveries
+- **Delivery Query Filtering**: Query APIs don't support filtering by date ranges, customer information, or delivery priority levels
+- **Route Optimization Features**: No automatic route optimization or dynamic re-routing based on traffic conditions or incident reports
+- **Notification System**: No built-in notifications for status changes, incidents, assignment updates, or delivery completions
+- **Delivery Dependencies**: No support for linked deliveries or delivery dependencies (e.g., pickup before drop-off scenarios)
+- **Time Window Validation**: Delivery time windows are not validated against route checkpoint timing constraints
+- **Capacity Management**: No validation of vehicle capacity against delivery payload size or weight restrictions
+- **Geographic Boundaries**: No validation of delivery locations against driver service areas or operational zones
+- **Service Level Agreement Tracking**: No SLA tracking or enforcement for delivery completion times or performance metrics
+- **Recurring Delivery Patterns**: No support for scheduled or recurring delivery patterns
+- **Multi-Stop Delivery Support**: Each delivery represents a single pickup-to-delivery journey; no multi-stop route support within a single delivery
 
 ### Planned Enhancements
 1. **Authentication & Authorization**
    - JWT-based authentication
    - Role-based access control (RBAC)
-   - API key management
+   - API key management for service-to-service auth
 
-2. **Resilience**
-   - Circuit breaker pattern (Polly)
-   - Retry with exponential backoff
-   - Bulkhead isolation
+2. **Resilience** 
+   - ✅ Circuit breaker pattern (Polly v8) - Implemented in BFF Gateway
+   - ✅ Retry with exponential backoff - Implemented in BFF Gateway
+   - ✅ Rate limiting - Implemented in BFF Gateway
+   - ✅ Distributed locking - Implemented in BFF Gateway
+   - ⏳ Extend resilience patterns to all microservices
+   - ⏳ Bulkhead isolation
+   - ⏳ Implement saga pattern for distributed transactions
 
 3. **Observability**
    - Distributed tracing (OpenTelemetry)
    - Centralized logging (ELK Stack)
    - Metrics & dashboards (Prometheus + Grafana)
+   - Correlation ID propagation across all services
+   - Structured logging with context
 
 4. **Performance**
-   - Response caching
-   - Database query optimization
-   - Connection pooling
+   - ✅ Health check endpoints - Implemented in BFF Gateway
+   - ⏳ Swap SQL Express with more concurrent performance Database
+   - ⏳ Response caching (Redis)
+   - ⏳ Database query optimization
+   - ⏳ Connection pooling tuning
+   - ⏳ gRPC streaming for large datasets
 
 5. **Deployment**
-   - Kubernetes manifests
-   - Helm charts
+   - Kubernetes manifests with HPA (Horizontal Pod Autoscaler)
+   - Helm charts for easy deployment
    - CI/CD pipelines (GitHub Actions)
+   - Blue-green deployment strategy
+   - Service mesh integration (Istio/Linkerd)
 
 ##  Team
 
