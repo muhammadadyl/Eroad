@@ -278,7 +278,7 @@ services:
       - route-management-query-api
     restart: on-failure
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/swagger/index.html" ]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health" ]
       interval: 10s
       timeout: 5s
       retries: 10
