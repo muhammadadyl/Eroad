@@ -302,9 +302,9 @@ public class EndToEndWorkflowTests : IClassFixture<BFFTestFixture>
         Assert.Equal(HttpStatusCode.OK, incident1Response.StatusCode);
         
         var deliveryDetailsResult = await _client.GetAsync($"/api/deliveries/{deliveryId}");
-        var deliveryDetails = await deliveryDetailsResult.Content.ReadFromJsonAsync<DeliveryEntity>(_jsonOptions);
+        var deliveryDetails = await deliveryDetailsResult.Content.ReadFromJsonAsync<DeliveryResponse>(_jsonOptions);
         
-        var incidentId = deliveryDetails.Incidents.FirstOrDefault().Id;
+        var incidentId = deliveryDetails?.Incidents.FirstOrDefault()?.Id;
 
         var incident2Response = await _client.PostAsJsonAsync($"/api/deliveries/{deliveryId}/incidents", new
         {

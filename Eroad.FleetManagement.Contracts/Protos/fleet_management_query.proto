@@ -20,6 +20,24 @@ service VehicleLookup {
   rpc GetAllVehicles(GetAllVehiclesRequest) returns (VehicleLookupResponse);
 }
 
+message Driver {
+	enum Status {
+	  AVAILABLE = 0;
+	  SUSPENDED = 1;
+	  UNAVAILABLE = 2;
+	  ASSIGNED = 3;
+	}
+}
+
+message Vehicle {
+	enum Status {
+	  AVAILABLE = 0;
+	  ASSIGNED = 1;
+	  MAINTENANCE = 2;
+	  OUT_OF_SERVICE = 3;
+	}
+}
+
 // Request messages - Driver
 message GetDriverByIdRequest {
   string id = 1;

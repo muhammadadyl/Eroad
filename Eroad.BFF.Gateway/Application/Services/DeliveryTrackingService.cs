@@ -60,7 +60,7 @@ public class DeliveryTrackingService : IDeliveryTrackingService
         var allDeliveriesResponse = await _deliveryQueryClient.GetAllDeliveriesAsync(new GetAllDeliveriesRequest());
         
         var allDeliveries = allDeliveriesResponse.Deliveries
-            .Where(d => d.Status == "InTransit" || d.Status == "OutForDelivery")
+            .Where(d => d.Status == DeliveryStatus.InTransit.ToString() || d.Status == DeliveryStatus.OutForDelivery.ToString())
             .ToList();
 
         if (!allDeliveries.Any())
@@ -158,6 +158,12 @@ public class DeliveryTrackingService : IDeliveryTrackingService
 
         _logger.LogInformation("Route validated: {Origin} to {Destination} with status {Status}", route.Origin, route.Destination, route.Status);
 
+        if (route.Status != RouteStatus.Active.ToString())
+        {
+            _logger.LogWarning("Cannot create delivery for route {RouteId} with status {Status}", routeId, route.Status);
+            throw new InvalidOperationException($"Cannot create delivery for route {routeId} because its status is {route.Status}");
+        }
+
         var (scheduledStart, scheduledEnd) = GetScheduledTimesFromRoute(route);
 
         // Use a single combined lock for both driver and vehicle validation and delivery creation
@@ -203,7 +209,7 @@ public class DeliveryTrackingService : IDeliveryTrackingService
             return new { Message = response.Message, Id = response.Id };
         });
 
-        await UpdateAssignmentStatusesAsync(driverId, vehicleId, "Assigned");
+        await UpdateAssignmentStatusesAsync(driverId, vehicleId, Driver.Types.Status.Assigned.ToString(), Vehicle.Types.Status.Assigned.ToString());
 
         return result;
     }
@@ -212,7 +218,7 @@ public class DeliveryTrackingService : IDeliveryTrackingService
     {
         _logger.LogInformation("Updating delivery status: {DeliveryId} to {Status}", id, status);
 
-        if (status == "Delivered")
+        if (status == DeliveryStatus.Delivered.ToString())
         {
             _logger.LogInformation("Fetching delivery details for Delivered status update: {DeliveryId}", id);
             var deliveryDetailsRequest = new GetDeliveryByIdRequest { Id = id };
@@ -231,10 +237,10 @@ public class DeliveryTrackingService : IDeliveryTrackingService
             }
 
             _logger.LogInformation("Updating driver and vehicle status to Available for delivery: {DeliveryId}", id);
-            await UpdateAssignmentStatusesAsync(delivery.DriverId, delivery.VehicleId, "Available");
+            await UpdateAssignmentStatusesAsync(delivery.DriverId, delivery.VehicleId, Driver.Types.Status.Available.ToString(), Vehicle.Types.Status.Available.ToString());
         }
 
-        if (status == "Cancelled")
+        if (status == DeliveryStatus.Failed.ToString())
         {
             _logger.LogInformation("Fetching delivery details for Cancelled status update: {DeliveryId}", id);
             var deliveryDetailsRequest = new GetDeliveryByIdRequest { Id = id };
@@ -242,10 +248,10 @@ public class DeliveryTrackingService : IDeliveryTrackingService
             var delivery = ValidateEntity(deliveryDetailsResponse.Delivery, "Delivery", id);
 
             _logger.LogInformation("Updating driver and vehicle status to Available for delivery: {DeliveryId}", id);
-            await UpdateAssignmentStatusesAsync(delivery.DriverId, delivery.VehicleId, "Available");
+            await UpdateAssignmentStatusesAsync(delivery.DriverId, delivery.VehicleId, Driver.Types.Status.Available.ToString(), Vehicle.Types.Status.Available.ToString());
         }
 
-        if (status == "InTransit" || status == "OutForDelivery")
+        if (status == DeliveryStatus.InTransit.ToString() || status == DeliveryStatus.OutForDelivery.ToString())
         {
             _logger.LogInformation("Fetching delivery details for status update: {DeliveryId}", id);
             var deliveryDetailsRequest = new GetDeliveryByIdRequest { Id = id };
@@ -311,7 +317,7 @@ public class DeliveryTrackingService : IDeliveryTrackingService
         if (isLastCheckpoint)
         {
             _logger.LogInformation("Last checkpoint reached for delivery: {DeliveryId}. Updating status to OutForDelivery.", id);
-            await UpdateDeliveryStatusAsync(id, "OutForDelivery");
+            await UpdateDeliveryStatusAsync(id, DeliveryStatus.OutForDelivery.ToString());
         }
 
         _logger.LogInformation("Checkpoint validated successfully");
@@ -370,7 +376,7 @@ public class DeliveryTrackingService : IDeliveryTrackingService
         var deliveryDetailsResponse = await _deliveryQueryClient.GetDeliveryByIdAsync(deliveryDetailsRequest);
         var delivery = deliveryDetailsResponse.Delivery;
 
-        await UpdateAssignmentStatusesAsync(delivery?.DriverId, delivery?.VehicleId, "Available");
+        await UpdateAssignmentStatusesAsync(delivery?.DriverId, delivery?.VehicleId, Driver.Types.Status.Available.ToString(), Vehicle.Types.Status.Available.ToString());
 
         return new { Message = response.Message };
     }
@@ -415,7 +421,7 @@ public class DeliveryTrackingService : IDeliveryTrackingService
                 await _driverCommandClient.ChangeDriverStatusAsync(new ChangeDriverStatusRequest
                 {
                     Id = driverId,
-                    Status = "Assigned"
+                    Status = Driver.Types.Status.Assigned.ToString()
                 }).ResponseAsync;
                 _logger.LogInformation("Driver {DriverId} status updated to Assigned", driverId);
             }
@@ -467,7 +473,7 @@ public class DeliveryTrackingService : IDeliveryTrackingService
                 await _vehicleCommandClient.ChangeVehicleStatusAsync(new ChangeVehicleStatusRequest
                 {
                     Id = vehicleId,
-                    Status = "Assigned"
+                    Status = Vehicle.Types.Status.Assigned.ToString()
                 }).ResponseAsync;
                 _logger.LogInformation("Vehicle {VehicleId} status updated to Assigned", vehicleId);
             }
@@ -580,7 +586,7 @@ public class DeliveryTrackingService : IDeliveryTrackingService
     /// <summary>
     /// Updates driver and vehicle statuses in parallel.
     /// </summary>
-    private async Task UpdateAssignmentStatusesAsync(string? driverId, string? vehicleId, string status)
+    private async Task UpdateAssignmentStatusesAsync(string? driverId, string? vehicleId, string driverStatus, string vehicleStatus)
     {
         var statusUpdateTasks = new List<Task>();
 
@@ -589,9 +595,9 @@ public class DeliveryTrackingService : IDeliveryTrackingService
             statusUpdateTasks.Add(_driverCommandClient.ChangeDriverStatusAsync(new ChangeDriverStatusRequest
             {
                 Id = driverId,
-                Status = status
+                Status = driverStatus
             }).ResponseAsync.ContinueWith(_ => 
-                _logger.LogInformation("Driver {DriverId} status updated to {Status}", driverId, status)));
+                _logger.LogInformation("Driver {DriverId} status updated to {Status}", driverId, driverStatus)));
         }
 
         if (vehicleId != null)
@@ -599,9 +605,9 @@ public class DeliveryTrackingService : IDeliveryTrackingService
             statusUpdateTasks.Add(_vehicleCommandClient.ChangeVehicleStatusAsync(new ChangeVehicleStatusRequest
             {
                 Id = vehicleId,
-                Status = status
+                Status = vehicleStatus
             }).ResponseAsync.ContinueWith(_ => 
-                _logger.LogInformation("Vehicle {VehicleId} status updated to {Status}", vehicleId, status)));
+                _logger.LogInformation("Vehicle {VehicleId} status updated to {Status}", vehicleId, vehicleStatus)));
         }
 
         if (statusUpdateTasks.Any())
