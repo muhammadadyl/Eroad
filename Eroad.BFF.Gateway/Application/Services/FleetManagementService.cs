@@ -100,14 +100,11 @@ public class FleetManagementService : IFleetManagementService
     public async Task<object> ChangeVehicleStatusAsync(string id, string status)
     {
         _logger.LogInformation("Changing vehicle status: {VehicleId} to {Status}", id, status);
-        var vehicle = await _deliveryClient.GetActiveDeliveriesByVehicleAsync(
-            new GetActiveDeliveriesByVehicleRequest { VehicleId = id }
-            );
-
-        if (vehicle?.Deliveries.Count > 0)
-        {
-            throw new InvalidOperationException($"Vehicle is assigned to job {vehicle.Deliveries.FirstOrDefault().Id} and cannot change status");
-        }
+        
+        await ValidateNoActiveAssignmentsAsync(
+            () => _deliveryClient.GetActiveDeliveriesByVehicleAsync(new GetActiveDeliveriesByVehicleRequest { VehicleId = id }).ResponseAsync,
+            deliveries => deliveries?.Deliveries,
+            "Vehicle");
 
         var request = new ChangeVehicleStatusRequest
         {
@@ -147,14 +144,11 @@ public class FleetManagementService : IFleetManagementService
     public async Task<object> ChangeDriverStatusAsync(string id, string status)
     {
         _logger.LogInformation("Changing driver status: {DriverId} to {Status}", id, status);
-        var driver = await _deliveryClient.GetActiveDeliveriesByDriverAsync(
-            new GetActiveDeliveriesByDriverRequest { DriverId = id }
-            );
-
-        if (driver?.Deliveries.Count > 0)
-        {
-            throw new InvalidOperationException($"Driver is assigned to job {driver.Deliveries.First().Id} and cannot change status");
-        }
+        
+        await ValidateNoActiveAssignmentsAsync(
+            () => _deliveryClient.GetActiveDeliveriesByDriverAsync(new GetActiveDeliveriesByDriverRequest { DriverId = id }).ResponseAsync,
+            deliveries => deliveries?.Deliveries,
+            "Driver");
 
         var request = new ChangeDriverStatusRequest
         {
@@ -163,5 +157,23 @@ public class FleetManagementService : IFleetManagementService
         };
         var response = await _driverCommandClient.ChangeDriverStatusAsync(request);
         return new { Message = response.Message };
+    }
+
+    /// <summary>
+    /// Validates that a driver or vehicle has no active deliveries assigned before allowing status change.
+    /// </summary>
+    private async Task ValidateNoActiveAssignmentsAsync<T>(
+        Func<Task<T>> fetchActiveDeliveries,
+        Func<T, dynamic?> extractDeliveries,
+        string entityType)
+    {
+        var result = await fetchActiveDeliveries();
+        var deliveries = extractDeliveries(result);
+
+        if (deliveries?.Count > 0)
+        {
+            var firstDeliveryId = deliveries.First().Id;
+            throw new InvalidOperationException($"{entityType} is assigned to job {firstDeliveryId} and cannot change status");
+        }
     }
 }

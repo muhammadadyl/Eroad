@@ -1,4 +1,4 @@
-@baseUrl = http://localhost:5000
+@baseUrl = http://localhost:51129
 @vehicleId = 550e8400-e29b-41d4-a716-446655440001
 @driverId = 550e8400-e29b-41d4-a716-446655440002
 @routeId = 550e8400-e29b-41d4-a716-446655440003
@@ -72,14 +72,6 @@ Content-Type: application/json
   "status": "Available"
 }
 
-### Change Vehicle Status to InTransit
-PATCH {{baseUrl}}/api/fleet/vehicles/{{vehicleId}}/status
-Content-Type: application/json
-
-{
-  "status": "InTransit"
-}
-
 ### Change Vehicle Status to Maintenance
 PATCH {{baseUrl}}/api/fleet/vehicles/{{vehicleId}}/status
 Content-Type: application/json
@@ -107,7 +99,8 @@ PUT {{baseUrl}}/api/fleet/drivers/{{driverId}}
 Content-Type: application/json
 
 {
-  "driverLicense": "DL987654"
+  "name": "John Smith Updated",
+  "driverLicense": "DL987654-UPDATED"
 }
 
 ### Change Driver Status to Available
@@ -175,7 +168,7 @@ Content-Type: application/json
   "status": "Active"
 }
 
-### Change Route Status to Dectivated
+### Change Route Status to Deactivated
 PATCH {{baseUrl}}/api/routes/{{routeId}}/status
 Content-Type: application/json
 
@@ -364,6 +357,7 @@ Content-Type: application/json
 
 ###############################################################################
 # COMPLETE WORKFLOW - END TO END
+# Execute these requests in order (STEP 1 through STEP 19) for a full workflow test
 ###############################################################################
 
 @E2E_VehicleId = c2fd0e3a-13ae-4336-a3ae-52b28a3decbd
@@ -477,7 +471,11 @@ Content-Type: application/json
   "location": "City Center"
 }
 
-### STEP 12: Report Incident (Optional)
+### STEP 12: Check Live Tracking (should show active delivery)
+GET {{baseUrl}}/api/deliveries/live-tracking
+Accept: application/json
+
+### STEP 13: Report Incident (Optional)
 POST {{baseUrl}}/api/deliveries/{{E2E_DeliveryId}}/incidents
 Content-Type: application/json
 
@@ -486,7 +484,7 @@ Content-Type: application/json
   "description": "Construction on main road"
 }
 
-### STEP 13: Update Delivery Status to OutForDelivery
+### STEP 14: Update Delivery Status to OutForDelivery
 PATCH {{baseUrl}}/api/deliveries/{{E2E_DeliveryId}}/status
 Content-Type: application/json
 
@@ -494,7 +492,7 @@ Content-Type: application/json
   "status": "OutForDelivery"
 }
 
-### STEP 14: Capture Proof of Delivery
+### STEP 15: Capture Proof of Delivery
 POST {{baseUrl}}/api/deliveries/{{E2E_DeliveryId}}/proof-of-delivery
 Content-Type: application/json
 
@@ -503,7 +501,7 @@ Content-Type: application/json
   "receiverName": "Customer Representative"
 }
 
-### STEP 15: Complete Delivery (optional if not auto-completed via POD)
+### STEP 16: Complete Delivery (optional if not auto-completed via POD)
 PATCH {{baseUrl}}/api/deliveries/{{E2E_DeliveryId}}/status
 Content-Type: application/json
 
@@ -511,7 +509,7 @@ Content-Type: application/json
   "status": "Delivered"
 }
 
-### STEP 16: Complete Route
+### STEP 17: Complete Route
 PATCH {{baseUrl}}/api/routes/{{E2E_RouteId}}/status
 Content-Type: application/json
 
@@ -519,15 +517,14 @@ Content-Type: application/json
   "status": "Deactivated"
 }
 
-### STEP 17: Verify Completed Delivery Summary
+### STEP 18: Verify Completed Delivery Summary
 GET {{baseUrl}}/api/deliveries/{{E2E_DeliveryId}}/completed-summary
 Accept: application/json
 
-
-### STEP 18: Verify Vehicle Status is Available
+### STEP 19: Verify Vehicle Status is Available
 GET {{baseUrl}}/api/fleet/vehicles/{{E2E_VehicleId}}
 Accept: application/json
 
-### STEP 19: Verify Driver Status is Available
+### STEP 20: Verify Driver Status is Available
 GET {{baseUrl}}/api/fleet/drivers/{{E2E_DriverId}}
 Accept: application/json

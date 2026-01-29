@@ -31,24 +31,13 @@ public class RouteManagementService : IRouteManagementService
         var routesResponse = await _routeClient.GetAllRoutesAsync(new GetAllRoutesRequest());
         var routes = routesResponse.Routes.ToList();
 
-        var routeDetails = routes.Select(route =>
+        var routeDetails = routes.Select(route => new RouteDetail
         {
-            var checkpoints = route.Checkpoints.Select(c => new CheckpointSummary
-            {
-                Sequence = c.Sequence,
-                Location = c.Location,
-                ExpectedTime = c.ExpectedTime.ToDateTime(),
-                Status = DateTime.UtcNow > c.ExpectedTime.ToDateTime() ? "Delayed" : "Pending"
-            }).ToList();
-
-            return new RouteDetail
-            {
-                RouteId = Guid.Parse(route.Id),
-                Origin = route.Origin,
-                Destination = route.Destination,
-                Status = route.Status,
-                Checkpoints = checkpoints
-            };
+            RouteId = Guid.Parse(route.Id),
+            Origin = route.Origin,
+            Destination = route.Destination,
+            Status = route.Status,
+            Checkpoints = MapToCheckpointSummaries(route.Checkpoints)
         }).ToList();
 
         return new RouteOverviewView
@@ -61,7 +50,13 @@ public class RouteManagementService : IRouteManagementService
     {
         _logger.LogInformation("Fetching route detail for ID: {RouteId}", routeId);
 
-        var routeResponse = await _routeClient.GetRouteByIdAsync(new GetRouteByIdRequest { Id = routeId.ToString() });
+        // Fetch route and all deliveries in parallel
+        var routeTask = _routeClient.GetRouteByIdAsync(new GetRouteByIdRequest { Id = routeId.ToString() }).ResponseAsync;
+        var deliveriesTask = _deliveryClient.GetAllDeliveriesAsync(new GetAllDeliveriesRequest()).ResponseAsync;
+
+        await Task.WhenAll(routeTask, deliveriesTask);
+
+        var routeResponse = await routeTask;
         var route = routeResponse.Route;
 
         if (route == null)
@@ -76,15 +71,16 @@ public class RouteManagementService : IRouteManagementService
             ExpectedTime = c.ExpectedTime.ToDateTime()
         }).ToList();
 
-        // Fetch deliveries for this route
-        var deliveriesResponse = await _deliveryClient.GetAllDeliveriesAsync(new GetAllDeliveriesRequest());
-        var deliveries = deliveriesResponse.Deliveries.Where(d => d.RouteId == routeId.ToString()).Select(d => new DeliverySummary
-        {
-            DeliveryId = Guid.Parse(d.Id),
-            Status = d.Status,
-            CreatedAt = d.CreatedAt.ToDateTime(),
-            DeliveredAt = d.DeliveredAt?.ToDateTime()
-        }).ToList();
+        var deliveriesResponse = await deliveriesTask;
+        var deliveries = deliveriesResponse.Deliveries
+            .Where(d => d.RouteId == routeId.ToString())
+            .Select(d => new DeliverySummary
+            {
+                DeliveryId = Guid.Parse(d.Id),
+                Status = d.Status,
+                CreatedAt = d.CreatedAt.ToDateTime(),
+                DeliveredAt = d.DeliveredAt?.ToDateTime()
+            }).ToList();
 
         return new RouteDetailView
         {
@@ -163,6 +159,21 @@ public class RouteManagementService : IRouteManagementService
         };
         var response = await _routeCommandClient.UpdateCheckpointAsync(request);
         return new { Message = response.Message };
+    }
+
+    /// <summary>
+    /// Maps checkpoint data to CheckpointSummary view models with status calculation.
+    /// </summary>
+    private List<CheckpointSummary> MapToCheckpointSummaries(IEnumerable<dynamic> checkpoints)
+    {
+        var currentTime = DateTime.UtcNow;
+        return checkpoints.Select(c => new CheckpointSummary
+        {
+            Sequence = c.Sequence,
+            Location = c.Location,
+            ExpectedTime = c.ExpectedTime.ToDateTime(),
+            Status = currentTime > c.ExpectedTime.ToDateTime() ? "Delayed" : "Pending"
+        }).ToList();
     }
 }
 

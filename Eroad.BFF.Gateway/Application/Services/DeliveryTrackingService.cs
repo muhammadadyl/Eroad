@@ -228,9 +228,13 @@ public class DeliveryTrackingService : IDeliveryTrackingService
     {
         _logger.LogInformation("Updating checkpoint for delivery: {DeliveryId}, Sequence: {Sequence}", id, sequence);
 
-        // Validate delivery exists in DeliveryTracking
-        var deliveryRequest = new GetDeliveryByIdRequest { Id = id };
-        var deliveryResponse = await _deliveryQueryClient.GetDeliveryByIdAsync(deliveryRequest);
+        // Fetch delivery and checkpoints in parallel
+        var deliveryTask = _deliveryQueryClient.GetDeliveryByIdAsync(new GetDeliveryByIdRequest { Id = id }).ResponseAsync;
+        var checkpointsTask = _routeQueryClient.GetCheckpointsByRouteAsync(new GetCheckpointsByRouteRequest { RouteId = routeId }).ResponseAsync;
+
+        await Task.WhenAll(deliveryTask, checkpointsTask);
+
+        var deliveryResponse = await deliveryTask;
         var delivery = ValidateEntity(deliveryResponse.Delivery, "Delivery", id);
 
         if (delivery.RouteId != routeId)
@@ -240,10 +244,7 @@ public class DeliveryTrackingService : IDeliveryTrackingService
             throw new InvalidOperationException($"Route ID mismatch for delivery {id}. Expected '{delivery.RouteId}' but got '{routeId}'");
         }
 
-        // Validate checkpoint exists in RouteManagement
-        var checkpointsRequest = new GetCheckpointsByRouteRequest { RouteId = routeId };
-        var checkpointsResponse = await _routeQueryClient.GetCheckpointsByRouteAsync(checkpointsRequest);
-        
+        var checkpointsResponse = await checkpointsTask;
         var checkpoint = checkpointsResponse.Checkpoints.FirstOrDefault(c => c.Sequence == sequence);
         if (checkpoint == null)
         {
@@ -251,7 +252,6 @@ public class DeliveryTrackingService : IDeliveryTrackingService
             throw new InvalidOperationException($"Checkpoint with sequence {sequence} does not exist for route {routeId}");
         }
 
-        // Validate location matches
         if (checkpoint.Location != location)
         {
             _logger.LogWarning("Location mismatch for checkpoint {Sequence}. Expected: {Expected}, Provided: {Provided}", 
@@ -260,14 +260,14 @@ public class DeliveryTrackingService : IDeliveryTrackingService
         }
 
         var isLastCheckpoint = sequence == checkpointsResponse.Checkpoints.Max(c => c.Sequence);
-        if (isLastCheckpoint) {
+        if (isLastCheckpoint)
+        {
             _logger.LogInformation("Last checkpoint reached for delivery: {DeliveryId}. Updating status to OutForDelivery.", id);
             await UpdateDeliveryStatusAsync(id, "OutForDelivery");
         }
 
         _logger.LogInformation("Checkpoint validated successfully");
 
-        // Update checkpoint in DeliveryTracking
         var request = new UpdateCurrentCheckpointRequest
         {
             Id = id,
