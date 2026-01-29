@@ -11,6 +11,7 @@ A microservices-based delivery management platform built with .NET 8, implementi
 - **gRPC** - Inter-service communication
 - **MediatR** - CQRS command/query handling
 - **Entity Framework Core** - ORM for query databases
+- **Polly** - Service resilience and rate limiting
 
 #### Data Storage
 - **MongoDB** - Event store for Command side (Event Sourcing)
@@ -58,29 +59,17 @@ A microservices-based delivery management platform built with .NET 8, implementi
 
 ### Running with Docker Compose
 
-#### 1. Start Infrastructure Services Only
-```powershell
-docker-compose --profile dev-services up -d
-```
-
-This starts:
-- Kafka (Port 9092)
-- MongoDB (Port 27017)
-- SQL Server (Port 1433)
-- Redis (Port 6379)
-- Kafka UI (Port 8080)
-
-#### 2. Start All Services (Infrastructure + APIs)
+#### 1. Start All Services (Infrastructure + APIs) __(Recommended)__
 ```powershell
 docker-compose --profile init-services up -d
 ```
 
-#### 3. View Logs
+#### 2. View Logs
 ```powershell
 docker-compose logs -f
 ```
 
-#### 4. Stop Services
+#### 3. Stop Services
 ```powershell
 docker-compose down
 ```
@@ -92,23 +81,28 @@ docker-compose down
 docker-compose --profile dev-services up -d
 ```
 
+Note: Add kafka-kraft in your windows host file
+
 #### 2. Run Individual Services
 
 **Delivery Tracking Command API:**
 ```powershell
 cd Eroad.DeliveryTracking.Command.API
+dotnet restore
 dotnet run
 ```
 
 **Delivery Tracking Query API:**
 ```powershell
 cd Eroad.DeliveryTracking.Query.API
+dotnet restore
 dotnet run
 ```
 
 **BFF Gateway:**
 ```powershell
 cd Eroad.BFF.Gateway
+dotnet restore
 dotnet run
 ```
 
@@ -170,20 +164,12 @@ public class DeliveryStatusChangedEvent : DomainEvent
 
 Delivery status transitions are controlled by a state machine:
 
-```
-PickedUp  InTransit  OutForDelivery  Delivered
-                             
-  Failed            
-    
-PickedUp (retry)
-```
-
 **Valid Transitions:**
-- PickedUp  InTransit, Failed
-- InTransit  OutForDelivery, Failed
-- OutForDelivery  Delivered, Failed
+- PickedUp -> InTransit, Failed
+- InTransit -> OutForDelivery, Failed
+- OutForDelivery -> Delivered, Failed
 - Delivered  (Terminal state)
-- Failed  PickedUp (retry)
+- Failed -> PickedUp (retry)
 
 ##  Inter-Service Communication
 
@@ -377,10 +363,24 @@ Eroad/
 
 ##  Testing
 
-### Run Unit Tests
+### Integration Tests
+
+- Ensure infrastructure (Kafka, MongoDB, SQL Server, Redis) is running before executing integration tests. Start the basic infra with:
+
 ```powershell
-dotnet test
+docker-compose --profile init-services up -d
 ```
+
+- Run the BFF integration test project:
+
+```powershell
+dotnet test Eroad.BFF.IntegrationTest
+```
+
+- Notes on eventual consistency: query/read models are updated asynchronously (via Kafka consumers). Integration tests that assert on read/query endpoints may need a retry/polling strategy (for example: poll the GET endpoint until a condition is met or a timeout elapses) to avoid flaky failures.
+
+   Recommended pattern: poll the endpoint with a short retry interval (200-1000ms) and a reasonable timeout (10-30s) when asserting results from query APIs.
+
 
 ### Manual Testing with Kafka UI
 
@@ -463,24 +463,6 @@ GET <key>
    - Kubernetes manifests
    - Helm charts
    - CI/CD pipelines (GitHub Actions)
-
-##  Additional Documentation
-
-- [Implementation Summary](IMPLEMENTATION_SUMMARY.md)
-- [gRPC Contracts](Eroad.DeliveryTracking.Contracts/Protos/)
-- [Architecture Decision Records](docs/adr/) (if exists)
-
-##  Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-##  License
-
-This project is proprietary and confidential.
 
 ##  Team
 
