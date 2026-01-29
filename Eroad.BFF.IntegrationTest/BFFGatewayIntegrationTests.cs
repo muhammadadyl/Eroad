@@ -5,6 +5,7 @@ using Xunit;
 
 namespace Eroad.BFF.IntegrationTest;
 
+[Collection("BFF Collection")]
 public class BFFGatewayIntegrationTests : IClassFixture<BFFTestFixture>
 {
     private readonly HttpClient _client;

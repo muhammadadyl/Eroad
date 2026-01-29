@@ -9,6 +9,7 @@ namespace Eroad.BFF.IntegrationTest;
 /// End-to-end integration tests that simulate complete delivery workflow scenarios.
 /// These tests execute the full lifecycle from creating resources to completing deliveries.
 /// </summary>
+[Collection("BFF Collection")]
 public class EndToEndWorkflowTests : IClassFixture<BFFTestFixture>
 {
     private readonly HttpClient _client;

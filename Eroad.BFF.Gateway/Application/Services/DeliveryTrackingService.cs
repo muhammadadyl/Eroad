@@ -519,13 +519,13 @@ public class DeliveryTrackingService : IDeliveryTrackingService
     private async Task<T> ExecuteWithLockAsync<T>(string lockKey, Func<string, Task<T>> action)
     {
         var lockOwner = Guid.NewGuid().ToString();
-        var lockTimeout = TimeSpan.FromSeconds(10);
+        var lockTimeout = TimeSpan.FromSeconds(30); // Increased to accommodate retries
 
         var lockAcquired = await _lockManager.TryAcquireLockAsync(lockKey, lockOwner, lockTimeout);
         if (!lockAcquired)
         {
-            _logger.LogWarning("Failed to acquire lock for key {LockKey}", lockKey);
-            throw new InvalidOperationException($"Unable to process request for {lockKey}. Please try again.");
+            _logger.LogWarning("Failed to acquire lock for key {LockKey} after all retry attempts", lockKey);
+            throw new InvalidOperationException($"Unable to process request for {lockKey}. Resource is currently locked, please try again later.");
         }
 
         try
