@@ -14,9 +14,9 @@ using EventHandler = Eroad.DeliveryTracking.Query.Infrastructure.Handlers.EventH
 var builder = WebApplication.CreateBuilder(args);
 
 // Configure Kestrel to support HTTP/2 without TLS
-builder.WebHost.UseKestrel(options =>
+builder.WebHost.ConfigureKestrel(options =>
 {
-    options.ListenAnyIP(8080, listenOptions =>
+    options.ConfigureEndpointDefaults(listenOptions =>
     {
         listenOptions.Protocols = HttpProtocols.Http2;
     });
