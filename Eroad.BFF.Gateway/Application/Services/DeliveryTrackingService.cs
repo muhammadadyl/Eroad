@@ -160,33 +160,52 @@ public class DeliveryTrackingService : IDeliveryTrackingService
 
         var (scheduledStart, scheduledEnd) = GetScheduledTimesFromRoute(route);
 
-        // Validate and acquire locks for driver if provided
-        if (!string.IsNullOrEmpty(driverId))
+        // Use a single combined lock for both driver and vehicle validation and delivery creation
+        var lockKey = $"delivery-creation:{routeId}";
+        var result = await ExecuteWithLockAsync(lockKey, async (lockOwner) =>
         {
-            await ValidateDriverAsync(driverId, scheduledStart, scheduledEnd);
-        }
+            // Validate and fetch driver if provided
+            if (!string.IsNullOrEmpty(driverId))
+            {
+                var driverLookupRequest = new GetDriverByIdRequest { Id = driverId };
+                var driverLookupResponse = await _driverQueryClient.GetDriverByIdAsync(driverLookupRequest);
+                var driver = ValidateEntity(driverLookupResponse.Driver, "Driver", driverId);
+                _logger.LogInformation("Driver validated: {DriverName} with status {Status}", driver.Name, driver.Status);
 
-        // Validate and acquire locks for vehicle if provided
-        if (!string.IsNullOrEmpty(vehicleId))
-        {
-            await ValidateVehicleAsync(vehicleId, scheduledStart, scheduledEnd);
-        }
+                await ValidateAssignmentAvailabilityAsync(driverId, scheduledStart, scheduledEnd,
+                    _assignmentValidator.ValidateDriverAvailabilityAsync);
+            }
 
-        // Create delivery after validation
-        var request = new CreateDeliveryRequest
-        {
-            Id = id ?? Guid.NewGuid().ToString(),
-            RouteId = routeId,
-            DriverId = driverId ?? string.Empty,
-            VehicleId = vehicleId ?? string.Empty
-        };
-        
-        var response = await _deliveryCommandClient.CreateDeliveryAsync(request);
-        _logger.LogInformation("Delivery created successfully with ID: {DeliveryId}", response.Id);
+            // Validate and fetch vehicle if provided
+            if (!string.IsNullOrEmpty(vehicleId))
+            {
+                var vehicleLookupRequest = new GetVehicleByIdRequest { Id = vehicleId };
+                var vehicleLookupResponse = await _vehicleQueryClient.GetVehicleByIdAsync(vehicleLookupRequest);
+                var vehicle = ValidateEntity(vehicleLookupResponse.Vehicle, "Vehicle", vehicleId);
+                _logger.LogInformation("Vehicle validated: {Registration} with status {Status}", vehicle.Registration, vehicle.Status);
+
+                await ValidateAssignmentAvailabilityAsync(vehicleId, scheduledStart, scheduledEnd,
+                    _assignmentValidator.ValidateVehicleAvailabilityAsync);
+            }
+
+            // Create delivery after all validations pass
+            var request = new CreateDeliveryRequest
+            {
+                Id = id ?? Guid.NewGuid().ToString(),
+                RouteId = routeId,
+                DriverId = driverId ?? string.Empty,
+                VehicleId = vehicleId ?? string.Empty
+            };
+
+            var response = await _deliveryCommandClient.CreateDeliveryAsync(request);
+            _logger.LogInformation("Delivery created successfully with ID: {DeliveryId}", response.Id);
+
+            return new { Message = response.Message, Id = response.Id };
+        });
 
         await UpdateAssignmentStatusesAsync(driverId, vehicleId, "Assigned");
 
-        return new { Message = response.Message, Id = response.Id };
+        return result;
     }
 
     public async Task<object> UpdateDeliveryStatusAsync(string id, string status)
@@ -474,43 +493,9 @@ public class DeliveryTrackingService : IDeliveryTrackingService
         return (route.ScheduledStartTime.ToDateTime(), route.ScheduledEndTime.ToDateTime());
     }
 
-    /// <summary>
-    /// Helper method to validate driver exists and acquire lock for availability check.
-    /// </summary>
-    private async Task ValidateDriverAsync(string driverId, DateTime scheduledStart, DateTime scheduledEnd)
-    {
-        var driverLookupRequest = new GetDriverByIdRequest { Id = driverId };
-        var driverLookupResponse = await _driverQueryClient.GetDriverByIdAsync(driverLookupRequest);
-        
-        var driver = ValidateEntity(driverLookupResponse.Driver, "Driver", driverId);
-        _logger.LogInformation("Driver validated: {DriverName} with status {Status}", driver.Name, driver.Status);
 
-        await ExecuteWithLockAsync($"driver-assignment:{driverId}", async (lockOwner) =>
-        {
-            await ValidateAssignmentAvailabilityAsync(driverId, scheduledStart, scheduledEnd, 
-                _assignmentValidator.ValidateDriverAvailabilityAsync);
-            return true;
-        });
-    }
 
-    /// <summary>
-    /// Helper method to validate vehicle exists and acquire lock for availability check.
-    /// </summary>
-    private async Task ValidateVehicleAsync(string vehicleId, DateTime scheduledStart, DateTime scheduledEnd)
-    {
-        var vehicleLookupRequest = new GetVehicleByIdRequest { Id = vehicleId };
-        var vehicleLookupResponse = await _vehicleQueryClient.GetVehicleByIdAsync(vehicleLookupRequest);
-        
-        var vehicle = ValidateEntity(vehicleLookupResponse.Vehicle, "Vehicle", vehicleId);
-        _logger.LogInformation("Vehicle validated: {Registration} with status {Status}", vehicle.Registration, vehicle.Status);
 
-        await ExecuteWithLockAsync($"vehicle-assignment:{vehicleId}", async (lockOwner) =>
-        {
-            await ValidateAssignmentAvailabilityAsync(vehicleId, scheduledStart, scheduledEnd, 
-                _assignmentValidator.ValidateVehicleAvailabilityAsync);
-            return true;
-        });
-    }
 
     /// <summary>
     /// Acquires a distributed lock and executes the provided action within the lock context.
