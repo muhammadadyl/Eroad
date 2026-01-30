@@ -596,21 +596,18 @@ GET <key>
 - **Proof of Delivery Capture**: Can only be captured when delivery status is OutForDelivery; required before marking delivery as Delivered
 - **Incident Resolution Scope**: Incidents can only be resolved individually; no bulk resolution capability available
 - **Route Modification Restrictions**: Once route transitions to Active state, checkpoints cannot be reordered or removed
-- **Driver Reassignment Window**: Changing assigned driver requires delivery to be in PickedUp state; not allowed during active transit
-- **Vehicle Reassignment Window**: Changing assigned vehicle requires delivery to be in PickedUp state; not allowed during active transit
+- **Driver Reassignment Window**: Changing assigned driver requires delivery to be in PickedUp state; not allowed during active transit. This also means reassigning, can only happen on new delivery while canceling existing one.
+- **Vehicle Reassignment Window**: Changing assigned vehicle requires delivery to be in PickedUp state; not allowed during active transit. This also means reassigning, can only happen on new delivery while canceling existing one.
 - **Status Rollback Limitations**: Failed deliveries can only transition back to PickedUp status; no other rollback transitions supported
 - **Delivery Cancellation Workflow**: No explicit cancellation workflow; deliveries must progress through status transitions or fail
 - **Batch Operations Support**: No support for bulk status updates, assignments, or incident reporting across multiple deliveries
-- **Delivery Query Filtering**: Query APIs don't support filtering by date ranges, customer information, or delivery priority levels
-- **Route Optimization Features**: No automatic route optimization or dynamic re-routing based on traffic conditions or incident reports
+- **Delivery Query Filtering**: Query APIs don't support filtering by date ranges, customer information, or delivery priority levels, they also lack in pagination.
+- **Route Optimization Features**: No automatic route optimization or dynamic re-routing based on incident reports
 - **Notification System**: No built-in notifications for status changes, incidents, assignment updates, or delivery completions
 - **Delivery Dependencies**: No support for linked deliveries or delivery dependencies (e.g., pickup before drop-off scenarios)
 - **Time Window Validation**: Delivery time windows are not validated against route checkpoint timing constraints
-- **Capacity Management**: No validation of vehicle capacity against delivery payload size or weight restrictions
-- **Geographic Boundaries**: No validation of delivery locations against driver service areas or operational zones
 - **Service Level Agreement Tracking**: No SLA tracking or enforcement for delivery completion times or performance metrics
 - **Recurring Delivery Patterns**: No support for scheduled or recurring delivery patterns
-- **Multi-Stop Delivery Support**: Each delivery represents a single pickup-to-delivery journey; no multi-stop route support within a single delivery
 
 ### Planned Enhancements
 1. **Authentication & Authorization**
