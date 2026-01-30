@@ -57,7 +57,46 @@ A production-ready microservices-based delivery management platform built with .
   - CORS configuration for frontend apps
   - Distributed locking (Redis) for concurrent operations
   - Health check endpoints for monitoring
+## Architecture Diagram
 
+```mermaid
+graph LR
+    A[Frontend Clients] --HTTP (REST)--> B[BFF Gateway &lpar;Port 5000&rpar;]
+    B --gRPC--> Delivery
+    B --gRPC--> Fleet
+    B --gRPC--> Route
+    
+    subgraph Delivery [Delivery Tracking Service]
+        F[Command API &lpar;Port 5001&rpar;]
+        G[Query API &lpar;Port 5002&rpar;] 
+    end
+
+    subgraph Fleet [Fleet Management Service]
+        H[Command API &lpar;Port 5003&rpar;]
+        I[Query API &lpar;Port 5004&rpar;] 
+    end
+
+    subgraph Route [Route Management Service]
+        J[Command API &lpar;Port 5005&rpar;]
+        K[Query API &lpar;Port 5006&rpar;] 
+    end
+    
+    F --> L[MongoDB &lpar;Event Store&rpar;]
+    H --> L
+    J --> L
+
+    G --> M[SQL Server &lpar;Read Models&rpar;]
+    I --> M
+    K --> M
+    
+    F --> N[Apache Kafka &lpar;Event Streaming&rpar;]
+    H --> N
+    J --> N
+    
+    N --> G
+    N --> I
+    N --> K
+```
 ##  Getting Started
 
 ### Prerequisites
