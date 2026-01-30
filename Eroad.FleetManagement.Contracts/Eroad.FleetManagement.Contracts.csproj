@@ -3,6 +3,8 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
+    <!-- Increase timeout for protobuf compilation in Docker -->
+    <ProtobufToolsTimeout>60000</ProtobufToolsTimeout>
   </PropertyGroup>
 
   <ItemGroup>

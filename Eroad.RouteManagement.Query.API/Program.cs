@@ -42,6 +42,8 @@ dataContext.Database.EnsureCreated();
 builder.Services.AddScoped<IRouteRepository, RouteRepository>();
 builder.Services.AddScoped<ICheckpointRepository, CheckpointRepository>();
 builder.Services.AddScoped<IEventHandler, EventHandler>();
+
+// Configure Kafka Consumer
 builder.Services.Configure<ConsumerConfig>(builder.Configuration.GetSection(nameof(ConsumerConfig)));
 builder.Services.AddScoped<IEventConsumer, EventConsumer>();
 
