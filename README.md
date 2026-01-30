@@ -537,7 +537,7 @@ GET <key>
 - Limited observability (no distributed tracing)
 - No distributed caching for read-heavy operations
 - Resilience patterns only in BFF Gateway (not in microservices)
-- Integration are flaky because of eventual consistency, and latency issue of sql express.
+- Due to the lack of probing and database setup verification, some integration tests fail on their first execution.
 
 #### Functional
 - **Incident Validation**: Incident properties lack strong typing and accept free-text input (except ID field)

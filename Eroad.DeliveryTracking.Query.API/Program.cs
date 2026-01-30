@@ -50,7 +50,7 @@ jsonOptions.Converters.Add(new EventJsonConverter());
 
 // Register Kafka consumer configuration
 builder.Services.Configure<ConsumerConfig>(builder.Configuration.GetSection(nameof(ConsumerConfig)));
-builder.Services.AddScoped<IEventConsumer, EventConsumer>();
+builder.Services.AddScoped<IEventConsumer, Eroad.DeliveryTracking.Query.Infrastructure.Consumers.EventConsumer>();
 
 // Register repositories
 builder.Services.AddScoped<IDeliveryRepository, DeliveryRepository>();

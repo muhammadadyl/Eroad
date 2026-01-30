@@ -46,7 +46,7 @@ builder.Services.AddScoped<IEventHandler, EventHandler>();
 
 // Configure Kafka Consumer
 builder.Services.Configure<ConsumerConfig>(builder.Configuration.GetSection(nameof(ConsumerConfig)));
-builder.Services.AddScoped<IEventConsumer, EventConsumer>();
+builder.Services.AddScoped<IEventConsumer, Eroad.FleetManagement.Query.Infrastructure.Consumers.EventConsumer>();
 
 // Register MediatR
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
