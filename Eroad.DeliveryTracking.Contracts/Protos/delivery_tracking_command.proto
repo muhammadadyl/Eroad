@@ -16,6 +16,14 @@ service DeliveryCommand {
   rpc AssignVehicle(AssignVehicleRequest) returns (AssignVehicleResponse);
 }
 
+enum DeliveryStatus {
+    PICKED_UP = 0;
+    IN_TRANSIT = 1;
+    OUT_FOR_DELIVERY = 2;
+    DELIVERED = 3;
+    FAILED = 4;
+}
+
 // Request messages
 message CreateDeliveryRequest {
   string id = 1;

@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 
@@ -62,6 +63,47 @@ public class BFFTestDataBuilder
         });
 
         var result = await response.Content.ReadFromJsonAsync<ApiResponse>(_jsonOptions);
+        return result?.Id ?? throw new InvalidOperationException("Failed to create route");
+    }
+
+    /// <summary>
+    /// Change Status to Active after creation.
+    /// </summary>
+    public async Task ChangeRouteStatusAsync(string id, string status = "Active")
+    {
+        var activateRouteResponse = await _client.PatchAsJsonAsync($"/api/routes/{id}/status", new
+        {
+            status = status
+        });
+        Thread.Sleep(500); // Small delay to ensure route status is updated before proceeding
+
+        if (!activateRouteResponse.IsSuccessStatusCode)
+        {
+            throw new InvalidOperationException("Failed to create route");
+        }
+    }
+
+
+    /// <summary>
+    /// Creates a route with the specified origin, destination, and scheduled start time.
+    /// Change Status to Active after creation.
+    /// </summary>
+    public async Task<string> CreateActiveRoute(string origin, string destination, DateTime? scheduledStartTime = null)
+    {
+        var startTime = scheduledStartTime ?? DateTime.UtcNow.AddHours(2);
+        var response = await _client.PostAsJsonAsync("/api/routes", new
+        {
+            origin,
+            destination,
+            scheduledStartTime = startTime
+        });
+
+        var result = await response.Content.ReadFromJsonAsync<ApiResponse>(_jsonOptions);
+        var activateRouteResponse = await _client.PatchAsJsonAsync($"/api/routes/{result?.Id}/status", new
+        {
+            status = "Active"
+        });
+        Thread.Sleep(500); // Small delay to ensure route status is updated before proceeding
         return result?.Id ?? throw new InvalidOperationException("Failed to create route");
     }
 

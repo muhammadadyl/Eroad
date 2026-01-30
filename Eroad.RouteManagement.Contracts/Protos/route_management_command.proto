@@ -15,6 +15,12 @@ service RouteCommand {
   rpc UpdateCheckpoint(UpdateCheckpointRequest) returns (UpdateCheckpointResponse);
 }
 
+enum RouteStatus {
+    PLANNING = 0;
+    ACTIVE = 3;
+    DEACTIVATED = 5;
+}
+
 // Request messages
 message CreateRouteRequest {
   string id = 1;

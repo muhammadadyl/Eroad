@@ -6,13 +6,13 @@ public class ApiResponse
     public string? Message { get; set; }
 }
 
-public class DeliveryEntity {
+public class DeliveryResponse {
     public string? Id { get; set; }
     public string? Status { get; set; }
     public string? DriverId { get; set; }
     public string? VehicleId { get; set; }
     public string? RouteId { get; set; }
-    public List<Incident> Incidents { get; set; }
+    public List<Incident> Incidents { get; set; } = new List<Incident>();
 }
 
 public class Incident

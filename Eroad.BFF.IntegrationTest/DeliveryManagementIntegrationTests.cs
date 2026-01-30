@@ -31,7 +31,7 @@ public class DeliveryManagementIntegrationTests : IClassFixture<BFFTestFixture>
         // Arrange - Create dependencies
         var vehicleId = await _builder.CreateVehicleAsync("DEL-VAN-001", "Delivery Van");
         var driverId = await _builder.CreateDriverAsync("Delivery Driver", "DL-DEL-001");
-        var routeId = await _builder.CreateRouteAsync("Warehouse", "Customer", DateTime.UtcNow.AddHours(1));
+        var routeId = await _builder.CreateActiveRoute("Warehouse", "Customer", DateTime.UtcNow.AddHours(1));
 
         var deliveryId = await _builder.CreateDeliveryAsync(routeId, driverId, vehicleId);
 
@@ -53,7 +53,7 @@ public class DeliveryManagementIntegrationTests : IClassFixture<BFFTestFixture>
         // Arrange - Create dependencies
         var vehicleId = await _builder.CreateVehicleAsync("DEL-VAN-001", "Delivery Van");
         var driverId = await _builder.CreateDriverAsync("Delivery Driver", "DL-DEL-001");
-        var routeId = await _builder.CreateRouteAsync("Warehouse", "Customer", DateTime.UtcNow.AddHours(1));
+        var routeId = await _builder.CreateActiveRoute("Warehouse", "Customer", DateTime.UtcNow.AddHours(1));
 
         // Act
         var response = await _client.PostAsJsonAsync("/api/deliveries", new
@@ -73,7 +73,7 @@ public class DeliveryManagementIntegrationTests : IClassFixture<BFFTestFixture>
     public async Task CreateDelivery_WithoutDriverAndVehicle_Succeeds()
     {
         // Arrange
-        var routeId = await _builder.CreateRouteAsync("Warehouse X", "Customer Y", DateTime.UtcNow.AddHours(2));
+        var routeId = await _builder.CreateActiveRoute("Warehouse X", "Customer Y", DateTime.UtcNow.AddHours(2));
 
         // Act
         var response = await _client.PostAsJsonAsync("/api/deliveries", new
@@ -91,7 +91,7 @@ public class DeliveryManagementIntegrationTests : IClassFixture<BFFTestFixture>
     public async Task UpdateDeliveryStatusWithNoVehicleDriver_ChangesDeliveryStatusToInTransit_Fails()
     {
         // Arrange - Create delivery without driver/vehicle
-        var routeId = await _builder.CreateRouteAsync("Point A", "Point B", DateTime.UtcNow.AddHours(1));
+        var routeId = await _builder.CreateActiveRoute("Point A", "Point B", DateTime.UtcNow.AddHours(1));
         var deliveryId = await _builder.CreateDeliveryAsync(routeId);
 
         // Act
@@ -114,6 +114,8 @@ public class DeliveryManagementIntegrationTests : IClassFixture<BFFTestFixture>
 
         await _builder.AddCheckpointAsync(routeId, 1, "Checkpoint 1", DateTime.UtcNow.AddHours(1.5));
 
+        await _builder.ChangeRouteStatusAsync(routeId);
+
         var deliveryId = await _builder.CreateDeliveryAsync(routeId, driverId, vehicleId);
 
         // Act - Update delivery status to InTransit
@@ -135,7 +137,7 @@ public class DeliveryManagementIntegrationTests : IClassFixture<BFFTestFixture>
     public async Task ReportIncident_CreatesIncidentReport()
     {
         // Arrange
-        var routeId = await _builder.CreateRouteAsync("Start", "End", DateTime.UtcNow.AddHours(1));
+        var routeId = await _builder.CreateActiveRoute("Start", "End", DateTime.UtcNow.AddHours(1));
         var deliveryId = await _builder.CreateDeliveryAsync(routeId);
 
         // Act
@@ -155,7 +157,7 @@ public class DeliveryManagementIntegrationTests : IClassFixture<BFFTestFixture>
         // Arrange - Create delivery with driver and vehicle
         var vehicleId = await _builder.CreateVehicleAsync("DEL-VAN-001", "Delivery Van");
         var driverId = await _builder.CreateDriverAsync("Delivery Driver", "DL-DEL-001");
-        var routeId = await _builder.CreateRouteAsync("Warehouse", "Customer", DateTime.UtcNow.AddHours(1));
+        var routeId = await _builder.CreateActiveRoute("Warehouse", "Customer", DateTime.UtcNow.AddHours(1));
         var deliveryId = await _builder.CreateDeliveryAsync(routeId, driverId, vehicleId);
 
         // Act - Update to InTransit
@@ -180,7 +182,7 @@ public class DeliveryManagementIntegrationTests : IClassFixture<BFFTestFixture>
     {
         // Arrange
         var driverId = await _builder.CreateDriverAsync("Test Driver", "DL-ASSIGN-001");
-        var routeId = await _builder.CreateRouteAsync("A", "B", DateTime.UtcNow.AddHours(2));
+        var routeId = await _builder.CreateActiveRoute("A", "B", DateTime.UtcNow.AddHours(2));
         var deliveryId = await _builder.CreateDeliveryAsync(routeId);
 
         // Act
@@ -198,7 +200,7 @@ public class DeliveryManagementIntegrationTests : IClassFixture<BFFTestFixture>
     {
         // Arrange
         var vehicleId = await _builder.CreateVehicleAsync("ASSIGN-VAN-001", "Delivery Van");
-        var routeId = await _builder.CreateRouteAsync("X", "Y", DateTime.UtcNow.AddHours(2));
+        var routeId = await _builder.CreateActiveRoute("X", "Y", DateTime.UtcNow.AddHours(2));
         var deliveryId = await _builder.CreateDeliveryAsync(routeId);
 
         // Act

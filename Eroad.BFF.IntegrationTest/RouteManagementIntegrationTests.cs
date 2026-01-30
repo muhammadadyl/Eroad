@@ -41,7 +41,7 @@ public class RouteManagementIntegrationTests : IClassFixture<BFFTestFixture>
     public async Task GetRouteDetail_ReturnsRouteDetails()
     {
         // Arrange - Create a route first
-        var routeId = await _builder.CreateRouteAsync("Test Warehouse", "Test Destination", DateTime.UtcNow.AddHours(2));
+        var routeId = await _builder.CreateActiveRoute("Test Warehouse", "Test Destination", DateTime.UtcNow.AddHours(2));
 
         // Act
         var response = await _client.GetAsync($"/api/routes/{routeId}");
@@ -73,7 +73,7 @@ public class RouteManagementIntegrationTests : IClassFixture<BFFTestFixture>
     public async Task UpdateRoute_UpdatesExistingRoute()
     {
         // Arrange
-        var routeId = await _builder.CreateRouteAsync("Warehouse A", "Location B", DateTime.UtcNow.AddHours(2));
+        var routeId = await _builder.CreateActiveRoute("Warehouse A", "Location B", DateTime.UtcNow.AddHours(2));
 
         // Act
         var response = await _client.PutAsJsonAsync($"/api/routes/{routeId}", new
@@ -91,7 +91,7 @@ public class RouteManagementIntegrationTests : IClassFixture<BFFTestFixture>
     public async Task ChangeRouteStatus_UpdatesRouteStatus()
     {
         // Arrange
-        var routeId = await _builder.CreateRouteAsync("Warehouse C", "Location D", DateTime.UtcNow.AddHours(1));
+        var routeId = await _builder.CreateActiveRoute("Warehouse C", "Location D", DateTime.UtcNow.AddHours(1));
 
         // Act
         var response = await _client.PatchAsJsonAsync($"/api/routes/{routeId}/status", new

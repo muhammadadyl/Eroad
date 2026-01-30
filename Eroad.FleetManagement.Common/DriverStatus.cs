@@ -2,9 +2,9 @@
 {
     public enum DriverStatus
     {
-        Available,
-        Suspended,
-        Unavailable,
-        Assigned
+        Available = 0,
+        Suspended = 1,
+        Unavailable = 2,
+        Assigned = 3
     }
 }

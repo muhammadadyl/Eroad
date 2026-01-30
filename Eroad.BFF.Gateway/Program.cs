@@ -33,6 +33,28 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Configure CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        .AllowCredentials()
+        .WithExposedHeaders("X-Correlation-Id", "X-Request-Id");
+    });
+
+    // More restrictive policy for production
+    options.AddPolicy("Production", policy =>
+    {
+        policy.WithOrigins(builder.Configuration.GetSection("CorsOrigins").Get<string[]>() ?? Array.Empty<string>())
+        .WithMethods("GET", "POST", "PATCH")
+        .AllowAnyHeader()
+        .AllowCredentials();
+    });
+});
+
 // Get service endpoint URLs from configuration
 var serviceEndpoints = builder.Configuration.GetSection("ServiceEndpoints");
 var deliveryTrackingBaseUrl = serviceEndpoints["DeliveryTrackingBaseUrl"] 
@@ -264,6 +286,9 @@ builder.Services.AddScoped<IDeliveryTrackingService, DeliveryTrackingService>();
 builder.Services.AddScoped<IFleetManagementService, FleetManagementService>();
 builder.Services.AddScoped<IRouteManagementService, RouteManagementService>();
 
+// Configure Health Checks
+builder.Services.AddHealthChecks();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline
@@ -275,8 +300,15 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// Use CORS
+app.UseCors(app.Environment.IsDevelopment() ? "AllowFrontend" : "Production");
+
 app.UseHttpsRedirection();
 app.UseAuthorization();
+
+// Map health check endpoint
+app.MapHealthChecks("/health");
+
 app.MapControllers();
 
 app.Run();
