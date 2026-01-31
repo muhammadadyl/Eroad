@@ -59,6 +59,7 @@ A production-ready microservices-based delivery management platform built with .
   - Health check endpoints for monitoring
 ## Architecture Diagram
 
+### Flowchart
 ```mermaid
 graph LR
     A[Frontend Clients] --HTTP (REST)--> B[BFF Gateway &lpar;Port 5000&rpar;]
@@ -97,6 +98,143 @@ graph LR
     N --> I
     N --> K
 ```
+
+### Sequence Diagram
+
+#### Delivery Creation
+```mermaid
+sequenceDiagram
+    actor Admin
+    box Fleet Management Service
+    participant Driver
+    participant Vehicle
+    end 
+
+    Admin->>+Driver: Add details (Name, license)
+    Driver-->>-Admin: driver id
+    Admin->>+Vehicle: Add Details (Registration, Type)
+    Vehicle-->>-Admin: vehicle id
+
+    box Route Manamgement Service
+    participant Route
+    participant Route-Checkpoint 
+    end
+
+    Admin->>+Route: details (Start DateTime, origin, destination)
+    Route-->>-Admin: route id and status Planning
+
+    Admin->>+Route-Checkpoint: details (route id, sequence, location, expected time)
+    Route-Checkpoint-->>-Admin: success message
+
+    Admin->>+Route: Status Change to Active
+    Route-->>-Admin: Status Changed
+
+    box Delivery Management Service
+        participant Delivery
+        participant Delivery-Checkpoint
+    end
+
+    Admin->>+Delivery: Create Delivery (Route id, vehicle id, driver id)
+    Delivery->>+Route: Get Details
+    Route->>-Delivery: Schedule Start and End Time
+    Delivery->>+Driver: Checks status
+    Driver->>-Delivery: Available/Not Available
+    alt Is Available
+        Delivery->>+Vehicle: Checks status
+        Vehicle->>-Delivery: Available / Not Available
+        alt Is Available
+            Delivery->>+Route: Active / Not Active
+                alt is Active
+                    Delivery->>Delivery: Checks Availability based on Planned Deliveries
+                    alt Is Available
+                        Delivery-->>-Admin: Delivery Created with default Picked Up status
+                    else Not Available
+                        Delivery-->>Admin: Bad Request
+                    end
+                else not Active
+                    Delivery-->>Admin: Bad Request
+                end
+        else Not Available
+            Delivery-->>Admin: Bad Request
+        end
+    else Not Available
+        Delivery-->>Admin: Bad Request
+    end
+```
+
+#### Delivery Status and Incidence
+```mermaid
+sequenceDiagram
+    actor Driver
+    
+    box Route Manamgement Service
+    participant Route
+    participant Route-Checkpoint 
+    end
+
+    box Delivery Management Service
+    participant Delivery
+    participant Delivery-Checkpoint
+    participant Incident
+    end
+
+    Driver->>+Delivery: InTransit
+    Delivery-->>-Driver: status changed
+    opt Checkpoint Completion
+        Driver->>+Delivery-Checkpoint: (seq, location)
+        Delivery-Checkpoint->>+Route-Checkpoint: if exists
+        alt Does exists
+            Route-Checkpoint->>-Delivery-Checkpoint: added to journey
+            Delivery-Checkpoint-->>+Driver: Checkpoint reached
+        else Doesn't exist
+            Delivery-Checkpoint-->>Driver: Can't register checkpoint
+        end
+    end
+    opt Incident Reporting
+        Driver->>+Incident: Reports (type, description)
+        Incident-->>-Driver: incident Id
+    end
+
+    opt Incident Resolution
+        Driver->>+Incident: Resolution (incident id)
+        Incident-->>-Driver: successful
+    end
+
+    Driver->>+Delivery: Out for Delivery
+    Delivery->>+Delivery-Checkpoint: Get Details
+    Delivery-Checkpoint->>-Delivery: Checkpoints List
+    Delivery->>+Route-Checkpoint: Get Route Checkpoints
+    Route-Checkpoint->>-Delivery: Checkpoint List
+    Delivery->>Delivery: verify Route Checkpoints equals to Delivery Checkpoints
+    alt Checkpoints Matched
+        Delivery-->>-Driver: Status Changed
+    else not Matched
+        Delivery-->>Driver: Status cannot be changed complete all Checkpoints
+    end
+
+    Driver->>+Delivery: Proof of Delivery
+    Delivery->>Delivery: Status Delivered
+    Delivery-->>-Driver: Journey Completed (Success)
+
+    opt Delivery Completed
+        Driver->>+Delivery: Status Delivered
+        Delivery-->>-Driver: Journey Completed (Success)
+    end
+    opt Delivery Cancel
+        Driver->>+Delivery: Failed
+        Delivery-->>-Driver: Journey Completed (Failure)
+    end
+```
+### Business Functionality Descriptions
+
+#### Delivery Creation Business Functionality
+
+The delivery creation process involves multiple stakeholders and services to ensure valid, conflict-free delivery assignments. An admin initiates the process by adding driver and vehicle details to the Fleet Management Service, then creates and activates a route with checkpoints in the Route Management Service. Finally, the admin creates a delivery in the Delivery Tracking Service, which validates availability of the assigned driver, vehicle, and route (must be active) against existing deliveries to prevent overlaps. If all validations pass, the delivery is created with a default "PickedUp" status; otherwise, a bad request is returned with conflict details.
+
+#### Delivery Status and Incidence Business Functionality
+
+Drivers manage delivery progress and report issues through the Delivery Tracking Service. They can update status to "InTransit" or "OutForDelivery", register checkpoints (validated against route checkpoints), and report/resolve incidents. For "OutForDelivery" transitions, all route checkpoints must be completed. Proof of delivery can only be captured in "OutForDelivery" status, allowing final "Delivered" status. Deliveries can also be marked as "Failed" for cancellation. Incidents are handled independently, with reporting and resolution not blocking delivery completion. All actions ensure state machine compliance and provide feedback on success or failure.
+
 ##  Getting Started
 
 ### Prerequisites
@@ -568,7 +706,7 @@ GET <key>
 
 ##  Known Limitations & Future Enhancements
 
-### Current Limitations
+### Current Limitations / Assumptions
 
 #### Technical
 - No authentication/authorization implemented
@@ -579,35 +717,42 @@ GET <key>
 - Due to the lack of probing and database setup verification, some integration tests fail on their first execution.
 
 #### Functional
+##### Route Management
+- **Route Checkpoint Addition**: Checkpoints can only be added when route is in Planning state
+- **Route Timing Calculation**: Route end times dynamically recalculate with each checkpoint addition (initial routes specify start time only)
+- **Route Modification Restrictions**: Once route transitions to Active state, checkpoints cannot be reordered or removed
+- **Route Optimization Features**: No automatic route optimization or dynamic re-routing based on incident reports
+
+##### Incidence and Resolution
 - **Incident Validation**: Incident properties lack strong typing and accept free-text input (except ID field)
+- **Incident Resolution Workflow**: Incidents can be reported and resolved independently; deliveries can be completed (marked as Delivered) without requiring all incidents to be resolved first
+- **Incident Resolution Scope**: Incidents can only be resolved individually; no bulk resolution capability available
+
+##### Delivery Management
 - **Live Tracking Display**: Shows current status for active deliveries (InTransit, OutForDelivery) without historical tracking data
 - **Delivery Summaries**: Provide basic information but include complete system event history
-- **Route Checkpoint Addition**: Checkpoints can only be added when route is in Planning state
 - **Delivery Creation Requirement**: Route must be in Active state before delivery can be created
 - **Status Transition Prerequisites**: Delivery cannot transition to InTransit until both driver and vehicle are assigned
 - **Concurrency Control Mechanism**: Redis distributed locks ensure driver and vehicle availability during concurrent assignment operations
 - **Resource Release Behavior**: Drivers and vehicles are automatically released when delivery reaches terminal state (Delivered, Failed)
 - **Assignment Time Validation**: Driver and vehicle assignments validate availability within the scheduled delivery time slot
-- **Route Timing Calculation**: Route end times dynamically recalculate with each checkpoint addition (initial routes specify start time only)
 - **Checkpoint Timing Data**: Delivery checkpoints track actual arrival times, whereas route checkpoints store expected arrival times
-- **Availability Time Buffer**: No time buffer allocated for route completion; driver/vehicle availability calculated using scheduled route end time
-- **Entity Duplication Policy**: Duplicate data allowed for all entity properties (names, license plates, phone numbers, addresses, etc.) except unique identifiers (IDs); no uniqueness constraints enforced beyond identity fields
-- **Incident Resolution Workflow**: Incidents can be reported and resolved independently; deliveries can be completed (marked as Delivered) without requiring all incidents to be resolved first
 - **Proof of Delivery Capture**: Can only be captured when delivery status is OutForDelivery; required before marking delivery as Delivered
-- **Incident Resolution Scope**: Incidents can only be resolved individually; no bulk resolution capability available
-- **Route Modification Restrictions**: Once route transitions to Active state, checkpoints cannot be reordered or removed
 - **Driver Reassignment Window**: Changing assigned driver requires delivery to be in PickedUp state; not allowed during active transit. This also means reassigning, can only happen on new delivery while canceling existing one.
 - **Vehicle Reassignment Window**: Changing assigned vehicle requires delivery to be in PickedUp state; not allowed during active transit. This also means reassigning, can only happen on new delivery while canceling existing one.
 - **Status Rollback Limitations**: Failed deliveries can only transition back to PickedUp status; no other rollback transitions supported
 - **Delivery Cancellation Workflow**: No explicit cancellation workflow; deliveries must progress through status transitions or fail
 - **Batch Operations Support**: No support for bulk status updates, assignments, or incident reporting across multiple deliveries
 - **Delivery Query Filtering**: Query APIs don't support filtering by date ranges, customer information, or delivery priority levels, they also lack in pagination.
-- **Route Optimization Features**: No automatic route optimization or dynamic re-routing based on incident reports
 - **Notification System**: No built-in notifications for status changes, incidents, assignment updates, or delivery completions
 - **Delivery Dependencies**: No support for linked deliveries or delivery dependencies (e.g., pickup before drop-off scenarios)
 - **Time Window Validation**: Delivery time windows are not validated against route checkpoint timing constraints
 - **Service Level Agreement Tracking**: No SLA tracking or enforcement for delivery completion times or performance metrics
 - **Recurring Delivery Patterns**: No support for scheduled or recurring delivery patterns
+
+##### Fleet Management
+- **Availability Time Buffer**: No time buffer allocated for route completion; driver/vehicle availability calculated using scheduled route end time
+- **Entity Duplication Policy**: Duplicate data allowed for all entity properties (names, license plates, phone numbers, addresses, etc.) except unique identifiers (IDs); no uniqueness constraints enforced beyond identity fields
 
 ### Planned Enhancements
 1. **Authentication & Authorization**
