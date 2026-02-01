@@ -1,6 +1,5 @@
 using Eroad.BFF.Gateway.Application.Interfaces;
 using Eroad.BFF.Gateway.Application.Services;
-using Eroad.BFF.Gateway.Application.Validators;
 using Eroad.BFF.Gateway.Presentation.Middleware;
 using Eroad.DeliveryTracking.Contracts;
 using Eroad.FleetManagement.Contracts;
@@ -277,9 +276,6 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
 
 // Register distributed lock manager
 builder.Services.AddSingleton<IDistributedLockManager, RedisLockManager>();
-
-// Register assignment validator
-builder.Services.AddScoped<DeliveryAssignmentValidator>();
 
 // Register application services with interfaces for dependency injection
 builder.Services.AddScoped<IDeliveryTrackingService, DeliveryTrackingService>();
