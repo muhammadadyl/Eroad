@@ -294,6 +294,12 @@ dotnet run
 
 Repeat for other services as needed.
 
+**Note:** for building docker images use following command
+
+```powershell
+docker-compose --profile init-services build
+```
+
 ##  Architecture Patterns
 
 ### CQRS (Command Query Responsibility Segregation)
