@@ -1,4 +1,4 @@
-# Eroad Delivery Management System
+# Eroad Delivery Management System (The Great Galactic Delivery Race)
 
 A production-ready microservices-based delivery management platform built with .NET 8, implementing Event Sourcing, CQRS, and Domain-Driven Design patterns. Features comprehensive resilience patterns, distributed locking, and clean architecture principles.
 
@@ -145,6 +145,7 @@ sequenceDiagram
         alt Is Available
             Delivery->>+Route: Active / Not Active
                 alt is Active
+                    Route->>-Delivery: Active
                     Delivery->>Delivery: Checks Availability based on Planned Deliveries
                     alt Is Available
                         Delivery-->>-Admin: Delivery Created with default Picked Up status
@@ -185,7 +186,7 @@ sequenceDiagram
         Delivery-Checkpoint->>+Route-Checkpoint: if exists
         alt Does exists
             Route-Checkpoint->>-Delivery-Checkpoint: added to journey
-            Delivery-Checkpoint-->>+Driver: Checkpoint reached
+            Delivery-Checkpoint-->>-Driver: Checkpoint reached
         else Doesn't exist
             Delivery-Checkpoint-->>Driver: Can't register checkpoint
         end
@@ -293,6 +294,12 @@ dotnet run
 ```
 
 Repeat for other services as needed.
+
+**Note:** for building docker images use following command
+
+```powershell
+docker-compose --profile init-services build
+```
 
 ##  Architecture Patterns
 
@@ -717,6 +724,7 @@ GET <key>
 - Due to the lack of probing and database setup verification, some integration tests fail on their first execution.
 
 #### Functional
+
 ##### Route Management
 - **Route Checkpoint Addition**: Checkpoints can only be added when route is in Planning state
 - **Route Timing Calculation**: Route end times dynamically recalculate with each checkpoint addition (initial routes specify start time only)
