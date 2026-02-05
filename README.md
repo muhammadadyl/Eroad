@@ -145,6 +145,7 @@ sequenceDiagram
         alt Is Available
             Delivery->>+Route: Active / Not Active
                 alt is Active
+                    Route->>-Delivery: Active
                     Delivery->>Delivery: Checks Availability based on Planned Deliveries
                     alt Is Available
                         Delivery-->>-Admin: Delivery Created with default Picked Up status
@@ -185,7 +186,7 @@ sequenceDiagram
         Delivery-Checkpoint->>+Route-Checkpoint: if exists
         alt Does exists
             Route-Checkpoint->>-Delivery-Checkpoint: added to journey
-            Delivery-Checkpoint-->>+Driver: Checkpoint reached
+            Delivery-Checkpoint-->>-Driver: Checkpoint reached
         else Doesn't exist
             Delivery-Checkpoint-->>Driver: Can't register checkpoint
         end
