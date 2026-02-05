@@ -1,4 +1,4 @@
-using Eroad.CQRS.Core.Handlers;
+using Eroad.CQRS.Core.Infrastructure;
 using Eroad.FleetManagement.Command.API.Commands.Vehicle;
 using Eroad.FleetManagement.Command.Domain.Aggregates;
 using Eroad.FleetManagement.Contracts;

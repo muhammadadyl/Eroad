@@ -1,6 +1,6 @@
 using Eroad.CQRS.Core.Domain;
 
-namespace Eroad.CQRS.Core.Handlers
+namespace Eroad.CQRS.Core.Infrastructure
 {
     public interface IEventSourcingHandler<T> where T : AggregateRoot
     {

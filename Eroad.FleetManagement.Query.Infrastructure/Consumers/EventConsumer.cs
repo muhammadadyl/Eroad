@@ -1,6 +1,6 @@
 using System.Text.Json;
 using Confluent.Kafka;
-using Eroad.CQRS.Core.Consumers;
+using Eroad.CQRS.Core.Infrastructure.Consumers;
 using Eroad.FleetManagement.Query.Infrastructure.Converters;
 using Eroad.FleetManagement.Query.Infrastructure.Handlers;
 using Microsoft.Extensions.Logging;

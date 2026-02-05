@@ -1,6 +1,5 @@
 using Eroad.CQRS.Core.Config;
 using Eroad.CQRS.Core.Exceptions;
-using Eroad.CQRS.Core.Handlers;
 using Eroad.CQRS.Core.Infrastructure;
 using Eroad.CQRS.Core.Producers;
 using Eroad.FleetManagement.Command.Domain.Aggregates;

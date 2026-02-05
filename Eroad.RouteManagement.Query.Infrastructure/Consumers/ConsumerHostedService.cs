@@ -1,4 +1,4 @@
-using Eroad.CQRS.Core.Consumers;
+using Eroad.CQRS.Core.Infrastructure.Consumers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;

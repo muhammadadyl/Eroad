@@ -1,4 +1,4 @@
-namespace Eroad.CQRS.Core.Consumers
+namespace Eroad.CQRS.Core.Infrastructure.Consumers
 {
     public interface IEventConsumer
     {

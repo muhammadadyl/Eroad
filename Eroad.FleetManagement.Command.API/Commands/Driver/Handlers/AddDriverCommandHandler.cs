@@ -1,5 +1,5 @@
 using Eroad.CQRS.Core.Exceptions;
-using Eroad.CQRS.Core.Handlers;
+using Eroad.CQRS.Core.Infrastructure;
 using Eroad.FleetManagement.Command.Domain.Aggregates;
 using MediatR;
 using MongoDB.Driver;

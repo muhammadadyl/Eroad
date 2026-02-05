@@ -1,6 +1,6 @@
 using Eroad.CQRS.Core.Events;
 
-namespace Eroad.CQRS.Core.Domain
+namespace Eroad.CQRS.Core.Infrastructure
 {
     public interface IEventStoreRepository
     {

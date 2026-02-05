@@ -1,6 +1,6 @@
 using Confluent.Kafka;
-using Eroad.CQRS.Core.Consumers;
 using Eroad.CQRS.Core.Infrastructure;
+using Eroad.CQRS.Core.Infrastructure.Consumers;
 using Eroad.FleetManagement.Query.Domain.Repositories;
 using Eroad.FleetManagement.Query.Infrastructure.Consumers;
 using Eroad.FleetManagement.Query.Infrastructure.DataAccess;

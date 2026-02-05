@@ -1,8 +1,6 @@
 using Confluent.Kafka;
 using Eroad.CQRS.Core.Config;
-using Eroad.CQRS.Core.Domain;
 using Eroad.CQRS.Core.Events;
-using Eroad.CQRS.Core.Handlers;
 using Eroad.CQRS.Core.Infrastructure;
 using Eroad.CQRS.Core.Infrastructure.Producers;
 using Eroad.CQRS.Core.Infrastructure.Stores;

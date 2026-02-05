@@ -1,4 +1,4 @@
-using Eroad.CQRS.Core.Handlers;
+using Eroad.CQRS.Core.Infrastructure;
 using Eroad.DeliveryTracking.Command.Domain.Aggregates;
 using MediatR;
 

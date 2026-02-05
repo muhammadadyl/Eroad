@@ -1,5 +1,5 @@
 using Confluent.Kafka;
-using Eroad.CQRS.Core.Consumers;
+using Eroad.CQRS.Core.Infrastructure.Consumers;
 using Eroad.DeliveryTracking.Query.API.Services.Grpc;
 using Eroad.DeliveryTracking.Query.Domain.Repositories;
 using Eroad.DeliveryTracking.Query.Infrastructure.Consumers;

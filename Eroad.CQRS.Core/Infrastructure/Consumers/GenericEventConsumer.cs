@@ -4,7 +4,7 @@ using Eroad.CQRS.Core.Events;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Eroad.CQRS.Core.Consumers
+namespace Eroad.CQRS.Core.Infrastructure.Consumers
 {
     /// <summary>
     /// Base event consumer for Kafka topics.

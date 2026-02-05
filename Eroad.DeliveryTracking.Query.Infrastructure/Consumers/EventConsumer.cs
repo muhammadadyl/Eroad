@@ -1,6 +1,6 @@
 using System.Text.Json;
 using Confluent.Kafka;
-using Eroad.CQRS.Core.Consumers;
+using Eroad.CQRS.Core.Infrastructure.Consumers;
 using Eroad.DeliveryTracking.Query.Infrastructure.Converters;
 using Eroad.DeliveryTracking.Query.Infrastructure.Handlers;
 using Microsoft.Extensions.Logging;
@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 
 namespace Eroad.DeliveryTracking.Query.Infrastructure.Consumers
 {
-    public class EventConsumer : Eroad.CQRS.Core.Consumers.GenericEventConsumer
+    public class EventConsumer : GenericEventConsumer
     {
         public EventConsumer(
             IOptions<ConsumerConfig> config,

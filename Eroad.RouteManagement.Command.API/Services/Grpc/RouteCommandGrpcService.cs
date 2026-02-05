@@ -1,4 +1,4 @@
-using Eroad.CQRS.Core.Handlers;
+using Eroad.CQRS.Core.Infrastructure;
 using Eroad.RouteManagement.Command.API.Commands.Route;
 using Eroad.RouteManagement.Command.Domain.Aggregates;
 using Eroad.RouteManagement.Contracts;
