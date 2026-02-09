@@ -62,6 +62,10 @@ A production-ready microservices-based delivery management platform built with .
 ### Flowchart
 ```mermaid
 graph LR
+    M[(SQL Server &lpar;Read Models&rpar;)]
+    L[(MongoDB &lpar;Event Store&rpar;)]
+    N@{ shape: das, label: "Apache Kafka &lpar;Event Streaming&rpar;" }
+    
     A[Frontend Clients] --HTTP (REST)--> B[BFF Gateway &lpar;Port 5000&rpar;]
     B --gRPC--> Delivery
     B --gRPC--> Fleet
@@ -82,15 +86,15 @@ graph LR
         K[Query API &lpar;Port 5006&rpar;] 
     end
     
-    F --> L[MongoDB &lpar;Event Store&rpar;]
+    F --> L
     H --> L
     J --> L
 
-    G --> M[SQL Server &lpar;Read Models&rpar;]
+    G --> M
     I --> M
     K --> M
     
-    F --> N[Apache Kafka &lpar;Event Streaming&rpar;]
+    F --> N
     H --> N
     J --> N
     
